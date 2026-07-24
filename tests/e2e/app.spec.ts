@@ -14,6 +14,58 @@ test('loads the complete editor workspace and rich preview', async ({ page }) =>
   await expect(page.locator('[data-mermaid-state="ready"]')).toBeVisible()
 })
 
+test('keeps Mermaid rendered when the workspace layout changes', async ({
+  page,
+}) => {
+  const surface = page.getByTestId('export-surface')
+  await expect(
+    surface.locator('[data-mermaid-state="ready"]'),
+  ).toBeVisible()
+
+  const loadingTransitions = await surface.evaluate(async (node) => {
+    let count = 0
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        if (
+          record.type === 'attributes' &&
+          (record.target as Element).getAttribute('data-mermaid-state') ===
+            'loading'
+        ) {
+          count += 1
+        }
+        for (const addedNode of record.addedNodes) {
+          if (
+            addedNode instanceof Element &&
+            (addedNode.matches('[data-mermaid-state="loading"]') ||
+              addedNode.querySelector('[data-mermaid-state="loading"]'))
+          ) {
+            count += 1
+          }
+        }
+      }
+    })
+
+    observer.observe(node, {
+      attributes: true,
+      attributeFilter: ['data-mermaid-state'],
+      childList: true,
+      subtree: true,
+    })
+    const panelToggle = document.querySelectorAll<HTMLButtonElement>(
+      '.desktop-panel-toggle',
+    )[1]
+    panelToggle?.click()
+    await new Promise((resolve) => window.setTimeout(resolve, 800))
+    observer.disconnect()
+    return count
+  })
+
+  expect(loadingTransitions).toBe(0)
+  await expect(
+    surface.locator('[data-mermaid-state="ready"]'),
+  ).toBeVisible()
+})
+
 test('switches language, theme and persists preferences', async ({ page }) => {
   await page.getByLabel('界面语言').selectOption('en')
   await expect(page.getByRole('button', { name: 'Export' })).toBeVisible()

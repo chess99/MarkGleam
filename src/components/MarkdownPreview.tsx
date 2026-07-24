@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import rehypeHighlight from 'rehype-highlight'
+import type { Components } from 'react-markdown'
 import { getTheme } from '../data/themes'
 import { loadAssetUrl } from '../lib/assets'
 import { scopeCustomCss } from '../lib/css'
@@ -16,6 +17,26 @@ interface MarkdownPreviewProps {
   onSurfaceReady?: (surface: HTMLDivElement) => void
   onHeightChange?: (height: number) => void
 }
+
+const remarkPlugins = [remarkGfm, remarkMath]
+const rehypePlugins = [rehypeKatex, rehypeHighlight]
+
+const markdownComponents = {
+  img: AssetImage,
+  hr: () => <hr data-page-break />,
+  code({ className, children, ...props }) {
+    const language = /language-([\w-]+)/.exec(className ?? '')?.[1]
+    const content = String(children).replace(/\n$/, '')
+    if (language === 'mermaid') {
+      return <MermaidBlock chart={content} />
+    }
+    return (
+      <code className={className} {...props}>
+        {children}
+      </code>
+    )
+  },
+} satisfies Components
 
 export function MarkdownPreview({
   surfaceRef,
@@ -146,24 +167,9 @@ export function MarkdownPreview({
             {scopedCss && <style>{scopedCss}</style>}
             <article className="markdown-body" data-export-content>
               <ReactMarkdown
-                remarkPlugins={[remarkGfm, remarkMath]}
-                rehypePlugins={[rehypeKatex, rehypeHighlight]}
-                components={{
-                  img: AssetImage,
-                  hr: () => <hr data-page-break />,
-                  code({ className, children, ...props }) {
-                    const language = /language-([\w-]+)/.exec(className ?? '')?.[1]
-                    const content = String(children).replace(/\n$/, '')
-                    if (language === 'mermaid') {
-                      return <MermaidBlock chart={content} />
-                    }
-                    return (
-                      <code className={className} {...props}>
-                        {children}
-                      </code>
-                    )
-                  },
-                }}
+                remarkPlugins={remarkPlugins}
+                rehypePlugins={rehypePlugins}
+                components={markdownComponents}
               >
                 {markdown}
               </ReactMarkdown>
