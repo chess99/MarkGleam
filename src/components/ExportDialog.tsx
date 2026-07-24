@@ -9,6 +9,7 @@ import {
   LoaderCircle,
 } from 'lucide-react'
 import { t } from '../i18n'
+import { trackEvent } from '../lib/analytics'
 import { runExport } from '../lib/export'
 import { useAppStore } from '../store'
 import type { ExportFormat } from '../types'
@@ -47,6 +48,12 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
     setDone(false)
     try {
       const result = await runExport(surface, config)
+      trackEvent('export_completed', {
+        requested_format: config.format,
+        delivered_format: result.format,
+        scale: config.scale,
+        parts: result.parts ?? 1,
+      })
       setDone(true)
       if (config.format === 'clipboard' && result.format === 'png') {
         onToast(t(locale, 'copyFallback'))

@@ -49,13 +49,30 @@ npx playwright install chromium firefox webkit
 Vite 使用相对资源路径，可同时运行在：
 
 - `https://chess99.github.io/markdown-to-image/`
-- 后续绑定的自定义子域名
+- `https://md2img.cearl.cc/`（当前 canonical 与 sitemap 地址）
 
 仓库不包含 `CNAME` 文件。自定义域名由 GitHub Pages 与 DNS 后台配置。
 
+## 访问统计
+
+生产环境会在页面加载完成后的浏览器空闲时段接入 Google Analytics 4 与百度统计，本地开发和 `127.0.0.1` 预览不会上报。
+
+- 默认 GA4 Measurement ID：`G-C3YEYVPEBR`
+- 默认百度统计站点 ID：`8864588cde35a2181784b07b34f770f9`
+- 自定义事件：`export_completed`，只包含导出格式、倍率和分片数量
+
+如需为本站拆分独立数据流，可在构建时设置：
+
+```bash
+VITE_GOOGLE_MEASUREMENT_ID=G-XXXXXXXXXX
+VITE_BAIDU_ANALYTICS_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+同一 ID 适合把多个个人站点放进统一看板，并可通过 hostname 区分；如果要独立观察获客、转化和留存，建议为每个域名创建单独的数据流或站点 ID。
+
 ## 隐私
 
-MD2IMG 没有内容服务器。Markdown、本地图片、字体和导出文件不会上传。使用远程图片链接时，浏览器会直接向图片原地址发起请求。
+MD2IMG 没有内容服务器。Markdown、本地图片、字体、文件名和导出文件不会上传。生产站点会向 Google Analytics 与百度统计发送页面访问和不含内容的导出事件；使用远程图片链接时，浏览器会直接向图片原地址发起请求。
 
 ## English
 

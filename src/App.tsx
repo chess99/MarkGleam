@@ -133,7 +133,14 @@ function App() {
           <span className="brand-mark" aria-hidden="true">
             <ImageIcon size={20} strokeWidth={2.4} />
           </span>
-          <strong>MD2IMG</strong>
+          <h1 className="brand-title">
+            <span>MD2IMG</span>
+            <span className="sr-only">
+              {locale === 'zh-CN'
+                ? '免费 Markdown 转图片工具'
+                : 'Free Markdown to image converter'}
+            </span>
+          </h1>
           <span className="brand-tagline">
             <ShieldCheck size={14} />
             {t(locale, 'tagline')}

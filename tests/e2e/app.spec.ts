@@ -14,6 +14,25 @@ test('loads the complete editor workspace and rich preview', async ({ page }) =>
   await expect(page.locator('[data-mermaid-state="ready"]')).toBeVisible()
 })
 
+test('exposes indexable product metadata without loading analytics locally', async ({
+  page,
+}) => {
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    'href',
+    'https://md2img.cearl.cc/',
+  )
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+    'content',
+    /Markdown 转图片工具/,
+  )
+  await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1)
+  await expect(
+    page.locator(
+      'script[src*="googletagmanager.com"], script[src*="hm.baidu.com"]',
+    ),
+  ).toHaveCount(0)
+})
+
 test('keeps Mermaid rendered when the workspace layout changes', async ({
   page,
 }) => {

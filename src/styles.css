@@ -111,9 +111,23 @@ select:focus-visible {
   box-shadow: 0 6px 14px rgba(242, 95, 58, 0.24);
 }
 
-.brand strong {
+.brand-title {
+  margin: 0;
   font-size: 21px;
+  line-height: 1;
   letter-spacing: -0.025em;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .brand-tagline {
@@ -1368,7 +1382,7 @@ input[type="range"] {
     border-radius: 9px;
   }
 
-  .brand strong {
+  .brand-title {
     font-size: 18px;
   }
 

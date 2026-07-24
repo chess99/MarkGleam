@@ -1,9 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentProps,
+} from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
-import rehypeKatex from 'rehype-katex'
-import rehypeHighlight from 'rehype-highlight'
 import type { Components } from 'react-markdown'
 import { getTheme } from '../data/themes'
 import { loadAssetUrl } from '../lib/assets'
@@ -19,7 +23,15 @@ interface MarkdownPreviewProps {
 }
 
 const remarkPlugins = [remarkGfm, remarkMath]
-const rehypePlugins = [rehypeKatex, rehypeHighlight]
+type RehypePlugin = NonNullable<
+  ComponentProps<typeof ReactMarkdown>['rehypePlugins']
+>[number]
+
+const containsMath = (markdown: string) =>
+  /(^|[^\\])\${1,2}(?!\s)[\s\S]*?\${1,2}/m.test(markdown)
+
+const containsHighlightedCode = (markdown: string) =>
+  /^```(?!mermaid(?:\s|$))[\w-]+/m.test(markdown)
 
 const markdownComponents = {
   img: AssetImage,
@@ -55,7 +67,46 @@ export function MarkdownPreview({
     id: string
     url?: string
   }>()
+  const [katexPlugin, setKatexPlugin] = useState<RehypePlugin>()
+  const [highlightPlugin, setHighlightPlugin] = useState<RehypePlugin>()
   const theme = useMemo(() => getTheme(themeId), [themeId])
+  const needsKatex = useMemo(() => containsMath(markdown), [markdown])
+  const needsHighlight = useMemo(
+    () => containsHighlightedCode(markdown),
+    [markdown],
+  )
+  const rehypePlugins = useMemo(
+    () =>
+      [
+        needsKatex ? katexPlugin : undefined,
+        needsHighlight ? highlightPlugin : undefined,
+      ].filter(Boolean) as NonNullable<
+        ComponentProps<typeof ReactMarkdown>['rehypePlugins']
+      >,
+    [highlightPlugin, katexPlugin, needsHighlight, needsKatex],
+  )
+
+  useEffect(() => {
+    if (!needsKatex || katexPlugin) return
+    let active = true
+    void import('rehype-katex').then(({ default: plugin }) => {
+      if (active) setKatexPlugin(() => plugin)
+    })
+    return () => {
+      active = false
+    }
+  }, [katexPlugin, needsKatex])
+
+  useEffect(() => {
+    if (!needsHighlight || highlightPlugin) return
+    let active = true
+    void import('rehype-highlight').then(({ default: plugin }) => {
+      if (active) setHighlightPlugin(() => plugin)
+    })
+    return () => {
+      active = false
+    }
+  }, [highlightPlugin, needsHighlight])
 
   useEffect(() => {
     scopeCustomCss(customCss).then(setScopedCss)
