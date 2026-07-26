@@ -57,18 +57,18 @@ Vite 使用相对资源路径，可同时运行在：
 
 生产环境会在页面加载完成后的浏览器空闲时段接入 Google Analytics 4 与百度统计，本地开发和 `127.0.0.1` 预览不会上报。
 
-- 默认 GA4 Measurement ID：`G-C3YEYVPEBR`
-- 默认百度统计站点 ID：`8864588cde35a2181784b07b34f770f9`
+- 默认 GA4 Measurement ID：`G-XRTY7G7G3Y`
+- 默认百度统计站点 ID：`771a2878fa58bca1d5d31f597f9315be`
 - 自定义事件：`export_completed`，只包含导出格式、倍率和分片数量
 
-如需为本站拆分独立数据流，可在构建时设置：
+如需在其他部署环境覆盖默认统计配置，可在构建时设置：
 
 ```bash
 VITE_GOOGLE_MEASUREMENT_ID=G-XXXXXXXXXX
 VITE_BAIDU_ANALYTICS_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-同一 ID 适合把多个个人站点放进统一看板，并可通过 hostname 区分；如果要独立观察获客、转化和留存，建议为每个域名创建单独的数据流或站点 ID。
+本站默认使用 `md2img.cearl.cc` 的独立数据流与站点 ID，避免和其他域名的数据混在一起。
 
 ## 隐私
 
