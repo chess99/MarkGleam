@@ -18,15 +18,25 @@ export function AssetImage({
   const assetId = parseAssetUrl(src)
 
   useEffect(() => {
+    let active = true
     let objectUrl: string | undefined
     if (!assetId) return
 
-    loadAssetUrl(assetId).then((url) => {
-      objectUrl = url
-      setAssetState({ src, resolved: url, failed: !url })
-    })
+    loadAssetUrl(assetId)
+      .then((url) => {
+        if (!active) {
+          if (url) URL.revokeObjectURL(url)
+          return
+        }
+        objectUrl = url
+        setAssetState({ src, resolved: url, failed: !url })
+      })
+      .catch(() => {
+        if (active) setAssetState({ src, failed: true })
+      })
 
     return () => {
+      active = false
       if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
   }, [assetId, src])

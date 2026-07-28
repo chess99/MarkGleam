@@ -857,7 +857,7 @@ select:focus-visible {
   justify-content: space-between;
 }
 
-.field output {
+.field-value {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
@@ -991,6 +991,11 @@ input[type="range"] {
 .asset-button:hover {
   color: var(--coral);
   border-color: var(--coral);
+}
+
+.asset-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .remove-asset {

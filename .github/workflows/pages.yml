@@ -32,6 +32,10 @@ jobs:
         run: npm run lint
       - name: Unit tests
         run: npm test
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Browser tests
+        run: npm run test:e2e -- --project=chromium
       - name: Build
         run: npm run build
       - name: Upload Pages artifact

@@ -35,6 +35,8 @@ npm run test:e2e
 npx playwright install chromium firefox webkit
 ```
 
+端到端测试使用独占端口启动本地服务，不会复用其他项目的开发服务器。正式发布前的测试范围、人工体验结果和剩余风险记录在 [发布质量审计](./docs/release-quality-audit.md)。GitHub Pages 工作流也会在部署前运行 Chromium 端到端测试。
+
 ## 浏览器限制
 
 - 复制图片依赖 `ClipboardItem` 和安全上下文，不支持时会自动下载 PNG。

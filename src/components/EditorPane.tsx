@@ -30,7 +30,11 @@ const useMobileEditor = () => {
   return mobile
 }
 
-export function EditorPane() {
+export function EditorPane({
+  onToast,
+}: {
+  onToast: (message: string, kind?: 'success' | 'error') => void
+}) {
   const markdown = useAppStore((state) => state.markdown)
   const locale = useAppStore((state) => state.locale)
   const themeId = useAppStore((state) => state.themeId)
@@ -38,19 +42,38 @@ export function EditorPane() {
   const resetDocument = useAppStore((state) => state.resetDocument)
   const inputRef = useRef<HTMLInputElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
   const [dragging, setDragging] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const mobileEditor = useMobileEditor()
 
-  const importFile = async (file: File) => {
+  useEffect(() => {
+    if (!menuOpen) return
+    const dismiss = (event: PointerEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) setMenuOpen(false)
+    }
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setMenuOpen(false)
+      menuButtonRef.current?.focus()
+    }
+    document.addEventListener('pointerdown', dismiss)
+    window.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('pointerdown', dismiss)
+      window.removeEventListener('keydown', handleEscape)
+    }
+  }, [menuOpen])
+
+  const importFile = async (file: File, currentMarkdown: string) => {
     if (
       file.type.startsWith('image/') ||
       /\.(png|jpe?g|gif|webp|svg)$/i.test(file.name)
     ) {
       const asset = await saveAsset(file, 'image')
       const alt = file.name.replace(/\.[^.]+$/, '')
-      setMarkdown(`${markdown.trimEnd()}\n\n![${alt}](md2img-asset://${asset.id})\n`)
-      return
+      return `${currentMarkdown.trimEnd()}\n\n![${alt}](md2img-asset://${asset.id})\n`
     }
 
     if (
@@ -58,12 +81,28 @@ export function EditorPane() {
       file.type === 'text/plain' ||
       /\.md(?:own)?$/i.test(file.name)
     ) {
-      setMarkdown(await file.text())
+      return file.text()
     }
+
+    return undefined
   }
 
   const handleFiles = async (files: FileList | File[]) => {
-    for (const file of [...files]) await importFile(file)
+    let nextMarkdown = useAppStore.getState().markdown
+    try {
+      for (const file of [...files]) {
+        const imported = await importFile(file, nextMarkdown)
+        if (imported === undefined) {
+          onToast(t(locale, 'unsupportedFile'), 'error')
+          continue
+        }
+        nextMarkdown = imported
+        setMarkdown(nextMarkdown)
+      }
+    } catch (error) {
+      console.error(error)
+      onToast(t(locale, 'importFailed'), 'error')
+    }
   }
 
   const clearDocument = () => {
@@ -118,8 +157,9 @@ export function EditorPane() {
           >
             <FileImage size={17} />
           </button>
-          <div className="menu-anchor">
+          <div className="menu-anchor" ref={menuRef}>
             <button
+              ref={menuButtonRef}
               className="icon-button"
               type="button"
               aria-label={t(locale, 'more')}
@@ -211,6 +251,7 @@ export function EditorPane() {
         hidden
         type="file"
         accept="image/*"
+        multiple
         onChange={(event) => {
           const files = event.target.files ? [...event.target.files] : []
           event.target.value = ''

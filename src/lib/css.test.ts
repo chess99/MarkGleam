@@ -4,12 +4,17 @@ import { sanitizeFilename, scopeCustomCss } from './css'
 describe('sanitizeFilename', () => {
   it('removes operating-system reserved characters', () => {
     expect(sanitizeFilename('  My article: 01 / demo?.png  ')).toBe(
-      'My-article-01-demo-.png',
+      'My-article-01-demo.png',
     )
   })
 
   it('uses a stable fallback', () => {
     expect(sanitizeFilename('***')).toBe('md2img')
+  })
+
+  it('avoids reserved Windows device names', () => {
+    expect(sanitizeFilename('CON')).toBe('_CON')
+    expect(sanitizeFilename('lpt1.txt')).toBe('_lpt1.txt')
   })
 })
 

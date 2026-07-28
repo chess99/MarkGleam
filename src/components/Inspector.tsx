@@ -36,7 +36,13 @@ const formats: ExportFormat[] = [
   'split-zip',
 ]
 
-export function Inspector({ onOpenExport }: { onOpenExport: () => void }) {
+export function Inspector({
+  onOpenExport,
+  onToast,
+}: {
+  onOpenExport: () => void
+  onToast: (message: string, kind?: 'success' | 'error') => void
+}) {
   const locale = useAppStore((state) => state.locale)
   const themeId = useAppStore((state) => state.themeId)
   const canvas = useAppStore((state) => state.canvas)
@@ -274,6 +280,7 @@ export function Inspector({ onOpenExport }: { onOpenExport: () => void }) {
                   className="color-input"
                   type="color"
                   value={canvas.backgroundColor}
+                  disabled={canvas.transparent}
                   onChange={(event) =>
                     updateCanvas({ backgroundColor: event.target.value })
                   }
@@ -282,6 +289,7 @@ export function Inspector({ onOpenExport }: { onOpenExport: () => void }) {
               <button
                 className="asset-button"
                 type="button"
+                disabled={canvas.transparent}
                 onClick={() => backgroundInputRef.current?.click()}
               >
                 <ImagePlus size={16} />
@@ -411,9 +419,12 @@ export function Inspector({ onOpenExport }: { onOpenExport: () => void }) {
         onChange={(event) => {
           const file = event.target.files?.[0]
           if (file) {
-            void saveAsset(file, 'image').then((asset) =>
-              updateCanvas({ backgroundAssetId: asset.id }),
-            )
+            void saveAsset(file, 'image')
+              .then((asset) => updateCanvas({ backgroundAssetId: asset.id }))
+              .catch((error) => {
+                console.error(error)
+                onToast(t(locale, 'importFailed'), 'error')
+              })
           }
           event.target.value = ''
         }}
@@ -426,9 +437,12 @@ export function Inspector({ onOpenExport }: { onOpenExport: () => void }) {
         onChange={(event) => {
           const file = event.target.files?.[0]
           if (file) {
-            void saveAsset(file, 'font').then((asset) =>
-              updateCanvas({ customFontAssetId: asset.id }),
-            )
+            void saveAsset(file, 'font')
+              .then((asset) => updateCanvas({ customFontAssetId: asset.id }))
+              .catch((error) => {
+                console.error(error)
+                onToast(t(locale, 'importFailed'), 'error')
+              })
           }
           event.target.value = ''
         }}

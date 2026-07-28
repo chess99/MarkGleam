@@ -80,7 +80,13 @@ export const sanitizeFilename = (filename: string, fallback = 'md2img') => {
     .join('')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
+    .replace(/-+\./g, '.')
     .replace(/^[.-]+|[.-]+$/g, '')
     .slice(0, 120)
-  return sanitized || fallback
+  const safe = /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(
+    sanitized,
+  )
+    ? `_${sanitized}`
+    : sanitized
+  return safe || fallback
 }

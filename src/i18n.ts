@@ -61,7 +61,8 @@ const messages = {
     uploadAsset: '上传图片',
     dropHint: '拖放 .md 或图片到编辑器',
     renderError: '图表渲染失败，请检查 Mermaid 语法。',
-    remoteImageError: '远程图片受跨域限制，建议下载后拖入编辑器。',
+    remoteImageError:
+      '图片无法加载。远程图片请下载后拖入，本地图片请检查文件是否完整。',
     copyFallback: '当前浏览器不支持复制图片，已改为下载 PNG。',
     exportSuccess: '导出完成',
     exportFailed: '导出失败，请降低清晰度或使用分片导出。',
@@ -81,6 +82,10 @@ const messages = {
     social: '社交分享',
     custom: '自定义',
     free: '完全免费',
+    lightTheme: '切换到浅色主题',
+    darkTheme: '切换到深色主题',
+    importFailed: '导入失败，请确认文件有效且浏览器本地存储可用。',
+    unsupportedFile: '不支持此文件，请选择 Markdown 或常见图片格式。',
   },
   en: {
     tagline: 'Local-first · Free forever',
@@ -142,7 +147,8 @@ const messages = {
     uploadAsset: 'Upload image',
     dropHint: 'Drop a .md file or image into the editor',
     renderError: 'Diagram failed to render. Check the Mermaid syntax.',
-    remoteImageError: 'The remote image blocks browser access. Download it and drop it here instead.',
+    remoteImageError:
+      'The image could not load. Drop in a local copy, or check that the local file is intact.',
     copyFallback: 'Image clipboard is unavailable, so a PNG was downloaded instead.',
     exportSuccess: 'Export complete',
     exportFailed: 'Export failed. Lower the resolution or use sliced export.',
@@ -162,6 +168,10 @@ const messages = {
     social: 'Social card',
     custom: 'Custom',
     free: 'Completely free',
+    lightTheme: 'Switch to light theme',
+    darkTheme: 'Switch to dark theme',
+    importFailed: 'Import failed. Check the file and local browser storage, then try again.',
+    unsupportedFile: 'This file is not supported. Choose Markdown or a common image format.',
   },
 } as const
 

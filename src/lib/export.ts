@@ -230,11 +230,12 @@ const exportSplitZip = async (
   baseName: string,
 ) => {
   const groups = getPageGroups(surface, config)
-  if (groups.length === 0) throw new Error('Nothing to export')
+  const parts =
+    groups.length > 0 ? groups : [{ start: 0, end: 9999, height: 0 }]
 
   const zip = new JSZip()
-  for (let index = 0; index < groups.length; index += 1) {
-    const group = groups[index]
+  for (let index = 0; index < parts.length; index += 1) {
+    const group = parts[index]
     const segment = createSegment(surface, group.start, group.end)
     try {
       await waitForRenderReady(segment)
@@ -250,7 +251,7 @@ const exportSplitZip = async (
 
   const blob = await zip.generateAsync({ type: 'blob' })
   downloadBlob(blob, `${baseName}-parts.zip`)
-  return groups.length
+  return parts.length
 }
 
 const exportPdf = async (

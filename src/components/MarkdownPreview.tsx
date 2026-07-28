@@ -118,29 +118,49 @@ export function MarkdownPreview({
   useEffect(() => {
     const assetId = canvas.backgroundAssetId
     if (!assetId) return
+    let active = true
     let currentUrl: string | undefined
-    loadAssetUrl(assetId).then((url) => {
-      currentUrl = url
-      setBackgroundAsset({ id: assetId, url })
-    })
+    loadAssetUrl(assetId)
+      .then((url) => {
+        if (!active) {
+          if (url) URL.revokeObjectURL(url)
+          return
+        }
+        currentUrl = url
+        setBackgroundAsset({ id: assetId, url })
+      })
+      .catch(() => {
+        if (active) setBackgroundAsset({ id: assetId })
+      })
     return () => {
+      active = false
       if (currentUrl) URL.revokeObjectURL(currentUrl)
     }
   }, [canvas.backgroundAssetId])
 
   useEffect(() => {
+    let active = true
     let fontUrl: string | undefined
+    let fontFace: FontFace | undefined
     if (!canvas.customFontAssetId) return
 
-    loadAssetUrl(canvas.customFontAssetId).then(async (url) => {
-      if (!url) return
-      fontUrl = url
-      const font = new FontFace('MD2IMG Custom', `url(${url})`)
-      await font.load()
-      document.fonts.add(font)
-    })
+    loadAssetUrl(canvas.customFontAssetId)
+      .then(async (url) => {
+        if (!url) return
+        if (!active) {
+          URL.revokeObjectURL(url)
+          return
+        }
+        fontUrl = url
+        fontFace = new FontFace('MD2IMG Custom', `url(${url})`)
+        await fontFace.load()
+        if (active) document.fonts.add(fontFace)
+      })
+      .catch(() => undefined)
 
     return () => {
+      active = false
+      if (fontFace) document.fonts.delete(fontFace)
       if (fontUrl) URL.revokeObjectURL(fontUrl)
     }
   }, [canvas.customFontAssetId])
@@ -189,9 +209,11 @@ export function MarkdownPreview({
     width: `${canvas.width}px`,
     minHeight: `${canvas.minHeight}px`,
     padding: `${canvas.paddingY}px ${canvas.paddingX}px`,
-    backgroundColor: canvas.transparent ? 'transparent' : theme.surface,
-    backgroundImage: backgroundUrl
-      ? `linear-gradient(${theme.surface}d9, ${theme.surface}d9), url("${backgroundUrl}")`
+    backgroundColor: canvas.transparent
+      ? 'transparent'
+      : canvas.backgroundColor,
+    backgroundImage: !canvas.transparent && backgroundUrl
+      ? `linear-gradient(${canvas.backgroundColor}d9, ${canvas.backgroundColor}d9), url("${backgroundUrl}")`
       : undefined,
   } as React.CSSProperties
 

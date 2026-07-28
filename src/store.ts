@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { sampleMarkdown } from './data/sample'
+import { getTheme } from './data/themes'
 import { suggestFilename } from './lib/filename'
 import type {
   CanvasConfig,
@@ -11,6 +12,18 @@ import type {
   MobilePane,
   ThemeId,
 } from './types'
+
+type PersistedDocumentState = Pick<
+  DocumentState,
+  | 'markdown'
+  | 'locale'
+  | 'themeId'
+  | 'canvas'
+  | 'export'
+  | 'customCss'
+  | 'editorCollapsed'
+  | 'inspectorCollapsed'
+>
 
 export const defaultCanvas: CanvasConfig = {
   preset: 'auto',
@@ -23,7 +36,7 @@ export const defaultCanvas: CanvasConfig = {
   cornerRadius: 18,
   shadow: true,
   transparent: false,
-  backgroundColor: '#f2eee6',
+  backgroundColor: getTheme('paper').surface,
 }
 
 export const defaultExport: ExportConfig = {
@@ -84,7 +97,14 @@ export const useAppStore = create<AppStore>()(
           }
         }),
       setLocale: (locale) => set({ locale }),
-      setThemeId: (themeId) => set({ themeId }),
+      setThemeId: (themeId) =>
+        set((state) => ({
+          themeId,
+          canvas: {
+            ...state.canvas,
+            backgroundColor: getTheme(themeId).surface,
+          },
+        })),
       updateCanvas: (patch) =>
         set((state) => ({ canvas: { ...state.canvas, ...patch } })),
       updateExport: (patch) =>
@@ -109,13 +129,32 @@ export const useAppStore = create<AppStore>()(
           ...state,
           themeId: defaultDocumentState.themeId,
           canvas: { ...defaultCanvas },
-          export: { ...defaultExport },
+          export: {
+            ...defaultExport,
+            filename: suggestFilename(state.markdown),
+          },
           customCss: '',
         })),
     }),
     {
       name: 'md2img-state-v1',
-      version: 1,
+      version: 2,
+      migrate: (persisted, version) => {
+        const saved = persisted as PersistedDocumentState
+        if (
+          version < 2 &&
+          saved.canvas?.backgroundColor === '#f2eee6'
+        ) {
+          return {
+            ...saved,
+            canvas: {
+              ...saved.canvas,
+              backgroundColor: getTheme(saved.themeId ?? 'paper').surface,
+            },
+          }
+        }
+        return saved
+      },
       partialize: (state) => ({
         markdown: state.markdown,
         locale: state.locale,

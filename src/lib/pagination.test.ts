@@ -9,14 +9,16 @@ describe('groupBlockHeights', () => {
     ])
   })
 
-  it('honors an explicit break without creating an empty page', () => {
+  it('treats explicit break blocks as separators without empty pages', () => {
     expect(groupBlockHeights([100, 200, 300], 1000, new Set([1]))).toEqual([
       { start: 0, end: 1, height: 100 },
-      { start: 1, end: 3, height: 500 },
+      { start: 2, end: 3, height: 300 },
     ])
-    expect(groupBlockHeights([100], 1000, new Set([0]))).toEqual([
+    expect(groupBlockHeights([100, 1, 1, 300], 1000, new Set([1, 2]))).toEqual([
       { start: 0, end: 1, height: 100 },
+      { start: 3, end: 4, height: 300 },
     ])
+    expect(groupBlockHeights([1], 1000, new Set([0]))).toEqual([])
   })
 
   it('keeps a single oversized block on its own page', () => {

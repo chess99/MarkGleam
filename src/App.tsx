@@ -51,6 +51,8 @@ function App() {
   const [exportSurface, setExportSurface] = useState<HTMLDivElement | null>(null)
   const [outputHeight, setOutputHeight] = useState(canvas.minHeight)
   const importRef = useRef<HTMLInputElement>(null)
+  const helpMenuRef = useRef<HTMLDivElement>(null)
+  const helpButtonRef = useRef<HTMLButtonElement>(null)
   const [exportOpen, setExportOpen] = useState(false)
   const [infoModal, setInfoModal] = useState<InfoModal>(null)
   const [helpMenuOpen, setHelpMenuOpen] = useState(false)
@@ -58,6 +60,7 @@ function App() {
     message: string
     kind: 'success' | 'error'
   }>()
+  const darkTheme = themeId === 'night' || themeId === 'terminal'
 
   const stats = useMemo(() => {
     const plain = markdown
@@ -88,6 +91,26 @@ function App() {
     const timeout = setTimeout(() => setToast(undefined), 3600)
     return () => clearTimeout(timeout)
   }, [toast])
+
+  useEffect(() => {
+    if (!helpMenuOpen) return
+    const dismiss = (event: PointerEvent) => {
+      if (!helpMenuRef.current?.contains(event.target as Node)) {
+        setHelpMenuOpen(false)
+      }
+    }
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setHelpMenuOpen(false)
+      helpButtonRef.current?.focus()
+    }
+    document.addEventListener('pointerdown', dismiss)
+    window.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('pointerdown', dismiss)
+      window.removeEventListener('keydown', handleEscape)
+    }
+  }, [helpMenuOpen])
 
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
@@ -151,7 +174,8 @@ function App() {
           <button
             className="icon-button desktop-panel-toggle"
             type="button"
-            title={editorCollapsed ? t(locale, 'expand') : t(locale, 'collapse')}
+            aria-label={`${editorCollapsed ? t(locale, 'expand') : t(locale, 'collapse')} ${t(locale, 'markdown')}`}
+            title={`${editorCollapsed ? t(locale, 'expand') : t(locale, 'collapse')} ${t(locale, 'markdown')}`}
             onClick={toggleEditor}
           >
             <PanelLeftClose size={18} />
@@ -159,7 +183,8 @@ function App() {
           <button
             className="icon-button desktop-panel-toggle"
             type="button"
-            title={inspectorCollapsed ? t(locale, 'expand') : t(locale, 'collapse')}
+            aria-label={`${inspectorCollapsed ? t(locale, 'expand') : t(locale, 'collapse')} ${t(locale, 'settings')}`}
+            title={`${inspectorCollapsed ? t(locale, 'expand') : t(locale, 'collapse')} ${t(locale, 'settings')}`}
             onClick={toggleInspector}
           >
             <PanelRightClose size={18} />
@@ -180,17 +205,18 @@ function App() {
           <button
             className="icon-button"
             type="button"
-            aria-label={themeId === 'night' ? 'Light theme' : 'Dark theme'}
-            onClick={() => setThemeId(themeId === 'night' ? 'paper' : 'night')}
+            aria-label={darkTheme ? t(locale, 'lightTheme') : t(locale, 'darkTheme')}
+            onClick={() => setThemeId(darkTheme ? 'paper' : 'night')}
           >
-            {themeId === 'night' || themeId === 'terminal' ? (
+            {darkTheme ? (
               <Sun size={18} />
             ) : (
               <Moon size={18} />
             )}
           </button>
-          <div className="menu-anchor">
+          <div className="menu-anchor" ref={helpMenuRef}>
             <button
+              ref={helpButtonRef}
               className="icon-button"
               type="button"
               aria-label={t(locale, 'help')}
@@ -247,7 +273,7 @@ function App() {
           inspectorCollapsed ? 'inspector-collapsed' : ''
         } mobile-${mobilePane}`}
       >
-        {!editorCollapsed && <EditorPane />}
+        {!editorCollapsed && <EditorPane onToast={showToast} />}
 
         {editorCollapsed && (
           <button
@@ -297,7 +323,9 @@ function App() {
           </button>
         )}
 
-        {!inspectorCollapsed && <Inspector onOpenExport={openExport} />}
+        {!inspectorCollapsed && (
+          <Inspector onOpenExport={openExport} onToast={showToast} />
+        )}
       </main>
 
       <footer className="statusbar">
@@ -344,7 +372,15 @@ function App() {
         accept=".md,.markdown,text/markdown,text/plain"
         onChange={(event) => {
           const file = event.target.files?.[0]
-          if (file) void file.text().then(setMarkdown)
+          if (file) {
+            void file
+              .text()
+              .then(setMarkdown)
+              .catch((error) => {
+                console.error(error)
+                showToast(t(locale, 'importFailed'), 'error')
+              })
+          }
           event.target.value = ''
         }}
       />
@@ -386,7 +422,11 @@ function App() {
       )}
 
       {toast && (
-        <div className={`toast toast-${toast.kind}`} role="status">
+        <div
+          className={`toast toast-${toast.kind}`}
+          role={toast.kind === 'error' ? 'alert' : 'status'}
+          aria-live={toast.kind === 'error' ? 'assertive' : 'polite'}
+        >
           {toast.kind === 'success' ? <CheckCircle2 size={17} /> : null}
           {toast.message}
         </div>

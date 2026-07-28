@@ -42,8 +42,6 @@ flowchart LR
 | KaTeX 与 Mermaid | ✅ |
 | 本地保存 | ✅ |
 
----
-
 _用 Markdown 记录，用图片表达。_
 `
 
