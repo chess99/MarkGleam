@@ -1,13 +1,13 @@
 import JSZip from 'jszip'
 import { jsPDF } from 'jspdf'
 import {
-  domToCanvas,
   domToJpeg,
   domToPng,
   domToSvg,
   domToWebp,
 } from 'modern-screenshot'
 import type { ExportConfig, ExportFormat, ExportResult } from '../types'
+import { assetToBlob, getAsset } from './assets'
 import { sanitizeFilename } from './css'
 import { calculateSafePartHeight, groupBlockHeights } from './pagination'
 
@@ -17,6 +17,14 @@ const dataUrlToBlob = async (dataUrl: string) => {
   const response = await fetch(dataUrl)
   return response.blob()
 }
+
+const blobToDataUrl = (blob: Blob) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.addEventListener('load', () => resolve(String(reader.result)))
+    reader.addEventListener('error', () => reject(reader.error))
+    reader.readAsDataURL(blob)
+  })
 
 export const downloadBlob = (blob: Blob, filename: string) => {
   const url = URL.createObjectURL(blob)
@@ -54,6 +62,94 @@ const waitForRenderReady = async (surface: HTMLElement) => {
   )
 }
 
+const prepareSnapshotNode = (snapshot: HTMLElement) => {
+  snapshot.id = 'md2img-export-surface'
+  snapshot.dataset.exportSnapshot = 'true'
+  snapshot.style.height = 'auto'
+  snapshot.style.transform = 'none'
+  snapshot.style.position = 'relative'
+  snapshot.style.left = '0'
+  snapshot.style.top = '0'
+  snapshot.style.zIndex = 'auto'
+}
+
+const mountSnapshotOffscreen = (snapshot: HTMLElement) => {
+  const host = document.createElement('div')
+  host.dataset.md2imgExportHost = 'true'
+  host.style.position = 'fixed'
+  host.style.left = '-100000px'
+  host.style.top = '0'
+  host.style.width = 'max-content'
+  host.style.height = 'max-content'
+  host.style.pointerEvents = 'none'
+  host.append(snapshot)
+  document.body.append(host)
+}
+
+const removeMountedSnapshot = (snapshot: HTMLElement) => {
+  const host = snapshot.closest<HTMLElement>('[data-md2img-export-host]')
+  if (host) host.remove()
+  else snapshot.remove()
+}
+
+const inlineLocalAssets = async (snapshot: HTMLElement) => {
+  const images = [...snapshot.querySelectorAll<HTMLImageElement>('img')]
+  await Promise.all(
+    images.map(async (image) => {
+      const assetId = image.dataset.md2imgAssetId
+      let blob: Blob | undefined
+
+      if (assetId) {
+        const asset = await getAsset(assetId)
+        blob = asset ? assetToBlob(asset) : undefined
+      } else {
+        const source = image.getAttribute('src') ?? ''
+        if (source.startsWith('blob:')) {
+          blob = await fetch(source).then((response) => response.blob())
+        }
+      }
+
+      if (!blob) return
+      image.removeAttribute('crossorigin')
+      image.src = await blobToDataUrl(blob)
+    }),
+  )
+
+  const backgroundAssetId = snapshot.dataset.md2imgBackgroundAssetId
+  if (!backgroundAssetId) return
+  const background = await getAsset(backgroundAssetId)
+  if (!background) return
+  const dataUrl = await blobToDataUrl(assetToBlob(background))
+  const current = snapshot.style.backgroundImage
+  snapshot.style.backgroundImage = current
+    ? current.replace(/url\(["']?blob:[^)"']+["']?\)/, `url("${dataUrl}")`)
+    : `url("${dataUrl}")`
+}
+
+const createExportSnapshot = async (surface: HTMLElement) => {
+  await waitForRenderReady(surface)
+  const snapshot = surface.cloneNode(true) as HTMLElement
+  prepareSnapshotNode(snapshot)
+
+  const explicitWidth = Number.parseFloat(surface.style.width)
+  if (Number.isFinite(explicitWidth) && explicitWidth > 0) {
+    snapshot.style.width = `${explicitWidth}px`
+  }
+
+  mountSnapshotOffscreen(snapshot)
+  try {
+    await inlineLocalAssets(snapshot)
+    await waitForRenderReady(snapshot)
+    if (snapshot.scrollWidth < 2 || snapshot.scrollHeight < 2) {
+      throw new Error('Export surface has no measurable content')
+    }
+    return snapshot
+  } catch (error) {
+    removeMountedSnapshot(snapshot)
+    throw error
+  }
+}
+
 const screenshotOptions = (
   surface: HTMLElement,
   config: ExportConfig,
@@ -77,15 +173,10 @@ const createSegment = (
   end: number,
 ): HTMLElement => {
   const clone = surface.cloneNode(true) as HTMLElement
-  clone.id = 'md2img-export-surface'
+  prepareSnapshotNode(clone)
   clone.dataset.exportSegment = 'true'
   clone.style.minHeight = '0'
   clone.style.height = 'auto'
-  clone.style.transform = 'none'
-  clone.style.position = 'fixed'
-  clone.style.left = '-100000px'
-  clone.style.top = '0'
-  clone.style.zIndex = '-1'
 
   const content = clone.querySelector<HTMLElement>('[data-export-content]')
   if (!content) throw new Error('Export content is missing')
@@ -97,7 +188,7 @@ const createSegment = (
     }
   })
 
-  document.body.append(clone)
+  mountSnapshotOffscreen(clone)
   return clone
 }
 
@@ -153,7 +244,7 @@ const exportSplitZip = async (
         await dataUrlToBlob(dataUrl),
       )
     } finally {
-      segment.remove()
+      removeMountedSnapshot(segment)
     }
   }
 
@@ -187,16 +278,26 @@ const exportPdf = async (
     const segment = createSegment(surface, page.start, page.end)
     try {
       await waitForRenderReady(segment)
-      const canvas = await domToCanvas(segment, {
+      const computedBackground = getComputedStyle(segment).backgroundColor
+      const backgroundColor =
+        computedBackground === 'rgba(0, 0, 0, 0)' ||
+        computedBackground === 'transparent'
+          ? '#ffffff'
+          : computedBackground
+      const scale = 2
+      const dataUrl = await domToPng(segment, {
         ...screenshotOptions(segment, { ...config, scale: 2 }),
-        scale: 2,
+        scale,
+        backgroundColor,
       })
-      const ratio = Math.min(imageWidth / canvas.width, imageHeight / canvas.height)
-      const width = canvas.width * ratio
-      const height = canvas.height * ratio
+      const pixelWidth = segment.scrollWidth * scale
+      const pixelHeight = segment.scrollHeight * scale
+      const ratio = Math.min(imageWidth / pixelWidth, imageHeight / pixelHeight)
+      const width = pixelWidth * ratio
+      const height = pixelHeight * ratio
       pdf.addImage(
-        canvas.toDataURL('image/jpeg', config.quality),
-        'JPEG',
+        dataUrl,
+        'PNG',
         config.pdfMargin + (imageWidth - width) / 2,
         config.pdfMargin,
         width,
@@ -205,7 +306,7 @@ const exportPdf = async (
         'FAST',
       )
     } finally {
-      segment.remove()
+      removeMountedSnapshot(segment)
     }
   }
 
@@ -217,50 +318,68 @@ export const runExport = async (
   surface: HTMLElement,
   config: ExportConfig,
 ): Promise<ExportResult> => {
-  await waitForRenderReady(surface)
   const baseName = sanitizeFilename(config.filename)
-  const estimatedPixels =
-    surface.scrollWidth * surface.scrollHeight * config.scale * config.scale
+  const snapshot = await createExportSnapshot(surface)
 
-  if (
-    config.format === 'split-zip' ||
-    (estimatedPixels > MAX_CANVAS_PIXELS &&
-      !['pdf', 'svg', 'clipboard'].includes(config.format))
-  ) {
-    const parts = await exportSplitZip(surface, config, baseName)
-    return { filename: `${baseName}-parts.zip`, format: 'split-zip', parts }
-  }
+  try {
+    const estimatedPixels =
+      snapshot.scrollWidth * snapshot.scrollHeight * config.scale * config.scale
 
-  if (config.format === 'pdf') {
-    const parts = await exportPdf(surface, config, baseName)
-    return { filename: `${baseName}.pdf`, format: 'pdf', parts }
-  }
+    if (
+      config.format === 'split-zip' ||
+      (estimatedPixels > MAX_CANVAS_PIXELS &&
+        !['pdf', 'svg', 'clipboard'].includes(config.format))
+    ) {
+      const parts = await exportSplitZip(snapshot, config, baseName)
+      return { filename: `${baseName}-parts.zip`, format: 'split-zip', parts }
+    }
 
-  if (config.format === 'clipboard') {
-    if (!navigator.clipboard || typeof ClipboardItem === 'undefined') {
-      const fallback = await domToPng(surface, screenshotOptions(surface, config))
-      downloadBlob(await dataUrlToBlob(fallback), `${baseName}.png`)
+    if (config.format === 'pdf') {
+      const parts = await exportPdf(snapshot, config, baseName)
+      return { filename: `${baseName}.pdf`, format: 'pdf', parts }
+    }
+
+    if (config.format === 'clipboard') {
+      const dataUrl = await domToPng(
+        snapshot,
+        screenshotOptions(snapshot, config),
+      )
+      const blob = await dataUrlToBlob(dataUrl)
+      if (blob.size < 128) throw new Error('Rendered image is unexpectedly empty')
+
+      if (navigator.clipboard && typeof ClipboardItem !== 'undefined') {
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': blob }),
+          ])
+          return { filename: `${baseName}.png`, format: 'clipboard' }
+        } catch {
+          // Clipboard permissions differ across browsers; download is reliable.
+        }
+      }
+
+      downloadBlob(blob, `${baseName}.png`)
       return { filename: `${baseName}.png`, format: 'png' }
     }
-    const dataUrl = await domToPng(surface, screenshotOptions(surface, config))
+
+    const renderers = {
+      png: () => domToPng(snapshot, screenshotOptions(snapshot, config)),
+      jpeg: () =>
+        domToJpeg(snapshot, screenshotOptions(snapshot, config, 'image/jpeg')),
+      webp: () =>
+        domToWebp(snapshot, screenshotOptions(snapshot, config, 'image/webp')),
+      svg: () =>
+        domToSvg(snapshot, screenshotOptions(snapshot, { ...config, scale: 1 })),
+    }
+
+    const format = config.format as keyof typeof renderers
+    const dataUrl = await renderers[format]()
+    const extension = extensionFor(format)
     const blob = await dataUrlToBlob(dataUrl)
-    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
-    return { filename: `${baseName}.png`, format: 'clipboard' }
+    if (blob.size < 128) throw new Error('Rendered image is unexpectedly empty')
+    downloadBlob(blob, `${baseName}.${extension}`)
+    return { filename: `${baseName}.${extension}`, format }
+  } finally {
+    removeMountedSnapshot(snapshot)
   }
-
-  const renderers = {
-    png: () => domToPng(surface, screenshotOptions(surface, config)),
-    jpeg: () =>
-      domToJpeg(surface, screenshotOptions(surface, config, 'image/jpeg')),
-    webp: () =>
-      domToWebp(surface, screenshotOptions(surface, config, 'image/webp')),
-    svg: () => domToSvg(surface, screenshotOptions(surface, { ...config, scale: 1 })),
-  }
-
-  const format = config.format as keyof typeof renderers
-  const dataUrl = await renderers[format]()
-  const extension = extensionFor(format)
-  const blob = await dataUrlToBlob(dataUrl)
-  downloadBlob(blob, `${baseName}.${extension}`)
-  return { filename: `${baseName}.${extension}`, format }
 }

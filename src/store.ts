@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { sampleMarkdown } from './data/sample'
+import { suggestFilename } from './lib/filename'
 import type {
   CanvasConfig,
   DocumentState,
@@ -68,7 +69,20 @@ export const useAppStore = create<AppStore>()(
   persist(
     (set) => ({
       ...defaultDocumentState,
-      setMarkdown: (markdown) => set({ markdown }),
+      setMarkdown: (markdown) =>
+        set((state) => {
+          const currentSuggestion = suggestFilename(state.markdown)
+          const shouldRefreshFilename =
+            !state.export.filename.trim() ||
+            state.export.filename === 'md2img' ||
+            state.export.filename === currentSuggestion
+          return {
+            markdown,
+            export: shouldRefreshFilename
+              ? { ...state.export, filename: suggestFilename(markdown) }
+              : state.export,
+          }
+        }),
       setLocale: (locale) => set({ locale }),
       setThemeId: (themeId) => set({ themeId }),
       updateCanvas: (patch) =>
@@ -82,7 +96,14 @@ export const useAppStore = create<AppStore>()(
         set((state) => ({ inspectorCollapsed: !state.inspectorCollapsed })),
       setMobilePane: (mobilePane) => set({ mobilePane }),
       setInspectorTab: (inspectorTab) => set({ inspectorTab }),
-      resetDocument: () => set({ markdown: sampleMarkdown }),
+      resetDocument: () =>
+        set((state) => ({
+          markdown: sampleMarkdown,
+          export: {
+            ...state.export,
+            filename: suggestFilename(sampleMarkdown),
+          },
+        })),
       resetSettings: () =>
         set((state) => ({
           ...state,

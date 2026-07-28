@@ -3,7 +3,12 @@ import { loadAssetUrl, parseAssetUrl } from '../lib/assets'
 import { useAppStore } from '../store'
 import { t } from '../i18n'
 
-export function AssetImage({ src, alt, ...props }: ImgHTMLAttributes<HTMLImageElement>) {
+export function AssetImage({
+  src,
+  alt,
+  title,
+  className,
+}: ImgHTMLAttributes<HTMLImageElement>) {
   const locale = useAppStore((state) => state.locale)
   const [assetState, setAssetState] = useState<{
     src?: string
@@ -36,9 +41,11 @@ export function AssetImage({ src, alt, ...props }: ImgHTMLAttributes<HTMLImageEl
 
   return (
     <img
-      {...props}
       src={resolvedSrc}
       alt={alt ?? ''}
+      title={title}
+      className={className}
+      data-md2img-asset-id={assetId || undefined}
       crossOrigin={src?.startsWith('http') ? 'anonymous' : undefined}
       onError={() => setAssetState({ src, resolved: resolvedSrc, failed: true })}
     />

@@ -1,6 +1,4 @@
-import { useRef, useState } from 'react'
-import CodeMirror from '@uiw/react-codemirror'
-import { markdown as markdownLanguage } from '@codemirror/lang-markdown'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import {
   FileImage,
   FileUp,
@@ -12,6 +10,26 @@ import { t } from '../i18n'
 import { saveAsset } from '../lib/assets'
 import { useAppStore } from '../store'
 
+const DesktopMarkdownEditor = lazy(() => import('./DesktopMarkdownEditor'))
+
+const useMobileEditor = () => {
+  const [mobile, setMobile] = useState(() =>
+    typeof window === 'undefined'
+      ? false
+      : window.matchMedia('(max-width: 820px)').matches,
+  )
+
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 820px)')
+    const update = () => setMobile(query.matches)
+    update()
+    query.addEventListener('change', update)
+    return () => query.removeEventListener('change', update)
+  }, [])
+
+  return mobile
+}
+
 export function EditorPane() {
   const markdown = useAppStore((state) => state.markdown)
   const locale = useAppStore((state) => state.locale)
@@ -22,6 +40,7 @@ export function EditorPane() {
   const imageInputRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const mobileEditor = useMobileEditor()
 
   const importFile = async (file: File) => {
     if (
@@ -140,23 +159,33 @@ export function EditorPane() {
       </header>
 
       <div className="editor-shell" data-testid="markdown-editor">
-        <CodeMirror
-          value={markdown}
-          height="100%"
-          minHeight="100%"
-          extensions={[markdownLanguage()]}
-          onChange={setMarkdown}
-          theme={themeId === 'night' || themeId === 'terminal' ? 'dark' : 'light'}
-          basicSetup={{
-            lineNumbers: true,
-            foldGutter: true,
-            highlightActiveLine: true,
-            highlightActiveLineGutter: true,
-            autocompletion: true,
-            bracketMatching: true,
-            searchKeymap: true,
-          }}
-        />
+        {mobileEditor ? (
+          <textarea
+            className="mobile-markdown-editor"
+            aria-label={t(locale, 'markdown')}
+            value={markdown}
+            onChange={(event) => setMarkdown(event.target.value)}
+            spellCheck={false}
+          />
+        ) : (
+          <Suspense
+            fallback={
+              <textarea
+                className="mobile-markdown-editor"
+                aria-label={t(locale, 'markdown')}
+                value={markdown}
+                onChange={(event) => setMarkdown(event.target.value)}
+                spellCheck={false}
+              />
+            }
+          >
+            <DesktopMarkdownEditor
+              value={markdown}
+              onChange={setMarkdown}
+              dark={themeId === 'night' || themeId === 'terminal'}
+            />
+          </Suspense>
+        )}
       </div>
 
       <div className="editor-status">
@@ -172,8 +201,9 @@ export function EditorPane() {
         type="file"
         accept=".md,.markdown,text/markdown,text/plain"
         onChange={(event) => {
-          if (event.target.files) void handleFiles(event.target.files)
+          const files = event.target.files ? [...event.target.files] : []
           event.target.value = ''
+          if (files.length) void handleFiles(files)
         }}
       />
       <input
@@ -182,8 +212,9 @@ export function EditorPane() {
         type="file"
         accept="image/*"
         onChange={(event) => {
-          if (event.target.files) void handleFiles(event.target.files)
+          const files = event.target.files ? [...event.target.files] : []
           event.target.value = ''
+          if (files.length) void handleFiles(files)
         }}
       />
     </section>

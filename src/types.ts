@@ -96,7 +96,7 @@ export interface AssetRecord {
   name: string
   mime: string
   kind: 'image' | 'font'
-  blob: Blob
+  blob: Blob | ArrayBuffer
   createdAt: number
 }
 

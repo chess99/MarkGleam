@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   CheckCircle2,
   Clipboard,
@@ -11,6 +11,7 @@ import {
 import { t } from '../i18n'
 import { trackEvent } from '../lib/analytics'
 import { runExport } from '../lib/export'
+import { suggestFilename } from '../lib/filename'
 import { useAppStore } from '../store'
 import type { ExportFormat } from '../types'
 import { Field } from './Field'
@@ -38,14 +39,30 @@ interface ExportDialogProps {
 
 export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
   const locale = useAppStore((state) => state.locale)
+  const markdown = useAppStore((state) => state.markdown)
   const config = useAppStore((state) => state.export)
   const updateExport = useAppStore((state) => state.updateExport)
+  const filenameInitialized = useRef(false)
   const [exporting, setExporting] = useState(false)
-  const [done, setDone] = useState(false)
+  const [completedFingerprint, setCompletedFingerprint] = useState<string>()
+  const exportFingerprint = JSON.stringify([config, markdown])
+  const done = completedFingerprint === exportFingerprint
+
+  useEffect(() => {
+    if (filenameInitialized.current) return
+    filenameInitialized.current = true
+    if (!config.filename.trim() || config.filename === 'md2img') {
+      updateExport({ filename: suggestFilename(markdown) })
+    }
+  }, [config.filename, markdown, updateExport])
+
+  const changeExport = (patch: Parameters<typeof updateExport>[0]) => {
+    updateExport(patch)
+  }
 
   const handleExport = async () => {
     setExporting(true)
-    setDone(false)
+    setCompletedFingerprint(undefined)
     try {
       const result = await runExport(surface, config)
       trackEvent('export_completed', {
@@ -54,7 +71,7 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
         scale: config.scale,
         parts: result.parts ?? 1,
       })
-      setDone(true)
+      setCompletedFingerprint(exportFingerprint)
       if (config.format === 'clipboard' && result.format === 'png') {
         onToast(t(locale, 'copyFallback'))
       } else {
@@ -89,7 +106,7 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
                 key={id}
                 type="button"
                 className={config.format === id ? 'active' : ''}
-                onClick={() => updateExport({ format: id })}
+                onClick={() => changeExport({ format: id })}
               >
                 <Icon size={18} />
                 <span>
@@ -112,7 +129,9 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
             <input
               type="text"
               value={config.filename}
-              onChange={(event) => updateExport({ filename: event.target.value })}
+              onChange={(event) =>
+                changeExport({ filename: event.target.value })
+              }
             />
           </Field>
           <Field label={t(locale, 'scale')} value={`${config.scale}×`}>
@@ -122,7 +141,7 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
                   key={scale}
                   type="button"
                   className={config.scale === scale ? 'active' : ''}
-                  onClick={() => updateExport({ scale: scale as 1 | 2 | 3 })}
+                  onClick={() => changeExport({ scale: scale as 1 | 2 | 3 })}
                 >
                   {scale}×
                 </button>
@@ -141,7 +160,7 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
                 step="0.01"
                 value={config.quality}
                 onChange={(event) =>
-                  updateExport({ quality: Number(event.target.value) })
+                  changeExport({ quality: Number(event.target.value) })
                 }
               />
             </Field>
@@ -153,7 +172,7 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
                 <select
                   value={config.pdfSize}
                   onChange={(event) =>
-                    updateExport({ pdfSize: event.target.value as 'a4' | 'letter' })
+                    changeExport({ pdfSize: event.target.value as 'a4' | 'letter' })
                   }
                 >
                   <option value="a4">A4</option>
@@ -167,7 +186,7 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
                       key={orientation}
                       type="button"
                       className={config.pdfOrientation === orientation ? 'active' : ''}
-                      onClick={() => updateExport({ pdfOrientation: orientation })}
+                      onClick={() => changeExport({ pdfOrientation: orientation })}
                     >
                       {t(locale, orientation)}
                     </button>
@@ -181,7 +200,7 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
                   max="30"
                   value={config.pdfMargin}
                   onChange={(event) =>
-                    updateExport({ pdfMargin: Number(event.target.value) })
+                    changeExport({ pdfMargin: Number(event.target.value) })
                   }
                 />
               </Field>
@@ -199,7 +218,7 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
                 step="100"
                 value={config.splitHeight}
                 onChange={(event) =>
-                  updateExport({ splitHeight: Number(event.target.value) })
+                  changeExport({ splitHeight: Number(event.target.value) })
                 }
               />
             </Field>

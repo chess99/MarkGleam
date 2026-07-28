@@ -5,7 +5,7 @@ import {
   useState,
   type ComponentProps,
 } from 'react'
-import ReactMarkdown from 'react-markdown'
+import ReactMarkdown, { defaultUrlTransform } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import type { Components } from 'react-markdown'
@@ -32,6 +32,9 @@ const containsMath = (markdown: string) =>
 
 const containsHighlightedCode = (markdown: string) =>
   /^```(?!mermaid(?:\s|$))[\w-]+/m.test(markdown)
+
+const markdownUrlTransform = (url: string) =>
+  url.startsWith('md2img-asset://') ? url : defaultUrlTransform(url)
 
 const markdownComponents = {
   img: AssetImage,
@@ -214,6 +217,7 @@ export function MarkdownPreview({
             className={`export-surface ${canvas.shadow ? 'has-shadow' : ''}`}
             style={style}
             data-testid="export-surface"
+            data-md2img-background-asset-id={canvas.backgroundAssetId}
           >
             {scopedCss && <style>{scopedCss}</style>}
             <article className="markdown-body" data-export-content>
@@ -221,6 +225,7 @@ export function MarkdownPreview({
                 remarkPlugins={remarkPlugins}
                 rehypePlugins={rehypePlugins}
                 components={markdownComponents}
+                urlTransform={markdownUrlTransform}
               >
                 {markdown}
               </ReactMarkdown>
