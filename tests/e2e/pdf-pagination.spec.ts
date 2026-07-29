@@ -14,9 +14,14 @@ const section = (index: number) => `## ${index}. 下列关于示例知识点的�
 
 ---`
 
-const countPdfPages = async (path: string) => {
+const readPdf = async (path: string) => {
   const bytes = await readFile(path)
-  return bytes.toString('latin1').match(/\/Type\s*\/Page\b/g)?.length ?? 0
+  const source = bytes.toString('latin1')
+  return {
+    bytes,
+    pages: source.match(/\/Type\s*\/Page\b/g)?.length ?? 0,
+    usesJpegPages: source.includes('/DCTDecode'),
+  }
 }
 
 test('packs short sections separated by horizontal rules into PDF pages', async ({
@@ -39,8 +44,11 @@ test('packs short sections separated by horizontal rules into PDF pages', async 
   const output = testInfo.outputPath('packed-sections.pdf')
   await download.saveAs(output)
 
-  expect(await countPdfPages(output)).toBe(6)
-  await expect(page.locator('.toast')).toContainText('(6)')
+  const pdf = await readPdf(output)
+  expect(pdf.pages).toBe(5)
+  expect(pdf.usesJpegPages).toBe(true)
+  expect(pdf.bytes.byteLength).toBeLessThan(2_000_000)
+  await expect(page.locator('.toast')).toContainText('(5)')
 })
 
 test('forces PDF pages only at explicit pagebreak comments', async ({
@@ -75,6 +83,6 @@ Short third page.`)
   const output = testInfo.outputPath('explicit-pagebreaks.pdf')
   await download.saveAs(output)
 
-  expect(await countPdfPages(output)).toBe(3)
+  expect((await readPdf(output)).pages).toBe(3)
   await expect(page.locator('.toast')).toContainText('(3)')
 })

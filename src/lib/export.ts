@@ -17,6 +17,26 @@ import {
 
 const MAX_CANVAS_PIXELS = 64_000_000
 
+export interface ExportProgress {
+  completed: number
+  total: number
+}
+
+export interface RunExportOptions {
+  signal?: AbortSignal
+  onProgress?: (progress: ExportProgress) => void
+  optimizeLongPdf?: boolean
+}
+
+const throwIfAborted = (signal?: AbortSignal) => {
+  if (signal?.aborted) {
+    throw new DOMException('Export canceled', 'AbortError')
+  }
+}
+
+const yieldToBrowser = () =>
+  new Promise<void>((resolve) => window.setTimeout(resolve, 0))
+
 const dataUrlToBlob = async (dataUrl: string) => {
   const response = await fetch(dataUrl)
   return response.blob()
@@ -171,25 +191,35 @@ const screenshotOptions = (
   },
 })
 
-const createSegment = (
+export const createSegment = (
   surface: HTMLElement,
   start: number,
   end: number,
+  minHeight = 0,
 ): HTMLElement => {
-  const clone = surface.cloneNode(true) as HTMLElement
+  const sourceContent = surface.querySelector<HTMLElement>('[data-export-content]')
+  if (!sourceContent) throw new Error('Export content is missing')
+
+  const clone = surface.cloneNode(false) as HTMLElement
   prepareSnapshotNode(clone)
   clone.dataset.exportSegment = 'true'
-  clone.style.minHeight = '0'
+  clone.style.minHeight = `${Math.max(0, minHeight)}px`
   clone.style.height = 'auto'
 
-  const content = clone.querySelector<HTMLElement>('[data-export-content]')
-  if (!content) throw new Error('Export content is missing')
-
-  const children = [...content.children]
-  children.forEach((child, index) => {
-    if (index < start || index >= end || child.hasAttribute('data-page-break')) {
-      child.remove()
+  surface.childNodes.forEach((node) => {
+    if (node !== sourceContent) {
+      clone.append(node.cloneNode(true))
+      return
     }
+
+    const content = sourceContent.cloneNode(false) as HTMLElement
+    const children = [...sourceContent.children]
+    children.slice(start, end).forEach((child) => {
+      if (!child.hasAttribute('data-page-break')) {
+        content.append(child.cloneNode(true))
+      }
+    })
+    clone.append(content)
   })
 
   mountSnapshotOffscreen(clone)
@@ -205,14 +235,13 @@ const getPageGroups = (
   if (!content) return []
 
   const children = [...content.children] as HTMLElement[]
-  const heights = children.map((child) => {
-    const style = getComputedStyle(child)
-    return (
-      child.getBoundingClientRect().height +
-      Number.parseFloat(style.marginTop || '0') +
-      Number.parseFloat(style.marginBottom || '0')
-    )
-  })
+  const rectangles = children.map((child) => child.getBoundingClientRect())
+  const heights = rectangles.map((rectangle) => rectangle.height)
+  const gapsBefore = rectangles.map((rectangle, index) =>
+    index === 0
+      ? 0
+      : Math.max(0, rectangle.top - rectangles[index - 1].bottom),
+  )
   const forcedBreaks = new Set<number>()
   children.forEach((child, index) => {
     if (child.hasAttribute('data-page-break')) forcedBreaks.add(index)
@@ -221,20 +250,23 @@ const getPageGroups = (
   const availableHeight =
     maxContentHeight ??
     calculateSafePartHeight(config.splitHeight, config.scale)
-  return groupBlockHeights(heights, availableHeight, forcedBreaks)
+  return groupBlockHeights(heights, availableHeight, forcedBreaks, gapsBefore)
 }
 
 const exportSplitZip = async (
   surface: HTMLElement,
   config: ExportConfig,
   baseName: string,
+  options: RunExportOptions,
 ) => {
   const groups = getPageGroups(surface, config)
   const parts =
     groups.length > 0 ? groups : [{ start: 0, end: 9999, height: 0 }]
 
   const zip = new JSZip()
+  options.onProgress?.({ completed: 0, total: parts.length })
   for (let index = 0; index < parts.length; index += 1) {
+    throwIfAborted(options.signal)
     const group = parts[index]
     const segment = createSegment(surface, group.start, group.end)
     try {
@@ -244,12 +276,16 @@ const exportSplitZip = async (
         `${baseName}-${String(index + 1).padStart(2, '0')}.png`,
         await dataUrlToBlob(dataUrl),
       )
+      options.onProgress?.({ completed: index + 1, total: parts.length })
     } finally {
       removeMountedSnapshot(segment)
     }
+    await yieldToBrowser()
   }
 
+  throwIfAborted(options.signal)
   const blob = await zip.generateAsync({ type: 'blob' })
+  throwIfAborted(options.signal)
   downloadBlob(blob, `${baseName}-parts.zip`)
   return parts.length
 }
@@ -258,6 +294,7 @@ const exportPdf = async (
   surface: HTMLElement,
   config: ExportConfig,
   baseName: string,
+  options: RunExportOptions,
 ) => {
   const orientation = config.pdfOrientation === 'landscape' ? 'landscape' : 'portrait'
   const pdf = new jsPDF({
@@ -282,11 +319,25 @@ const exportPdf = async (
   )
   const groups = getPageGroups(surface, config, maxContentHeight)
   const pages = groups.length > 0 ? groups : [{ start: 0, end: 9999, height: 0 }]
+  const minPageSurfaceHeight = maxContentHeight + verticalPadding
+  const optimizeLongDocument =
+    options.optimizeLongPdf !== false && pages.length >= 100
+  const rasterScale = optimizeLongDocument ? 1 : config.scale
+  const rasterQuality = optimizeLongDocument
+    ? Math.min(config.quality, 0.82)
+    : config.quality
 
+  options.onProgress?.({ completed: 0, total: pages.length })
   for (let index = 0; index < pages.length; index += 1) {
+    throwIfAborted(options.signal)
     if (index > 0) pdf.addPage(config.pdfSize, orientation)
     const page = pages[index]
-    const segment = createSegment(surface, page.start, page.end)
+    const segment = createSegment(
+      surface,
+      page.start,
+      page.end,
+      minPageSurfaceHeight,
+    )
     try {
       await waitForRenderReady(segment)
       const computedBackground = getComputedStyle(segment).backgroundColor
@@ -295,12 +346,18 @@ const exportPdf = async (
         computedBackground === 'transparent'
           ? '#ffffff'
           : computedBackground
-      const scale = 2
-      const dataUrl = await domToPng(segment, {
-        ...screenshotOptions(segment, { ...config, scale: 2 }),
+      const scale = rasterScale
+      const dataUrl = await domToJpeg(segment, {
+        ...screenshotOptions(
+          segment,
+          { ...config, scale: rasterScale, quality: rasterQuality },
+          'image/jpeg',
+        ),
         scale,
+        quality: rasterQuality,
         backgroundColor,
       })
+      throwIfAborted(options.signal)
       const pixelWidth = segment.scrollWidth * scale
       const pixelHeight = segment.scrollHeight * scale
       const ratio = Math.min(imageWidth / pixelWidth, imageHeight / pixelHeight)
@@ -308,7 +365,7 @@ const exportPdf = async (
       const height = pixelHeight * ratio
       pdf.addImage(
         dataUrl,
-        'PNG',
+        'JPEG',
         config.pdfMargin + (imageWidth - width) / 2,
         config.pdfMargin,
         width,
@@ -316,11 +373,14 @@ const exportPdf = async (
         undefined,
         'FAST',
       )
+      options.onProgress?.({ completed: index + 1, total: pages.length })
     } finally {
       removeMountedSnapshot(segment)
     }
+    await yieldToBrowser()
   }
 
+  throwIfAborted(options.signal)
   pdf.save(`${baseName}.pdf`)
   return pages.length
 }
@@ -328,11 +388,14 @@ const exportPdf = async (
 export const runExport = async (
   surface: HTMLElement,
   config: ExportConfig,
+  options: RunExportOptions = {},
 ): Promise<ExportResult> => {
+  throwIfAborted(options.signal)
   const baseName = sanitizeFilename(config.filename)
   const snapshot = await createExportSnapshot(surface)
 
   try {
+    throwIfAborted(options.signal)
     const estimatedPixels =
       snapshot.scrollWidth * snapshot.scrollHeight * config.scale * config.scale
 
@@ -341,12 +404,12 @@ export const runExport = async (
       (estimatedPixels > MAX_CANVAS_PIXELS &&
         !['pdf', 'svg', 'clipboard'].includes(config.format))
     ) {
-      const parts = await exportSplitZip(snapshot, config, baseName)
+      const parts = await exportSplitZip(snapshot, config, baseName, options)
       return { filename: `${baseName}-parts.zip`, format: 'split-zip', parts }
     }
 
     if (config.format === 'pdf') {
-      const parts = await exportPdf(snapshot, config, baseName)
+      const parts = await exportPdf(snapshot, config, baseName, options)
       return { filename: `${baseName}.pdf`, format: 'pdf', parts }
     }
 
@@ -355,6 +418,7 @@ export const runExport = async (
         snapshot,
         screenshotOptions(snapshot, config),
       )
+      throwIfAborted(options.signal)
       const blob = await dataUrlToBlob(dataUrl)
       if (blob.size < 128) throw new Error('Rendered image is unexpectedly empty')
 
@@ -385,6 +449,7 @@ export const runExport = async (
 
     const format = config.format as keyof typeof renderers
     const dataUrl = await renderers[format]()
+    throwIfAborted(options.signal)
     const extension = extensionFor(format)
     const blob = await dataUrlToBlob(dataUrl)
     if (blob.size < 128) throw new Error('Rendered image is unexpectedly empty')

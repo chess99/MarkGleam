@@ -31,6 +31,20 @@ describe('groupBlockHeights', () => {
       { start: 1, end: 2, height: 200 },
     ])
   })
+
+  it('counts actual collapsed gaps only between blocks on the same page', () => {
+    expect(
+      groupBlockHeights(
+        [300, 300, 300],
+        650,
+        new Set(),
+        [0, 40, 40],
+      ),
+    ).toEqual([
+      { start: 0, end: 2, height: 640 },
+      { start: 2, end: 3, height: 300 },
+    ])
+  })
 })
 
 describe('calculateSafePartHeight', () => {

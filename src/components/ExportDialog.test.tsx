@@ -47,4 +47,48 @@ describe('ExportDialog', () => {
     )
     expect(exportMock).toHaveBeenCalledTimes(2)
   })
+
+  it('shows page progress and cancels an in-progress export', async () => {
+    exportMock.mockImplementation(
+      (
+        _surface: HTMLElement,
+        _config: unknown,
+        options: {
+          signal: AbortSignal
+          onProgress: (progress: { completed: number; total: number }) => void
+        },
+      ) =>
+        new Promise((_resolve, reject) => {
+          options.onProgress({ completed: 2, total: 10 })
+          options.signal.addEventListener('abort', () => {
+            reject(new DOMException('Export canceled', 'AbortError'))
+          })
+        }),
+    )
+    const onToast = vi.fn()
+
+    render(
+      <ExportDialog
+        surface={document.createElement('div')}
+        onClose={vi.fn()}
+        onToast={onToast}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Download' }))
+    expect(exportMock.mock.calls[0]?.[2]).toMatchObject({
+      optimizeLongPdf: true,
+    })
+    const cancelButton = await screen.findByRole('button', {
+      name: 'Cancel export',
+    })
+    expect(screen.getByRole('progressbar')).toHaveTextContent('2 / 10')
+
+    fireEvent.click(cancelButton)
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Download' })).toBeEnabled(),
+    )
+    expect(onToast).not.toHaveBeenCalled()
+  })
 })

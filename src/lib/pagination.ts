@@ -8,6 +8,7 @@ export const groupBlockHeights = (
   heights: number[],
   maxHeight: number,
   forcedBreaks = new Set<number>(),
+  gapsBefore: number[] = [],
 ): PageGroup[] => {
   if (heights.length === 0) return []
 
@@ -26,7 +27,9 @@ export const groupBlockHeights = (
     }
 
     const measuredHeight = Math.max(1, blockHeight)
-    const exceeds = height > 0 && height + measuredHeight > maxHeight
+    const gapBefore = height > 0 ? Math.max(0, gapsBefore[index] ?? 0) : 0
+    const exceeds =
+      height > 0 && height + gapBefore + measuredHeight > maxHeight
 
     if (exceeds && index > start) {
       groups.push({ start, end: index, height })
@@ -34,7 +37,7 @@ export const groupBlockHeights = (
       height = 0
     }
 
-    height += measuredHeight
+    height += measuredHeight + (height > 0 ? gapBefore : 0)
   })
 
   if (heights.length > start && height > 0) {

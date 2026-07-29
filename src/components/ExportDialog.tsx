@@ -7,10 +7,11 @@ import {
   FileImage,
   FileText,
   LoaderCircle,
+  X,
 } from 'lucide-react'
 import { t } from '../i18n'
 import { trackEvent } from '../lib/analytics'
-import { runExport } from '../lib/export'
+import { runExport, type ExportProgress } from '../lib/export'
 import { suggestFilename } from '../lib/filename'
 import { useAppStore } from '../store'
 import type { ExportFormat } from '../types'
@@ -43,7 +44,10 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
   const config = useAppStore((state) => state.export)
   const updateExport = useAppStore((state) => state.updateExport)
   const filenameInitialized = useRef(false)
+  const abortControllerRef = useRef<AbortController | null>(null)
   const [exporting, setExporting] = useState(false)
+  const [progress, setProgress] = useState<ExportProgress>()
+  const [optimizeLongPdf, setOptimizeLongPdf] = useState(true)
   const [completedFingerprint, setCompletedFingerprint] = useState<string>()
   const exportFingerprint = JSON.stringify([config, markdown])
   const done = completedFingerprint === exportFingerprint
@@ -56,15 +60,29 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
     }
   }, [config.filename, markdown, updateExport])
 
+  useEffect(
+    () => () => {
+      abortControllerRef.current?.abort()
+    },
+    [],
+  )
+
   const changeExport = (patch: Parameters<typeof updateExport>[0]) => {
     updateExport(patch)
   }
 
   const handleExport = async () => {
+    const controller = new AbortController()
+    abortControllerRef.current = controller
     setExporting(true)
+    setProgress(undefined)
     setCompletedFingerprint(undefined)
     try {
-      const result = await runExport(surface, config)
+      const result = await runExport(surface, config, {
+        signal: controller.signal,
+        onProgress: setProgress,
+        optimizeLongPdf,
+      })
       trackEvent('export_completed', {
         requested_format: config.format,
         delivered_format: result.format,
@@ -83,12 +101,25 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
         )
       }
     } catch (error) {
+      if (controller.signal.aborted) return
       console.error(error)
       onToast(t(locale, 'exportFailed'), 'error')
     } finally {
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null
+      }
       setExporting(false)
+      setProgress(undefined)
     }
   }
+
+  const cancelExport = () => {
+    abortControllerRef.current?.abort()
+  }
+
+  const progressPercent = progress
+    ? Math.round((progress.completed / Math.max(1, progress.total)) * 100)
+    : 0
 
   return (
     <Modal
@@ -148,7 +179,7 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
               ))}
             </div>
           </Field>
-          {['jpeg', 'webp'].includes(config.format) && (
+          {['jpeg', 'webp', 'pdf'].includes(config.format) && (
             <Field
               label={t(locale, 'quality')}
               value={`${Math.round(config.quality * 100)}%`}
@@ -204,6 +235,17 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
                   }
                 />
               </Field>
+              <label className="toggle-row pdf-optimization-toggle">
+                <span>{t(locale, 'optimizeLongPdf')}</span>
+                <input
+                  type="checkbox"
+                  checked={optimizeLongPdf}
+                  onChange={(event) => setOptimizeLongPdf(event.target.checked)}
+                />
+              </label>
+              <p className="export-optimization-hint">
+                {t(locale, 'optimizeLongPdfHint')}
+              </p>
             </>
           )}
           {config.format === 'split-zip' && (
@@ -227,17 +269,37 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
           <div className="export-summary">
             <span>{t(locale, 'exportHint')}</span>
             <b>{t(locale, 'localOnly')}</b>
+            {progress && (
+              <div
+                className="export-progress"
+                role="progressbar"
+                aria-label={t(locale, 'exporting')}
+                aria-valuemin={0}
+                aria-valuemax={progress.total}
+                aria-valuenow={progress.completed}
+              >
+                <span>
+                  {locale === 'zh-CN' ? '页面进度' : 'Page progress'}
+                  <b>
+                    {progress.completed} / {progress.total}
+                  </b>
+                </span>
+                <i style={{ width: `${progressPercent}%` }} />
+              </div>
+            )}
           </div>
           <button
-            className="primary-button export-now"
+            className={`primary-button export-now ${exporting ? 'is-cancel' : ''}`}
             type="button"
-            disabled={exporting}
-            onClick={() => void handleExport()}
+            onClick={() => {
+              if (exporting) cancelExport()
+              else void handleExport()
+            }}
           >
             {exporting ? (
               <>
-                <LoaderCircle className="spin" size={18} />
-                {t(locale, 'exporting')}
+                {progress ? <X size={18} /> : <LoaderCircle className="spin" size={18} />}
+                {t(locale, 'cancelExport')}
               </>
             ) : done ? (
               <>
