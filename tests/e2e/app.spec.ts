@@ -94,7 +94,8 @@ test('keeps Mermaid rendered when the workspace layout changes', async ({
 })
 
 test('switches language, theme and persists preferences', async ({ page }) => {
-  await page.getByLabel('界面语言').selectOption('en')
+  await page.getByRole('combobox', { name: '界面语言' }).click()
+  await page.getByRole('option', { name: 'English' }).click()
   await expect(page.getByRole('button', { name: 'Export' })).toBeVisible()
 
   await page.getByRole('button', { name: 'Forest' }).click()
@@ -456,9 +457,14 @@ test('keeps mobile language switching and native editor scrolling available', as
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 })
-  const language = page.getByLabel('界面语言')
-  await expect(language.locator('option')).toHaveCount(2)
-  await language.selectOption('en')
+  const language = page.getByRole('combobox', { name: '界面语言' })
+  await expect(language).toHaveCSS('white-space', 'nowrap')
+  expect(await language.evaluate((element) => element.scrollHeight)).toBe(
+    await language.evaluate((element) => element.clientHeight),
+  )
+  await language.click()
+  await expect(page.getByRole('option')).toHaveCount(2)
+  await page.getByRole('option', { name: 'English' }).click()
   await expect(page.locator('.mobile-export')).toContainText('Export')
 
   const mobileSurfaceColor = await page
@@ -469,6 +475,26 @@ test('keeps mobile language switching and native editor scrolling available', as
     'data-appearance',
     'dark',
   )
+  await page.getByRole('combobox', { name: 'Interface language' }).click()
+  const languageMenu = page.locator('.language-menu-content')
+  await expect(languageMenu).toHaveCSS('background-color', 'rgb(32, 36, 42)')
+  await expect(languageMenu).toHaveCSS('color', 'rgb(238, 241, 244)')
+  await page.keyboard.press('Escape')
+
+  await page.setViewportSize({ width: 320, height: 700 })
+  expect(
+    await page.evaluate(() => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+      topbarClientWidth: document.querySelector('.topbar')?.clientWidth,
+      topbarScrollWidth: document.querySelector('.topbar')?.scrollWidth,
+    })),
+  ).toEqual({
+    clientWidth: 320,
+    scrollWidth: 320,
+    topbarClientWidth: 320,
+    topbarScrollWidth: 320,
+  })
   await expect(page.getByTestId('export-surface')).toHaveCSS(
     'background-color',
     mobileSurfaceColor,

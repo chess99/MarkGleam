@@ -8,7 +8,6 @@ import {
   Eye,
   FileText,
   Image as ImageIcon,
-  Languages,
   LockKeyhole,
   Moon,
   PanelLeftClose,
@@ -19,6 +18,7 @@ import {
 } from 'lucide-react'
 import { EditorPane } from './components/EditorPane'
 import { Inspector } from './components/Inspector'
+import { LanguageSelect } from './components/LanguageSelect'
 import { MarkdownPreview } from './components/MarkdownPreview'
 import { Modal } from './components/Modal'
 import { t } from './i18n'
@@ -85,6 +85,10 @@ function App() {
   useEffect(() => {
     document.documentElement.lang = locale
   }, [locale])
+
+  useEffect(() => {
+    document.documentElement.dataset.appearance = appearance
+  }, [appearance])
 
   useEffect(() => {
     if (!toast) return
@@ -189,19 +193,7 @@ function App() {
           >
             <PanelRightClose size={18} />
           </button>
-          <label className="language-select">
-            <Languages size={16} />
-            <select
-              aria-label={locale === 'zh-CN' ? '界面语言' : 'Interface language'}
-              value={locale}
-              onChange={(event) =>
-                setLocale(event.target.value as 'zh-CN' | 'en')
-              }
-            >
-              <option value="zh-CN">简体中文</option>
-              <option value="en">English</option>
-            </select>
-          </label>
+          <LanguageSelect locale={locale} onChange={setLocale} />
           <button
             className="icon-button"
             type="button"
