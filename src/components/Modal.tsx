@@ -6,6 +6,7 @@ interface ModalProps {
   onClose: () => void
   children: ReactNode
   wide?: boolean
+  compact?: boolean
   closeLabel?: string
 }
 
@@ -14,6 +15,7 @@ export function Modal({
   onClose,
   children,
   wide,
+  compact,
   closeLabel = 'Close',
 }: ModalProps) {
   const dialogRef = useRef<HTMLElement>(null)
@@ -72,7 +74,7 @@ export function Modal({
     >
       <section
         ref={dialogRef}
-        className={`modal ${wide ? 'modal-wide' : ''}`}
+        className={`modal ${wide ? 'modal-wide' : ''} ${compact ? 'modal-compact' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}

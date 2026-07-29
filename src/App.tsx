@@ -27,6 +27,12 @@ import type { MobilePane } from './types'
 
 type InfoModal = 'help' | 'privacy' | 'shortcuts' | null
 
+const shortcutItems = [
+  { key: 'S', action: { 'zh-CN': '打开导出', en: 'Open export' } },
+  { key: 'O', action: { 'zh-CN': '导入文件', en: 'Import a file' } },
+  { key: '/', action: { 'zh-CN': '打开帮助', en: 'Open help' } },
+] as const
+
 const ExportDialog = lazy(() =>
   import('./components/ExportDialog').then((module) => ({
     default: module.ExportDialog,
@@ -397,9 +403,25 @@ function App() {
           title={t(locale, `${infoModal}Title` as 'helpTitle')}
           onClose={() => setInfoModal(null)}
           closeLabel={t(locale, 'close')}
+          compact
         >
           <div className="info-copy">
-            <p>{t(locale, `${infoModal}Body` as 'helpBody')}</p>
+            {infoModal === 'shortcuts' ? (
+              <div className="shortcut-list" role="list">
+                {shortcutItems.map((item) => (
+                  <div className="shortcut-row" role="listitem" key={item.key}>
+                    <span className="shortcut-combo">
+                      <kbd>Ctrl / ⌘</kbd>
+                      <span>+</span>
+                      <kbd>{item.key}</kbd>
+                    </span>
+                    <span className="shortcut-action">{item.action[locale]}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p>{t(locale, `${infoModal}Body` as 'helpBody')}</p>
+            )}
             {infoModal === 'help' && (
               <ul>
                 <li>

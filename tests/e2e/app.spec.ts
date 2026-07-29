@@ -296,6 +296,23 @@ test('dismisses menus with Escape and opens export from the keyboard', async ({
   await expect(page.getByRole('dialog', { name: '导出' })).toBeVisible()
 })
 
+test('presents shortcuts as three readable rows in a compact modal', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.getByRole('button', { name: '帮助' }).click()
+  await page.getByRole('menuitem', { name: '快捷键' }).click()
+
+  const dialog = page.getByRole('dialog', { name: '快捷键' })
+  await expect(dialog.locator('.shortcut-row')).toHaveCount(3)
+  await expect(dialog.locator('.shortcut-row')).toHaveText([
+    'Ctrl / ⌘+S打开导出',
+    'Ctrl / ⌘+O导入文件',
+    'Ctrl / ⌘+/打开帮助',
+  ])
+  expect((await dialog.boundingBox())?.height).toBeLessThan(420)
+})
+
 test('downloads valid PNG, JPEG, WebP, SVG and sliced ZIP files', async ({
   page,
   browserName,

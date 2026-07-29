@@ -1529,6 +1529,54 @@ input[type="range"] {
   padding-left: 20px;
 }
 
+.shortcut-list {
+  display: grid;
+  gap: 10px;
+}
+
+.shortcut-row {
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: minmax(132px, auto) 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 13px;
+  border: 1px solid var(--line-soft);
+  border-radius: 11px;
+  background: var(--panel-soft);
+}
+
+.shortcut-combo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.shortcut-combo kbd {
+  min-width: 30px;
+  min-height: 30px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 8px;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--panel);
+  box-shadow: 0 2px 0 var(--line);
+}
+
+.shortcut-action {
+  color: var(--ink);
+  font-weight: 650;
+  text-align: right;
+}
+
 .toast {
   position: fixed;
   right: 20px;
@@ -1755,6 +1803,11 @@ input[type="range"] {
     height: 88dvh;
     max-height: 88dvh;
     border-radius: 18px 18px 0 0;
+  }
+
+  .modal-compact {
+    height: auto;
+    max-height: 88dvh;
   }
 
   .modal-content {
