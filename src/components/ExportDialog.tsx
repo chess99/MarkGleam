@@ -7,12 +7,14 @@ import {
   FileImage,
   FileText,
   LoaderCircle,
+  Printer,
   X,
 } from 'lucide-react'
 import { t } from '../i18n'
 import { trackEvent } from '../lib/analytics'
 import { runExport, type ExportProgress } from '../lib/export'
 import { suggestFilename } from '../lib/filename'
+import { runPrint } from '../lib/print'
 import { useAppStore } from '../store'
 import type { ExportFormat } from '../types'
 import { Field } from './Field'
@@ -28,6 +30,7 @@ const formatMeta: {
   { id: 'webp', icon: FileImage, label: 'WebP' },
   { id: 'svg', icon: FileText, label: 'SVG' },
   { id: 'pdf', icon: FileText, label: 'PDF' },
+  { id: 'print', icon: Printer, label: 'Print' },
   { id: 'clipboard', icon: Clipboard, label: 'Clipboard' },
   { id: 'split-zip', icon: FileArchive, label: 'ZIP parts' },
 ]
@@ -48,6 +51,7 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
   const [exporting, setExporting] = useState(false)
   const [progress, setProgress] = useState<ExportProgress>()
   const [optimizeLongPdf, setOptimizeLongPdf] = useState(true)
+  const [preservePrintBackground, setPreservePrintBackground] = useState(false)
   const [completedFingerprint, setCompletedFingerprint] = useState<string>()
   const exportFingerprint = JSON.stringify([config, markdown])
   const done = completedFingerprint === exportFingerprint
@@ -78,6 +82,20 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
     setProgress(undefined)
     setCompletedFingerprint(undefined)
     try {
+      if (config.format === 'print') {
+        await runPrint(surface, config, {
+          preserveBackground: preservePrintBackground,
+        })
+        trackEvent('export_completed', {
+          requested_format: 'print',
+          delivered_format: 'print',
+          scale: 1,
+          parts: 1,
+        })
+        onToast(t(locale, 'printDialogOpened'))
+        return
+      }
+
       const result = await runExport(surface, config, {
         signal: controller.signal,
         onProgress: setProgress,
@@ -147,7 +165,11 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
                       ? locale === 'zh-CN'
                         ? '长图分片 ZIP'
                         : 'Sliced ZIP'
-                      : label}
+                      : id === 'pdf'
+                        ? t(locale, 'visualPdf')
+                        : id === 'print'
+                          ? t(locale, 'printPdf')
+                          : label}
                 </span>
                 {config.format === id && <CheckCircle2 size={16} />}
               </button>
@@ -165,20 +187,22 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
               }
             />
           </Field>
-          <Field label={t(locale, 'scale')} value={`${config.scale}×`}>
-            <div className="segmented">
-              {[1, 2, 3].map((scale) => (
-                <button
-                  key={scale}
-                  type="button"
-                  className={config.scale === scale ? 'active' : ''}
-                  onClick={() => changeExport({ scale: scale as 1 | 2 | 3 })}
-                >
-                  {scale}×
-                </button>
-              ))}
-            </div>
-          </Field>
+          {config.format !== 'print' && (
+            <Field label={t(locale, 'scale')} value={`${config.scale}×`}>
+              <div className="segmented">
+                {[1, 2, 3].map((scale) => (
+                  <button
+                    key={scale}
+                    type="button"
+                    className={config.scale === scale ? 'active' : ''}
+                    onClick={() => changeExport({ scale: scale as 1 | 2 | 3 })}
+                  >
+                    {scale}×
+                  </button>
+                ))}
+              </div>
+            </Field>
+          )}
           {['jpeg', 'webp', 'pdf'].includes(config.format) && (
             <Field
               label={t(locale, 'quality')}
@@ -196,9 +220,11 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
               />
             </Field>
           )}
-          {config.format === 'pdf' && (
+          {['pdf', 'print'].includes(config.format) && (
             <>
-              <div className="section-heading">{t(locale, 'pdfSettings')}</div>
+              <div className="section-heading">
+                {t(locale, config.format === 'print' ? 'printSettings' : 'pdfSettings')}
+              </div>
               <Field label={t(locale, 'paper')}>
                 <select
                   value={config.pdfSize}
@@ -235,17 +261,37 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
                   }
                 />
               </Field>
-              <label className="toggle-row pdf-optimization-toggle">
-                <span>{t(locale, 'optimizeLongPdf')}</span>
-                <input
-                  type="checkbox"
-                  checked={optimizeLongPdf}
-                  onChange={(event) => setOptimizeLongPdf(event.target.checked)}
-                />
-              </label>
-              <p className="export-optimization-hint">
-                {t(locale, 'optimizeLongPdfHint')}
-              </p>
+              {config.format === 'pdf' ? (
+                <>
+                  <label className="toggle-row pdf-optimization-toggle">
+                    <span>{t(locale, 'optimizeLongPdf')}</span>
+                    <input
+                      type="checkbox"
+                      checked={optimizeLongPdf}
+                      onChange={(event) => setOptimizeLongPdf(event.target.checked)}
+                    />
+                  </label>
+                  <p className="export-optimization-hint">
+                    {t(locale, 'optimizeLongPdfHint')}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <label className="toggle-row pdf-optimization-toggle">
+                    <span>{t(locale, 'preservePrintBackground')}</span>
+                    <input
+                      type="checkbox"
+                      checked={preservePrintBackground}
+                      onChange={(event) =>
+                        setPreservePrintBackground(event.target.checked)
+                      }
+                    />
+                  </label>
+                  <p className="export-optimization-hint">
+                    {t(locale, 'printHint')}
+                  </p>
+                </>
+              )}
             </>
           )}
           {config.format === 'split-zip' && (
@@ -308,9 +354,15 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
               </>
             ) : (
               <>
-                <Download size={18} />
+                {config.format === 'print' ? (
+                  <Printer size={18} />
+                ) : (
+                  <Download size={18} />
+                )}
                 {config.format === 'clipboard'
                   ? t(locale, 'copyImage')
+                  : config.format === 'print'
+                    ? t(locale, 'printPdf')
                   : t(locale, 'download')}
               </>
             )}

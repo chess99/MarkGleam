@@ -32,6 +32,7 @@ export type ExportFormat =
   | 'webp'
   | 'svg'
   | 'pdf'
+  | 'print'
   | 'clipboard'
   | 'split-zip'
 

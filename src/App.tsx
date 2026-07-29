@@ -7,6 +7,7 @@ import {
   CircleHelp,
   Eye,
   FileText,
+  History,
   Image as ImageIcon,
   LockKeyhole,
   Moon,
@@ -17,6 +18,7 @@ import {
   Sun,
 } from 'lucide-react'
 import { EditorPane } from './components/EditorPane'
+import { ChangelogPage } from './components/ChangelogPage'
 import { Inspector } from './components/Inspector'
 import { LanguageSelect } from './components/LanguageSelect'
 import { MarkdownPreview } from './components/MarkdownPreview'
@@ -62,6 +64,9 @@ function App() {
   const [exportOpen, setExportOpen] = useState(false)
   const [infoModal, setInfoModal] = useState<InfoModal>(null)
   const [helpMenuOpen, setHelpMenuOpen] = useState(false)
+  const [changelogOpen, setChangelogOpen] = useState(
+    () => window.location.hash === '#/changelog',
+  )
   const [toast, setToast] = useState<{
     message: string
     kind: 'success' | 'error'
@@ -95,6 +100,14 @@ function App() {
   useEffect(() => {
     document.documentElement.dataset.appearance = appearance
   }, [appearance])
+
+  useEffect(() => {
+    const syncRoute = () => {
+      setChangelogOpen(window.location.hash === '#/changelog')
+    }
+    window.addEventListener('hashchange', syncRoute)
+    return () => window.removeEventListener('hashchange', syncRoute)
+  }, [])
 
   useEffect(() => {
     if (!toast) return
@@ -158,6 +171,16 @@ function App() {
     { id: 'preview', label: t(locale, 'preview'), icon: Eye },
     { id: 'settings', label: t(locale, 'settings'), icon: Settings2 },
   ]
+
+  if (changelogOpen) {
+    return (
+      <ChangelogPage
+        onBack={() => {
+          window.location.hash = ''
+        }}
+      />
+    )
+  }
 
   return (
     <div className="app-shell" data-appearance={appearance}>
@@ -249,6 +272,16 @@ function App() {
                   }}
                 >
                   <LockKeyhole size={15} /> {t(locale, 'privacy')}
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    window.location.hash = '/changelog'
+                    setHelpMenuOpen(false)
+                  }}
+                >
+                  <History size={15} /> {t(locale, 'changelog')}
                 </button>
                 <button
                   type="button"

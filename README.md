@@ -76,6 +76,15 @@ VITE_BAIDU_ANALYTICS_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 MD2IMG 没有内容服务器。Markdown、本地图片、字体、文件名和导出文件不会上传。生产站点会向 Google Analytics 与百度统计发送页面访问和不含内容的导出事件；使用远程图片链接时，浏览器会直接向图片原地址发起请求。
 
+## PDF 与打印
+
+- **视觉 PDF**：把主题预览按页生成图片型 PDF，适合分享和保留视觉效果。
+- **打印 / 保存为 PDF**：使用浏览器原生分页，默认采用白底、11pt 正文和省墨配色；文字可搜索、复制，可直接选择打印机或另存为 PDF。
+- A4/Letter、纵向/横向、页边距和 `<!-- pagebreak -->` 同时适用于两种模式；`---` 始终是普通水平分隔线。
+- 更新记录可从帮助菜单打开，也可直接访问 `#/changelog`。
+
+打印实现、浏览器行为和已知边界见 [打印工作流说明](./docs/printing.md)。
+
 ## English
 
 MD2IMG is a free, local-first Markdown-to-image studio. It supports rich Markdown, math, diagrams, themes, local assets, and watermark-free exports. Run `npm install && npm run dev` to start.

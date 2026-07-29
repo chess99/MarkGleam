@@ -2,6 +2,16 @@ import type { Locale } from './types'
 
 const messages = {
   'zh-CN': {
+    changelog: '更新日志',
+    changelogTitle: 'MD2IMG 更新日志',
+    changelogIntro: '记录会影响导出体验、兼容性和工作流的重要变化。',
+    backToEditor: '返回编辑器',
+    visualPdf: '视觉 PDF',
+    printPdf: '打印 / 保存为 PDF',
+    printSettings: '打印设置',
+    preservePrintBackground: '保留主题背景',
+    printHint: '使用浏览器原生分页，默认白底省墨；可直接打印或另存为可搜索 PDF。',
+    printDialogOpened: '已打开浏览器打印对话框，可选择打印机或“另存为 PDF”。',
     tagline: '本地优先 · 永久免费',
     markdown: 'Markdown',
     preview: '预览',
@@ -91,6 +101,16 @@ const messages = {
     unsupportedFile: '不支持此文件，请选择 Markdown 或常见图片格式。',
   },
   en: {
+    changelog: 'Changelog',
+    changelogTitle: 'MD2IMG changelog',
+    changelogIntro: 'Important changes to export behavior, compatibility, and workflows.',
+    backToEditor: 'Back to editor',
+    visualPdf: 'Visual PDF',
+    printPdf: 'Print / Save as PDF',
+    printSettings: 'Print settings',
+    preservePrintBackground: 'Preserve theme background',
+    printHint: 'Uses native browser pagination with an ink-friendly white background by default. Print directly or save a searchable PDF.',
+    printDialogOpened: 'The browser print dialog opened. Choose a printer or Save as PDF.',
     tagline: 'Local-first · Free forever',
     markdown: 'Markdown',
     preview: 'Preview',

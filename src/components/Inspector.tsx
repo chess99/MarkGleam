@@ -32,6 +32,7 @@ const formats: ExportFormat[] = [
   'webp',
   'svg',
   'pdf',
+  'print',
   'clipboard',
   'split-zip',
 ]
@@ -347,6 +348,10 @@ export function Inspector({
                   >
                     {format === 'split-zip'
                       ? 'ZIP'
+                      : format === 'print'
+                        ? locale === 'zh-CN'
+                          ? '打印'
+                          : 'Print'
                       : format === 'clipboard'
                         ? locale === 'zh-CN'
                           ? '复制'

@@ -413,6 +413,10 @@ export const runExport = async (
       return { filename: `${baseName}.pdf`, format: 'pdf', parts }
     }
 
+    if (config.format === 'print') {
+      throw new Error('Print exports must use the native print workflow')
+    }
+
     if (config.format === 'clipboard') {
       const dataUrl = await domToPng(
         snapshot,

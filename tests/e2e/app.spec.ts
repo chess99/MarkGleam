@@ -265,8 +265,19 @@ test('keeps every image from a multi-file import', async ({ page }) => {
 test('opens export and exposes every free output format', async ({ page }) => {
   await page.getByRole('button', { name: '导出' }).first().click()
   await expect(page.getByRole('dialog')).toBeVisible()
-  for (const label of ['PNG', 'JPEG', 'WebP', 'SVG', 'PDF', '复制图片', '长图分片 ZIP']) {
-    await expect(page.getByRole('button', { name: label })).toBeVisible()
+  for (const label of [
+    'PNG',
+    'JPEG',
+    'WebP',
+    'SVG',
+    '视觉 PDF',
+    '打印 / 保存为 PDF',
+    '复制图片',
+    '长图分片 ZIP',
+  ]) {
+    await expect(
+      page.getByRole('button', { name: label, exact: true }),
+    ).toBeVisible()
   }
 })
 
@@ -600,7 +611,7 @@ test('exports an uploaded image from a hidden mobile preview and resets completi
   await page.getByRole('button', { name: 'JPEG' }).click()
   await expect(page.getByRole('button', { name: '下载' })).toBeVisible()
 
-  await page.getByRole('button', { name: 'PDF' }).click()
+  await page.getByRole('button', { name: '视觉 PDF' }).click()
   const [pdfDownload] = await Promise.all([
     page.waitForEvent('download'),
     page.locator('.export-now').click(),
@@ -632,7 +643,7 @@ test('exports an uploaded image from a hidden mobile preview and resets completi
 test('keeps PDF controls and download reachable on mobile', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.locator('.mobile-export').click()
-  await page.getByRole('button', { name: 'PDF' }).click()
+  await page.getByRole('button', { name: '视觉 PDF' }).click()
 
   const modalContent = page.locator('.modal-content')
   const dimensions = await modalContent.evaluate((element) => ({

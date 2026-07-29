@@ -4,13 +4,16 @@ import { defaultExport, useAppStore } from '../store'
 import { ExportDialog } from './ExportDialog'
 
 const exportMock = vi.hoisted(() => vi.fn())
+const printMock = vi.hoisted(() => vi.fn())
 
 vi.mock('../lib/export', () => ({ runExport: exportMock }))
+vi.mock('../lib/print', () => ({ runPrint: printMock }))
 vi.mock('../lib/analytics', () => ({ trackEvent: vi.fn() }))
 
 describe('ExportDialog', () => {
   beforeEach(() => {
     exportMock.mockReset()
+    printMock.mockReset()
     useAppStore.setState({
       markdown: '# Retry export',
       locale: 'en',
@@ -90,5 +93,40 @@ describe('ExportDialog', () => {
       expect(screen.getByRole('button', { name: 'Download' })).toBeEnabled(),
     )
     expect(onToast).not.toHaveBeenCalled()
+  })
+
+  it('opens the native print workflow with print-specific settings', async () => {
+    printMock.mockResolvedValue(undefined)
+    const surface = document.createElement('div')
+    const onToast = vi.fn()
+
+    const { container } = render(
+      <ExportDialog
+        surface={surface}
+        onClose={vi.fn()}
+        onToast={onToast}
+      />,
+    )
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Print / Save as PDF' }),
+    )
+    expect(screen.getByText('Print settings')).toBeInTheDocument()
+    expect(screen.queryByText('Resolution')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByLabelText('Preserve theme background'))
+    fireEvent.click(container.querySelector('.export-now') as HTMLButtonElement)
+
+    await waitFor(() =>
+      expect(printMock).toHaveBeenCalledWith(
+        surface,
+        expect.objectContaining({ format: 'print' }),
+        { preserveBackground: true },
+      ),
+    )
+    expect(exportMock).not.toHaveBeenCalled()
+    expect(onToast).toHaveBeenCalledWith(
+      'The browser print dialog opened. Choose a printer or Save as PDF.',
+    )
   })
 })

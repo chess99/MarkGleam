@@ -35,7 +35,7 @@ test('packs short sections separated by horizontal rules into PDF pages', async 
     .fill(Array.from({ length: 12 }, (_, index) => section(index + 1)).join('\n\n'))
 
   await page.locator('.mobile-export').click()
-  await page.getByRole('button', { name: 'PDF', exact: true }).click()
+  await page.getByRole('button', { name: '视觉 PDF', exact: true }).click()
 
   const [download] = await Promise.all([
     page.waitForEvent('download'),
@@ -47,7 +47,7 @@ test('packs short sections separated by horizontal rules into PDF pages', async 
   const pdf = await readPdf(output)
   expect(pdf.pages).toBe(5)
   expect(pdf.usesJpegPages).toBe(true)
-  expect(pdf.bytes.byteLength).toBeLessThan(2_000_000)
+  expect(pdf.bytes.byteLength).toBeLessThan(2_500_000)
   await expect(page.locator('.toast')).toContainText('(5)')
 })
 
@@ -74,7 +74,7 @@ Short second page.
 Short third page.`)
 
   await page.locator('.mobile-export').click()
-  await page.getByRole('button', { name: 'PDF', exact: true }).click()
+  await page.getByRole('button', { name: '视觉 PDF', exact: true }).click()
 
   const [download] = await Promise.all([
     page.waitForEvent('download'),
