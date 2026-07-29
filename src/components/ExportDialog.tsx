@@ -150,30 +150,42 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
         <section>
           <div className="section-heading">{t(locale, 'exportFormat')}</div>
           <div className="export-format-list">
-            {formatMeta.map(({ id, icon: Icon, label }) => (
-              <button
-                key={id}
-                type="button"
-                className={config.format === id ? 'active' : ''}
-                onClick={() => changeExport({ format: id })}
-              >
-                <Icon size={18} />
-                <span>
-                  {id === 'clipboard'
-                    ? t(locale, 'copyImage')
-                    : id === 'split-zip'
-                      ? locale === 'zh-CN'
-                        ? '长图分片 ZIP'
-                        : 'Sliced ZIP'
-                      : id === 'pdf'
-                        ? t(locale, 'visualPdf')
-                        : id === 'print'
-                          ? t(locale, 'printPdf')
-                          : label}
-                </span>
-                {config.format === id && <CheckCircle2 size={16} />}
-              </button>
-            ))}
+            {formatMeta.map(({ id, icon: Icon, label }) => {
+              const optionLabel =
+                id === 'clipboard'
+                  ? t(locale, 'copyImage')
+                  : id === 'split-zip'
+                    ? locale === 'zh-CN'
+                      ? '长图分片 ZIP'
+                      : 'Sliced ZIP'
+                    : id === 'pdf'
+                      ? t(locale, 'visualPdf')
+                      : id === 'print'
+                        ? t(locale, 'printPdf')
+                        : label
+              const optionSummary =
+                id === 'pdf'
+                  ? t(locale, 'visualPdfSummary')
+                  : id === 'print'
+                    ? t(locale, 'printPdfSummary')
+                    : undefined
+
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  className={config.format === id ? 'active' : ''}
+                  onClick={() => changeExport({ format: id })}
+                >
+                  <Icon size={18} />
+                  <span className="export-format-copy">
+                    <span>{optionLabel}</span>
+                    {optionSummary && <small>{optionSummary}</small>}
+                  </span>
+                  {config.format === id && <CheckCircle2 size={16} />}
+                </button>
+              )
+            })}
           </div>
         </section>
 

@@ -1488,6 +1488,23 @@ input[type="range"] {
   background: var(--coral-soft);
 }
 
+.export-format-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.export-format-copy small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.export-format-list button.active .export-format-copy small {
+  color: inherit;
+  opacity: 0.78;
+}
+
 .export-options {
   padding-left: 24px;
   border-left: 1px solid var(--line-soft);

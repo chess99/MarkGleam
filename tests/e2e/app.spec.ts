@@ -270,13 +270,13 @@ test('opens export and exposes every free output format', async ({ page }) => {
     'JPEG',
     'WebP',
     'SVG',
-    '视觉 PDF',
-    '打印 / 保存为 PDF',
+    '保留样式 PDF',
+    '打印 / 可搜索 PDF',
     '复制图片',
     '长图分片 ZIP',
   ]) {
     await expect(
-      page.getByRole('button', { name: label, exact: true }),
+      page.getByRole('button', { name: new RegExp(`^${label}`) }),
     ).toBeVisible()
   }
 })
@@ -611,7 +611,7 @@ test('exports an uploaded image from a hidden mobile preview and resets completi
   await page.getByRole('button', { name: 'JPEG' }).click()
   await expect(page.getByRole('button', { name: '下载' })).toBeVisible()
 
-  await page.getByRole('button', { name: '视觉 PDF' }).click()
+  await page.getByRole('button', { name: /保留样式 PDF/ }).click()
   const [pdfDownload] = await Promise.all([
     page.waitForEvent('download'),
     page.locator('.export-now').click(),
@@ -643,7 +643,7 @@ test('exports an uploaded image from a hidden mobile preview and resets completi
 test('keeps PDF controls and download reachable on mobile', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.locator('.mobile-export').click()
-  await page.getByRole('button', { name: '视觉 PDF' }).click()
+  await page.getByRole('button', { name: /保留样式 PDF/ }).click()
 
   const modalContent = page.locator('.modal-content')
   const dimensions = await modalContent.evaluate((element) => ({

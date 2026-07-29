@@ -20,7 +20,7 @@ test('opens a shareable bilingual changelog page', async ({ page }) => {
     page.getByRole('heading', { name: 'MD2IMG changelog' }),
   ).toBeVisible()
   await expect(page.getByText('2026-07-30')).toBeVisible()
-  await expect(page.getByText('Print / Save as PDF', { exact: false })).toBeVisible()
+  await expect(page.getByText('Print / Searchable PDF', { exact: false })).toBeVisible()
 
   await page.setViewportSize({ width: 320, height: 700 })
   await expect(page.getByRole('combobox')).toBeVisible()
@@ -56,7 +56,7 @@ More searchable text.`)
 
   await page.getByRole('button', { name: 'Export', exact: true }).click()
   await page
-    .getByRole('button', { name: 'Print / Save as PDF', exact: true })
+    .getByRole('button', { name: /Print \/ Searchable PDF/ })
     .first()
     .click()
   await page.locator('.export-now').click()

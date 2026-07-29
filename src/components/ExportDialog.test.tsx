@@ -109,7 +109,7 @@ describe('ExportDialog', () => {
     )
 
     fireEvent.click(
-      screen.getByRole('button', { name: 'Print / Save as PDF' }),
+      screen.getByRole('button', { name: /Print \/ Searchable PDF/ }),
     )
     expect(screen.getByText('Print settings')).toBeInTheDocument()
     expect(screen.queryByText('Resolution')).not.toBeInTheDocument()
@@ -128,5 +128,30 @@ describe('ExportDialog', () => {
     expect(onToast).toHaveBeenCalledWith(
       'The browser print dialog opened. Choose a printer or Save as PDF.',
     )
+  })
+
+  it('explains the two PDF outputs and the long-document tradeoff', () => {
+    useAppStore.setState({ locale: 'zh-CN' })
+
+    render(
+      <ExportDialog
+        surface={document.createElement('div')}
+        onClose={vi.fn()}
+        onToast={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByText('保留样式 PDF')).toBeInTheDocument()
+    expect(screen.getByText('还原当前预览；文字将转为图片')).toBeInTheDocument()
+    expect(screen.getByText('打印 / 可搜索 PDF')).toBeInTheDocument()
+    expect(screen.getByText('文字清晰可复制；适合纸张打印')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /保留样式 PDF/ }))
+    expect(
+      screen.getByLabelText('100 页以上优先快速导出（推荐）'),
+    ).toBeChecked()
+    expect(
+      screen.getByText(/关闭：保持上方清晰度和图片质量/),
+    ).toBeInTheDocument()
   })
 })
