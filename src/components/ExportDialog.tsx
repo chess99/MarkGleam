@@ -175,6 +175,7 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
                 <button
                   key={id}
                   type="button"
+                  data-format={id}
                   className={config.format === id ? 'active' : ''}
                   onClick={() => changeExport({ format: id })}
                 >

@@ -1887,6 +1887,26 @@ input[type="range"] {
     scroll-padding-bottom: 72px;
   }
 
+  .export-format-list button {
+    grid-template-columns: 20px minmax(0, 1fr) 16px;
+    gap: 6px;
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .export-format-list button[data-format="pdf"],
+  .export-format-list button[data-format="print"] {
+    min-height: 60px;
+    grid-column: 1 / -1;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .export-format-list button[data-format="pdf"] .export-format-copy > span,
+  .export-format-list button[data-format="print"] .export-format-copy > span {
+    white-space: nowrap;
+  }
+
   .preview-meta > span:first-child {
     display: none;
   }

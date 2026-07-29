@@ -663,6 +663,19 @@ test('exports an uploaded image from a hidden mobile preview and resets completi
 test('keeps PDF controls and download reachable on mobile', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.locator('.mobile-export').click()
+
+  const [pngBox, visualPdfBox, printPdfBox] = await Promise.all([
+    page.locator('[data-format="png"]').boundingBox(),
+    page.locator('[data-format="pdf"]').boundingBox(),
+    page.locator('[data-format="print"]').boundingBox(),
+  ])
+  expect(pngBox).not.toBeNull()
+  expect(visualPdfBox).not.toBeNull()
+  expect(printPdfBox).not.toBeNull()
+  expect(visualPdfBox?.width ?? 0).toBeGreaterThan((pngBox?.width ?? 0) * 1.8)
+  expect(printPdfBox?.width).toBeCloseTo(visualPdfBox?.width ?? 0, 0)
+  expect(printPdfBox?.x).toBeCloseTo(visualPdfBox?.x ?? 0, 0)
+
   await page.getByRole('button', { name: /保留样式 PDF/ }).click()
 
   const modalContent = page.locator('.modal-content')
