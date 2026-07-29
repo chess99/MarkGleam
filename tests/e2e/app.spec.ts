@@ -281,6 +281,26 @@ test('opens export and exposes every free output format', async ({ page }) => {
   }
 })
 
+test('keeps the desktop export dialog stable while switching formats', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 })
+  await page.getByRole('button', { name: '导出' }).first().click()
+
+  const modal = page.getByRole('dialog')
+  await page.getByRole('button', { name: 'JPEG', exact: true }).click()
+  const initialBox = await modal.boundingBox()
+  expect(initialBox).not.toBeNull()
+
+  for (const format of ['保留样式 PDF', '打印 / 可搜索 PDF', 'PNG']) {
+    await page.getByRole('button', { name: new RegExp(`^${format}`) }).click()
+    const box = await modal.boundingBox()
+    expect(box).not.toBeNull()
+    expect(box?.y).toBeCloseTo(initialBox?.y ?? 0, 0)
+    expect(box?.height).toBeCloseTo(initialBox?.height ?? 0, 0)
+  }
+})
+
 test('traps modal focus and restores it after closing', async ({ page }) => {
   const openButton = page.locator('.top-export')
   await openButton.press('Enter')

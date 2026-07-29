@@ -145,6 +145,7 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
       onClose={onClose}
       closeLabel={t(locale, 'close')}
       wide
+      stableHeight
     >
       <div className="export-dialog-grid">
         <section>

@@ -7,6 +7,7 @@ interface ModalProps {
   children: ReactNode
   wide?: boolean
   compact?: boolean
+  stableHeight?: boolean
   closeLabel?: string
 }
 
@@ -16,6 +17,7 @@ export function Modal({
   children,
   wide,
   compact,
+  stableHeight,
   closeLabel = 'Close',
 }: ModalProps) {
   const dialogRef = useRef<HTMLElement>(null)
@@ -74,7 +76,7 @@ export function Modal({
     >
       <section
         ref={dialogRef}
-        className={`modal ${wide ? 'modal-wide' : ''} ${compact ? 'modal-compact' : ''}`}
+        className={`modal ${wide ? 'modal-wide' : ''} ${compact ? 'modal-compact' : ''} ${stableHeight ? 'modal-stable-height' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}

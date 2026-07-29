@@ -1430,6 +1430,10 @@ input[type="range"] {
   width: min(820px, 100%);
 }
 
+.modal-stable-height {
+  height: min(760px, calc(100dvh - 48px));
+}
+
 .modal > header {
   flex: none;
   min-height: 58px;
