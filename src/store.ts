@@ -4,6 +4,7 @@ import { sampleMarkdown } from './data/sample'
 import { getTheme } from './data/themes'
 import { suggestFilename } from './lib/filename'
 import type {
+  Appearance,
   CanvasConfig,
   DocumentState,
   ExportConfig,
@@ -17,6 +18,7 @@ type PersistedDocumentState = Pick<
   DocumentState,
   | 'markdown'
   | 'locale'
+  | 'appearance'
   | 'themeId'
   | 'canvas'
   | 'export'
@@ -53,6 +55,7 @@ export const defaultExport: ExportConfig = {
 export const defaultDocumentState: DocumentState = {
   markdown: sampleMarkdown,
   locale: 'zh-CN',
+  appearance: 'light',
   themeId: 'paper',
   canvas: defaultCanvas,
   export: defaultExport,
@@ -66,6 +69,7 @@ export const defaultDocumentState: DocumentState = {
 interface AppStore extends DocumentState {
   setMarkdown: (markdown: string) => void
   setLocale: (locale: Locale) => void
+  setAppearance: (appearance: Appearance) => void
   setThemeId: (themeId: ThemeId) => void
   updateCanvas: (patch: Partial<CanvasConfig>) => void
   updateExport: (patch: Partial<ExportConfig>) => void
@@ -97,6 +101,7 @@ export const useAppStore = create<AppStore>()(
           }
         }),
       setLocale: (locale) => set({ locale }),
+      setAppearance: (appearance) => set({ appearance }),
       setThemeId: (themeId) =>
         set((state) => ({
           themeId,
@@ -158,6 +163,7 @@ export const useAppStore = create<AppStore>()(
       partialize: (state) => ({
         markdown: state.markdown,
         locale: state.locale,
+        appearance: state.appearance,
         themeId: state.themeId,
         canvas: state.canvas,
         export: state.export,

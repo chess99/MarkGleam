@@ -1,5 +1,7 @@
 export type Locale = 'zh-CN' | 'en'
 
+export type Appearance = 'light' | 'dark'
+
 export type MobilePane = 'editor' | 'preview' | 'settings'
 
 export type InspectorTab = 'theme' | 'canvas' | 'export'
@@ -81,6 +83,7 @@ export interface ExportConfig {
 export interface DocumentState {
   markdown: string
   locale: Locale
+  appearance: Appearance
   themeId: ThemeId
   canvas: CanvasConfig
   export: ExportConfig

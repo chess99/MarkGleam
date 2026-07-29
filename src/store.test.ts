@@ -6,6 +6,7 @@ describe('app store product state', () => {
   beforeEach(() => {
     useAppStore.setState({
       markdown: '# Current title',
+      appearance: 'light',
       themeId: 'paper',
       canvas: { ...defaultCanvas },
       export: { ...defaultExport, filename: 'custom-name' },
@@ -16,6 +17,15 @@ describe('app store product state', () => {
     useAppStore.getState().setThemeId('terminal')
     expect(useAppStore.getState().canvas.backgroundColor).toBe(
       getTheme('terminal').surface,
+    )
+  })
+
+  it('keeps interface appearance independent from the export theme', () => {
+    useAppStore.getState().setAppearance('dark')
+    expect(useAppStore.getState().appearance).toBe('dark')
+    expect(useAppStore.getState().themeId).toBe('paper')
+    expect(useAppStore.getState().canvas.backgroundColor).toBe(
+      getTheme('paper').surface,
     )
   })
 

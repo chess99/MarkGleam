@@ -37,7 +37,7 @@ export function EditorPane({
 }) {
   const markdown = useAppStore((state) => state.markdown)
   const locale = useAppStore((state) => state.locale)
-  const themeId = useAppStore((state) => state.themeId)
+  const appearance = useAppStore((state) => state.appearance)
   const setMarkdown = useAppStore((state) => state.setMarkdown)
   const resetDocument = useAppStore((state) => state.resetDocument)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -222,7 +222,7 @@ export function EditorPane({
             <DesktopMarkdownEditor
               value={markdown}
               onChange={setMarkdown}
-              dark={themeId === 'night' || themeId === 'terminal'}
+              dark={appearance === 'dark'}
             />
           </Suspense>
         )}

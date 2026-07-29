@@ -111,7 +111,7 @@ test('switches language, theme and persists preferences', async ({ page }) => {
   )
 })
 
-test('applies canvas background colors and keeps dark-mode toggling accurate', async ({
+test('keeps interface appearance independent from the export theme', async ({
   page,
 }) => {
   await page.getByRole('tab', { name: '画布' }).click()
@@ -123,10 +123,56 @@ test('applies canvas background colors and keeps dark-mode toggling accurate', a
 
   await page.getByRole('tab', { name: '主题' }).click()
   await page.getByRole('button', { name: 'Aa 终端' }).click()
-  const lightToggle = page.getByRole('button', { name: '切换到浅色主题' })
-  await expect(lightToggle).toBeVisible()
-  await lightToggle.click()
-  await expect(page.getByRole('button', { name: 'Aa 暖纸' })).toHaveAttribute(
+  const surface = page.getByTestId('export-surface')
+  await expect(surface).toHaveCSS('background-color', 'rgb(16, 23, 19)')
+  await expect(surface).toHaveCSS('color', 'rgb(216, 243, 223)')
+  const contentBefore = await surface.evaluate((element) => ({
+    color: getComputedStyle(element).color,
+    backgroundColor: getComputedStyle(element).backgroundColor,
+  }))
+
+  await page.getByRole('button', { name: '切换到深色界面' }).click()
+  await expect(page.locator('.app-shell')).toHaveAttribute(
+    'data-appearance',
+    'dark',
+  )
+  await expect(page.locator('.app-shell')).toHaveCSS(
+    'color',
+    'rgb(238, 241, 244)',
+  )
+  await expect(page.locator('.desktop-markdown-editor')).toHaveClass(
+    /cm-theme-dark/,
+  )
+  await expect(page.getByRole('button', { name: 'Aa 终端' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  expect(
+    await surface.evaluate((element) => ({
+      color: getComputedStyle(element).color,
+      backgroundColor: getComputedStyle(element).backgroundColor,
+    })),
+  ).toEqual(contentBefore)
+
+  await page.reload()
+  await expect(page.locator('.app-shell')).toHaveAttribute(
+    'data-appearance',
+    'dark',
+  )
+  await expect(page.getByRole('button', { name: 'Aa 终端' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+
+  await page.getByRole('button', { name: '切换到浅色界面' }).click()
+  await expect(page.locator('.app-shell')).toHaveAttribute(
+    'data-appearance',
+    'light',
+  )
+  await expect(page.locator('.desktop-markdown-editor')).toHaveClass(
+    /cm-theme-light/,
+  )
+  await expect(page.getByRole('button', { name: 'Aa 终端' })).toHaveAttribute(
     'aria-pressed',
     'true',
   )
@@ -414,6 +460,19 @@ test('keeps mobile language switching and native editor scrolling available', as
   await expect(language.locator('option')).toHaveCount(2)
   await language.selectOption('en')
   await expect(page.locator('.mobile-export')).toContainText('Export')
+
+  const mobileSurfaceColor = await page
+    .getByTestId('export-surface')
+    .evaluate((element) => getComputedStyle(element).backgroundColor)
+  await page.getByRole('button', { name: 'Switch to dark interface' }).click()
+  await expect(page.locator('.app-shell')).toHaveAttribute(
+    'data-appearance',
+    'dark',
+  )
+  await expect(page.getByTestId('export-surface')).toHaveCSS(
+    'background-color',
+    mobileSurfaceColor,
+  )
 
   await page
     .locator('.mobile-nav')

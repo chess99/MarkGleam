@@ -36,14 +36,14 @@ const ExportDialog = lazy(() =>
 function App() {
   const locale = useAppStore((state) => state.locale)
   const markdown = useAppStore((state) => state.markdown)
-  const themeId = useAppStore((state) => state.themeId)
+  const appearance = useAppStore((state) => state.appearance)
   const canvas = useAppStore((state) => state.canvas)
   const editorCollapsed = useAppStore((state) => state.editorCollapsed)
   const inspectorCollapsed = useAppStore((state) => state.inspectorCollapsed)
   const mobilePane = useAppStore((state) => state.mobilePane)
   const setLocale = useAppStore((state) => state.setLocale)
   const setMarkdown = useAppStore((state) => state.setMarkdown)
-  const setThemeId = useAppStore((state) => state.setThemeId)
+  const setAppearance = useAppStore((state) => state.setAppearance)
   const toggleEditor = useAppStore((state) => state.toggleEditor)
   const toggleInspector = useAppStore((state) => state.toggleInspector)
   const setMobilePane = useAppStore((state) => state.setMobilePane)
@@ -60,7 +60,7 @@ function App() {
     message: string
     kind: 'success' | 'error'
   }>()
-  const darkTheme = themeId === 'night' || themeId === 'terminal'
+  const darkAppearance = appearance === 'dark'
 
   const stats = useMemo(() => {
     const plain = markdown
@@ -150,7 +150,7 @@ function App() {
   ]
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-appearance={appearance}>
       <header className="topbar">
         <div className="brand">
           <span className="brand-mark" aria-hidden="true">
@@ -205,10 +205,15 @@ function App() {
           <button
             className="icon-button"
             type="button"
-            aria-label={darkTheme ? t(locale, 'lightTheme') : t(locale, 'darkTheme')}
-            onClick={() => setThemeId(darkTheme ? 'paper' : 'night')}
+            aria-label={
+              darkAppearance
+                ? t(locale, 'lightTheme')
+                : t(locale, 'darkTheme')
+            }
+            aria-pressed={darkAppearance}
+            onClick={() => setAppearance(darkAppearance ? 'light' : 'dark')}
           >
-            {darkTheme ? (
+            {darkAppearance ? (
               <Sun size={18} />
             ) : (
               <Moon size={18} />
