@@ -14,9 +14,9 @@ export default function DesktopMarkdownEditor({
 }: DesktopMarkdownEditorProps) {
   return (
     <CodeMirror
+      className="desktop-markdown-editor"
       value={value}
       height="100%"
-      minHeight="100%"
       extensions={[markdownLanguage()]}
       onChange={onChange}
       theme={dark ? 'dark' : 'light'}

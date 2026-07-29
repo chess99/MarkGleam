@@ -367,6 +367,35 @@ test('shows a useful remote-image fallback and still exports', async ({
   expect(download.suggestedFilename()).toBe('Remote-image.png')
 })
 
+test('keeps the desktop CodeMirror editor independently scrollable', async ({
+  page,
+}) => {
+  await page.locator('input[accept*=".md"]').first().setInputFiles({
+    name: 'desktop-scroll.md',
+    mimeType: 'text/markdown',
+    buffer: Buffer.from(
+      Array.from(
+        { length: 120 },
+        (_, index) => `Line ${index + 1}: desktop scrolling`,
+      ).join('\n'),
+    ),
+  })
+
+  const scroller = page.locator('.desktop-markdown-editor .cm-scroller')
+  await expect(scroller).toBeVisible()
+  const dimensions = await scroller.evaluate((element) => ({
+    height: element.clientHeight,
+    scrollHeight: element.scrollHeight,
+  }))
+  expect(dimensions.scrollHeight).toBeGreaterThan(dimensions.height)
+
+  await scroller.hover()
+  await page.mouse.wheel(0, 700)
+  await expect
+    .poll(() => scroller.evaluate((element) => element.scrollTop))
+    .toBeGreaterThan(0)
+})
+
 test('uses a mobile pane switcher', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   const mobileNav = page.locator('.mobile-nav')

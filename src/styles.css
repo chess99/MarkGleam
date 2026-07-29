@@ -306,9 +306,14 @@ select:focus-visible {
   background: #fffefa;
 }
 
-.editor-shell .cm-theme,
-.editor-shell .cm-editor {
+.desktop-markdown-editor,
+.desktop-markdown-editor .cm-editor {
   height: 100%;
+  min-height: 0;
+}
+
+.desktop-markdown-editor {
+  overflow: hidden;
 }
 
 .editor-shell .cm-editor {
@@ -317,6 +322,7 @@ select:focus-visible {
 }
 
 .editor-shell .cm-scroller {
+  height: 100%;
   overflow: auto;
   line-height: 1.72;
   padding: 10px 0 28px;
