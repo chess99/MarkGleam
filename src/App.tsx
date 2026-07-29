@@ -426,8 +426,8 @@ function App() {
               <ul>
                 <li>
                   {locale === 'zh-CN'
-                    ? '使用 --- 分隔内容时，PDF 与分片导出会优先从该处分页。'
-                    : 'Use --- to suggest a page break for PDF and sliced exports.'}
+                    ? '需要强制分页时，请单独一行输入 <!-- pagebreak -->；--- 会保留为普通分隔线。'
+                    : 'Use <!-- pagebreak --> on its own line to force a page break; --- remains a thematic break.'}
                 </li>
                 <li>
                   {locale === 'zh-CN'

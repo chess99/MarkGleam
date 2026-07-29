@@ -213,15 +213,15 @@ const getPageGroups = (
       Number.parseFloat(style.marginBottom || '0')
     )
   })
-  const preferredBreaks = new Set<number>()
+  const forcedBreaks = new Set<number>()
   children.forEach((child, index) => {
-    if (child.hasAttribute('data-page-break')) preferredBreaks.add(index)
+    if (child.hasAttribute('data-page-break')) forcedBreaks.add(index)
   })
 
   const availableHeight =
     maxContentHeight ??
     calculateSafePartHeight(config.splitHeight, config.scale)
-  return groupBlockHeights(heights, availableHeight, preferredBreaks)
+  return groupBlockHeights(heights, availableHeight, forcedBreaks)
 }
 
 const exportSplitZip = async (

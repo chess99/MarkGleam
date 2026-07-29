@@ -14,6 +14,11 @@ const section = (index: number) => `## ${index}. 下列关于示例知识点的�
 
 ---`
 
+const countPdfPages = async (path: string) => {
+  const bytes = await readFile(path)
+  return bytes.toString('latin1').match(/\/Type\s*\/Page\b/g)?.length ?? 0
+}
+
 test('packs short sections separated by horizontal rules into PDF pages', async ({
   page,
 }, testInfo) => {
@@ -29,13 +34,47 @@ test('packs short sections separated by horizontal rules into PDF pages', async 
 
   const [download] = await Promise.all([
     page.waitForEvent('download'),
-    page.getByRole('button', { name: '下载', exact: true }).click(),
+    page.locator('.export-now').click(),
   ])
   const output = testInfo.outputPath('packed-sections.pdf')
   await download.saveAs(output)
 
-  const bytes = await readFile(output)
-  const pageObjects = bytes.toString('latin1').match(/\/Type\s*\/Page\b/g) ?? []
-  expect(pageObjects).toHaveLength(6)
+  expect(await countPdfPages(output)).toBe(6)
   await expect(page.locator('.toast')).toContainText('(6)')
+})
+
+test('forces PDF pages only at explicit pagebreak comments', async ({
+  page,
+}, testInfo) => {
+  await page.goto('/')
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.getByRole('button', { name: 'Markdown', exact: true }).click()
+  await page.locator('.mobile-markdown-editor').fill(`# Page 1
+
+Short first page.
+
+<!-- pagebreak -->
+
+# Page 2
+
+Short second page.
+
+<!-- pagebreak -->
+
+# Page 3
+
+Short third page.`)
+
+  await page.locator('.mobile-export').click()
+  await page.getByRole('button', { name: 'PDF', exact: true }).click()
+
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.locator('.export-now').click(),
+  ])
+  const output = testInfo.outputPath('explicit-pagebreaks.pdf')
+  await download.saveAs(output)
+
+  expect(await countPdfPages(output)).toBe(3)
+  await expect(page.locator('.toast')).toContainText('(3)')
 })

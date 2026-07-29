@@ -4,56 +4,34 @@ export interface PageGroup {
   height: number
 }
 
-const MIN_PREFERRED_BREAK_FILL = 0.72
-
 export const groupBlockHeights = (
   heights: number[],
   maxHeight: number,
-  preferredBreaks = new Set<number>(),
+  forcedBreaks = new Set<number>(),
 ): PageGroup[] => {
   if (heights.length === 0) return []
 
   const groups: PageGroup[] = []
   let start = 0
   let height = 0
-  let preferredBreak: number | undefined
-  let heightAtPreferredBreak = 0
 
   heights.forEach((blockHeight, index) => {
-    if (preferredBreaks.has(index)) {
-      if (height >= maxHeight * MIN_PREFERRED_BREAK_FILL) {
-        preferredBreak = index
-        heightAtPreferredBreak = height
+    if (forcedBreaks.has(index)) {
+      if (index > start && height > 0) {
+        groups.push({ start, end: index, height })
       }
+      start = index + 1
+      height = 0
       return
     }
 
     const measuredHeight = Math.max(1, blockHeight)
     const exceeds = height > 0 && height + measuredHeight > maxHeight
 
-    if (exceeds) {
-      if (
-        preferredBreak !== undefined &&
-        preferredBreak >= start &&
-        heightAtPreferredBreak > 0
-      ) {
-        groups.push({
-          start,
-          end: preferredBreak,
-          height: heightAtPreferredBreak,
-        })
-        start = preferredBreak + 1
-        height -= heightAtPreferredBreak
-      }
-
-      if (height > 0 && height + measuredHeight > maxHeight) {
-        groups.push({ start, end: index, height })
-        start = index
-        height = 0
-      }
-
-      preferredBreak = undefined
-      heightAtPreferredBreak = 0
+    if (exceeds && index > start) {
+      groups.push({ start, end: index, height })
+      start = index
+      height = 0
     }
 
     height += measuredHeight

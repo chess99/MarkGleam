@@ -857,6 +857,10 @@ select:focus-visible {
   background: var(--theme-border);
 }
 
+.markdown-body > [data-page-break] {
+  display: none;
+}
+
 .markdown-body img {
   display: block;
   max-width: 100%;

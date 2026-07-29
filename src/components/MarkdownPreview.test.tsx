@@ -53,6 +53,22 @@ describe('MarkdownPreview', () => {
     expect(document.querySelector('.markdown-body b')).not.toBeInTheDocument()
   })
 
+  it('keeps thematic breaks visible and recognizes explicit page breaks', () => {
+    useAppStore.setState({
+      markdown: 'First\n\n---\n\nSecond\n\n<!-- pagebreak -->\n\nThird',
+    })
+    const surfaceRef = createRef<HTMLDivElement>()
+    render(<MarkdownPreview surfaceRef={surfaceRef} />)
+
+    const body = document.querySelector('.markdown-body')
+    expect(body?.querySelectorAll('hr')).toHaveLength(1)
+    expect(body?.querySelector('[data-page-break]')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    )
+    expect(screen.getByText('Third')).toBeInTheDocument()
+  })
+
   it('keeps Mermaid mounted when the preview rerenders', () => {
     useAppStore.setState({
       markdown: '```mermaid\ngraph TD\n  A --> B\n```',

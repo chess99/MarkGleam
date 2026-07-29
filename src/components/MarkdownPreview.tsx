@@ -12,6 +12,7 @@ import type { Components } from 'react-markdown'
 import { getTheme } from '../data/themes'
 import { loadAssetUrl } from '../lib/assets'
 import { scopeCustomCss } from '../lib/css'
+import { remarkPageBreak } from '../lib/pagebreak'
 import { useAppStore } from '../store'
 import { AssetImage } from './AssetImage'
 import { MermaidBlock } from './MermaidBlock'
@@ -22,7 +23,7 @@ interface MarkdownPreviewProps {
   onHeightChange?: (height: number) => void
 }
 
-const remarkPlugins = [remarkGfm, remarkMath]
+const remarkPlugins = [remarkPageBreak, remarkGfm, remarkMath]
 type RehypePlugin = NonNullable<
   ComponentProps<typeof ReactMarkdown>['rehypePlugins']
 >[number]
@@ -38,7 +39,6 @@ const markdownUrlTransform = (url: string) =>
 
 const markdownComponents = {
   img: AssetImage,
-  hr: () => <hr data-page-break />,
   code({ className, children, ...props }) {
     const language = /language-([\w-]+)/.exec(className ?? '')?.[1]
     const content = String(children).replace(/\n$/, '')
