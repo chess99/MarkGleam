@@ -9,7 +9,11 @@ import {
 import type { ExportConfig, ExportFormat, ExportResult } from '../types'
 import { assetToBlob, getAsset } from './assets'
 import { sanitizeFilename } from './css'
-import { calculateSafePartHeight, groupBlockHeights } from './pagination'
+import {
+  calculatePageContentHeight,
+  calculateSafePartHeight,
+  groupBlockHeights,
+} from './pagination'
 
 const MAX_CANVAS_PIXELS = 64_000_000
 
@@ -195,7 +199,7 @@ const createSegment = (
 const getPageGroups = (
   surface: HTMLElement,
   config: ExportConfig,
-  usePaperHeight = false,
+  maxContentHeight?: number,
 ) => {
   const content = surface.querySelector<HTMLElement>('[data-export-content]')
   if (!content) return []
@@ -209,19 +213,15 @@ const getPageGroups = (
       Number.parseFloat(style.marginBottom || '0')
     )
   })
-  const forcedBreaks = new Set<number>()
+  const preferredBreaks = new Set<number>()
   children.forEach((child, index) => {
-    if (child.hasAttribute('data-page-break')) forcedBreaks.add(index)
+    if (child.hasAttribute('data-page-break')) preferredBreaks.add(index)
   })
 
-  const paperRatio =
-    config.pdfSize === 'a4' ? 297 / 210 : 11 / 8.5
-  const orientedRatio =
-    config.pdfOrientation === 'portrait' ? paperRatio : 1 / paperRatio
-  const availableHeight = usePaperHeight
-    ? Math.max(640, surface.clientWidth * orientedRatio - 160)
-    : calculateSafePartHeight(config.splitHeight, config.scale)
-  return groupBlockHeights(heights, availableHeight, forcedBreaks)
+  const availableHeight =
+    maxContentHeight ??
+    calculateSafePartHeight(config.splitHeight, config.scale)
+  return groupBlockHeights(heights, availableHeight, preferredBreaks)
 }
 
 const exportSplitZip = async (
@@ -270,7 +270,17 @@ const exportPdf = async (
   const pageHeight = pdf.internal.pageSize.getHeight()
   const imageWidth = pageWidth - config.pdfMargin * 2
   const imageHeight = pageHeight - config.pdfMargin * 2
-  const groups = getPageGroups(surface, config, true)
+  const surfaceStyle = getComputedStyle(surface)
+  const verticalPadding =
+    Number.parseFloat(surfaceStyle.paddingTop || '0') +
+    Number.parseFloat(surfaceStyle.paddingBottom || '0')
+  const maxContentHeight = calculatePageContentHeight(
+    surface.clientWidth,
+    verticalPadding,
+    imageWidth,
+    imageHeight,
+  )
+  const groups = getPageGroups(surface, config, maxContentHeight)
   const pages = groups.length > 0 ? groups : [{ start: 0, end: 9999, height: 0 }]
 
   for (let index = 0; index < pages.length; index += 1) {
