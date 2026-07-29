@@ -49,10 +49,23 @@ Searchable native text.
 
 More searchable text.`)
   await page.evaluate(() => {
+    const externalFixedElement = document.createElement('div')
+    externalFixedElement.dataset.testExternalPrintElement = 'true'
+    externalFixedElement.textContent = 'Injected browser helper'
+    Object.assign(externalFixedElement.style, {
+      position: 'fixed',
+      left: '0',
+      bottom: '-40px',
+    })
+    document.body.append(externalFixedElement)
+
     window.print = () => {
       document.documentElement.dataset.printCalled = 'true'
     }
   })
+  await expect(
+    page.locator('[data-test-external-print-element]'),
+  ).toBeVisible()
 
   await page.getByRole('button', { name: 'Export', exact: true }).click()
   await page
@@ -68,6 +81,9 @@ More searchable text.`)
 
   await page.emulateMedia({ media: 'print' })
   await expect(page.locator('#root')).toHaveCSS('display', 'none')
+  await expect(
+    page.locator('[data-test-external-print-element]'),
+  ).toHaveCSS('display', 'none')
   await expect(printHost).toHaveCSS('display', 'block')
   await expect(printHost.locator('[data-page-break]')).toHaveCSS(
     'break-before',

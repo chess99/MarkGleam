@@ -2099,7 +2099,7 @@ input[type="range"] {
     margin: 0 !important;
   }
 
-  body > #root {
+  body > :not(.md2img-print-root) {
     display: none !important;
   }
 
