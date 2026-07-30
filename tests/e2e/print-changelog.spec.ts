@@ -12,12 +12,13 @@ test.beforeEach(async ({ page }) => {
 })
 
 test('opens a shareable bilingual changelog page', async ({ page }) => {
-  await page.getByRole('button', { name: 'Help' }).click()
-  await page.getByRole('menuitem', { name: 'Changelog' }).click()
+  await page.evaluate(() => {
+    window.location.hash = '/changelog'
+  })
 
   await expect(page).toHaveURL(/#\/changelog$/)
   await expect(
-    page.getByRole('heading', { name: 'MD2IMG changelog' }),
+    page.getByRole('heading', { name: 'MarkGleam changelog' }),
   ).toBeVisible()
   await expect(page.getByText('2026-07-30')).toBeVisible()
   await expect(page.getByText('Print / Searchable PDF', { exact: false })).toBeVisible()

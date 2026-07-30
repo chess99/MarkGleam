@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://md2img.cearl.cc/sitemap.xml
+Sitemap: https://markgleam.com/sitemap.xml

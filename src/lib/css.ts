@@ -1,17 +1,33 @@
-const EXPORT_SCOPE = '#md2img-export-surface'
+const EXPORT_SCOPE =
+  '[data-markgleam-export-surface] [data-export-content]'
 
-const prefixSelectors = (selectorList: string) =>
-  selectorList
+const BLOCKED_SELECTOR_PATTERN =
+  /(?:data-markgleam-export-surface|data-export-(?:content|signature))/i
+
+const prefixSelectors = (selectorList: string) => {
+  const selectors = selectorList
     .split(',')
-    .map((selector) => {
-      const trimmed = selector.trim()
-      if (!trimmed) return ''
-      if (trimmed.startsWith(EXPORT_SCOPE)) return trimmed
-      if ([':root', 'html', 'body'].includes(trimmed)) return EXPORT_SCOPE
-      return `${EXPORT_SCOPE} ${trimmed}`
-    })
+    .map((selector) => selector.trim())
     .filter(Boolean)
+
+  if (
+    selectors.length === 0 ||
+    selectors.some(
+      (selector) =>
+        /^[>+~&]/.test(selector) || BLOCKED_SELECTOR_PATTERN.test(selector),
+    )
+  ) {
+    return ''
+  }
+
+  return selectors
+    .map((selector) =>
+      [':root', 'html', 'body'].includes(selector)
+        ? EXPORT_SCOPE
+        : `${EXPORT_SCOPE} ${selector}`,
+    )
     .join(', ')
+}
 
 const scopeCssBlock = (css: string): string => {
   let output = ''
@@ -20,7 +36,10 @@ const scopeCssBlock = (css: string): string => {
   while (cursor < css.length) {
     const open = css.indexOf('{', cursor)
     if (open === -1) {
-      output += css.slice(cursor)
+      const remainder = css.slice(cursor)
+      output += remainder.trim().startsWith('@')
+        ? '/* Unsupported custom CSS rule was ignored. */'
+        : remainder
       break
     }
 
@@ -56,10 +75,20 @@ const scopeCssBlock = (css: string): string => {
       lowerPrelude.startsWith('@layer')
     ) {
       output += `${prelude}{${scopeCssBlock(body)}}`
-    } else if (prelude.startsWith('@')) {
+    } else if (
+      lowerPrelude.startsWith('@font-face') ||
+      lowerPrelude.startsWith('@keyframes') ||
+      lowerPrelude.startsWith('@-webkit-keyframes') ||
+      lowerPrelude.startsWith('@property')
+    ) {
       output += `${prelude}{${body}}`
+    } else if (prelude.startsWith('@')) {
+      output += '/* Unsupported custom CSS rule was ignored. */'
     } else {
-      output += `${prefixSelectors(prelude)}{${body}}`
+      const selectors = prefixSelectors(prelude)
+      output += selectors
+        ? `${selectors}{${body}}`
+        : '/* Unsafe custom CSS selector was ignored. */'
     }
     cursor = index
   }
@@ -68,10 +97,15 @@ const scopeCssBlock = (css: string): string => {
 
 export const scopeCustomCss = async (css: string) => {
   if (!css.trim()) return ''
-  return scopeCssBlock(css)
+  const withoutComments = css.replace(/\/\*[\s\S]*?\*\//g, '')
+  const withoutExternalRules = withoutComments.replace(
+    /@(charset|import|namespace)\b[^;{}]*;/gi,
+    '',
+  )
+  return scopeCssBlock(withoutExternalRules)
 }
 
-export const sanitizeFilename = (filename: string, fallback = 'md2img') => {
+export const sanitizeFilename = (filename: string, fallback = 'markgleam') => {
   const sanitized = filename
     .trim()
     .replace(/[<>:"/\\|?*]/g, '-')

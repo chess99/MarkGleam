@@ -17,6 +17,7 @@ import type {
   InspectorTab,
   Locale,
   MobilePane,
+  SignatureConfig,
   ToolId,
   ThemeId,
 } from './types'
@@ -31,6 +32,7 @@ type PersistedDocumentState = Pick<
   | 'appearance'
   | 'themeId'
   | 'canvas'
+  | 'signature'
   | 'export'
   | 'customCss'
   | 'editorCollapsed'
@@ -55,7 +57,7 @@ export const defaultExport: ExportConfig = {
   format: 'png',
   scale: 2,
   quality: 0.92,
-  filename: 'md2img',
+  filename: 'markgleam',
   pdfSize: 'a4',
   pdfOrientation: 'portrait',
   pdfMargin: 12,
@@ -65,8 +67,13 @@ export const defaultExport: ExportConfig = {
   splitHeight: 4096,
 }
 
+export const defaultSignature: SignatureConfig = {
+  style: 'camera',
+  tone: 'subtle',
+}
+
 export const defaultDocumentState: DocumentState = {
-  toolId: 'markdown-to-image',
+  toolId: 'visual-workspace',
   inputKind: 'markdown',
   drafts: createToolDrafts(),
   markdown: sampleMarkdown,
@@ -75,6 +82,7 @@ export const defaultDocumentState: DocumentState = {
   appearance: 'light',
   themeId: 'paper',
   canvas: defaultCanvas,
+  signature: defaultSignature,
   export: defaultExport,
   customCss: '',
   editorCollapsed: false,
@@ -92,6 +100,7 @@ interface AppStore extends DocumentState {
   setAppearance: (appearance: Appearance) => void
   setThemeId: (themeId: ThemeId) => void
   updateCanvas: (patch: Partial<CanvasConfig>) => void
+  updateSignature: (patch: Partial<SignatureConfig>) => void
   updateExport: (patch: Partial<ExportConfig>) => void
   setCustomCss: (customCss: string) => void
   toggleEditor: () => void
@@ -119,6 +128,7 @@ export const useAppStore = create<AppStore>()(
           const shouldRefreshFilename =
             !state.export.filename.trim() ||
             state.export.filename === 'md2img' ||
+            state.export.filename === 'markgleam' ||
             state.export.filename === currentSuggestion
           return {
             markdown,
@@ -144,6 +154,8 @@ export const useAppStore = create<AppStore>()(
         })),
       updateCanvas: (patch) =>
         set((state) => ({ canvas: { ...state.canvas, ...patch } })),
+      updateSignature: (patch) =>
+        set((state) => ({ signature: { ...state.signature, ...patch } })),
       updateExport: (patch) =>
         set((state) => ({ export: { ...state.export, ...patch } })),
       setCustomCss: (customCss) => set({ customCss }),
@@ -170,6 +182,7 @@ export const useAppStore = create<AppStore>()(
           ...state,
           themeId: defaultDocumentState.themeId,
           canvas: { ...defaultCanvas },
+          signature: { ...defaultSignature },
           export: {
             ...defaultExport,
             filename: suggestFilename(state.markdown),
@@ -179,7 +192,7 @@ export const useAppStore = create<AppStore>()(
     }),
     {
       name: 'md2img-state-v1',
-      version: 3,
+      version: 4,
       migrate: (persisted, version) => {
         const saved = persisted as PersistedDocumentState
         let migrated: PersistedDocumentState = saved
@@ -205,6 +218,19 @@ export const useAppStore = create<AppStore>()(
             codeLanguage: 'typescript',
           }
         }
+        if (version < 4) {
+          migrated = {
+            ...migrated,
+            signature: defaultSignature,
+            export: {
+              ...migrated.export,
+              filename:
+                migrated.export?.filename === 'md2img'
+                  ? 'markgleam'
+                  : migrated.export?.filename ?? defaultExport.filename,
+            },
+          }
+        }
         return migrated
       },
       partialize: (state) => ({
@@ -216,6 +242,7 @@ export const useAppStore = create<AppStore>()(
         appearance: state.appearance,
         themeId: state.themeId,
         canvas: state.canvas,
+        signature: state.signature,
         export: state.export,
         customCss: state.customCss,
         editorCollapsed: state.editorCollapsed,
@@ -228,6 +255,7 @@ export const useAppStore = create<AppStore>()(
           ...saved,
           drafts: { ...current.drafts, ...saved.drafts },
           canvas: { ...current.canvas, ...saved.canvas },
+          signature: { ...current.signature, ...saved.signature },
           export: { ...current.export, ...saved.export },
         }
       },

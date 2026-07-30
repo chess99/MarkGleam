@@ -17,6 +17,7 @@ import { useAppStore } from '../store'
 import type { InputKind } from '../types'
 import { AssetImage } from './AssetImage'
 import { CodePreview } from './CodePreview'
+import { ExportSignature } from './ExportSignature'
 import { FormulaPreview } from './FormulaPreview'
 import { MermaidBlock } from './MermaidBlock'
 
@@ -77,6 +78,8 @@ export function MarkdownPreview({
   const codeLanguage = explicitCodeLanguage ?? storedCodeLanguage
   const themeId = useAppStore((state) => state.themeId)
   const canvas = useAppStore((state) => state.canvas)
+  const signature = useAppStore((state) => state.signature)
+  const locale = useAppStore((state) => state.locale)
   const customCss = useAppStore((state) => state.customCss)
   const containerRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(1)
@@ -174,7 +177,7 @@ export function MarkdownPreview({
           return
         }
         fontUrl = url
-        fontFace = new FontFace('MD2IMG Custom', `url(${url})`)
+        fontFace = new FontFace('MarkGleam Custom', `url(${url})`)
         await fontFace.load()
         if (active) document.fonts.add(fontFace)
       })
@@ -220,10 +223,10 @@ export function MarkdownPreview({
     '--theme-border': theme.border,
     '--theme-code': theme.codeBackground,
     '--theme-heading-font': canvas.customFontAssetId
-      ? '"MD2IMG Custom", sans-serif'
+      ? '"MarkGleam Custom", sans-serif'
       : theme.headingFont,
     '--theme-body-font': canvas.customFontAssetId
-      ? '"MD2IMG Custom", sans-serif'
+      ? '"MarkGleam Custom", sans-serif'
       : theme.bodyFont,
     '--content-font-size': `${canvas.fontSize}px`,
     '--content-line-height': canvas.lineHeight,
@@ -261,6 +264,7 @@ export function MarkdownPreview({
             className={`export-surface ${canvas.shadow ? 'has-shadow' : ''}`}
             style={style}
             data-testid="export-surface"
+            data-markgleam-export-surface
             data-input-kind={inputKind}
             data-md2img-background-asset-id={canvas.backgroundAssetId}
           >
@@ -286,6 +290,17 @@ export function MarkdownPreview({
                 <CodePreview code={markdown} language={codeLanguage} />
               )}
             </article>
+            <ExportSignature
+              config={signature}
+              inputKind={inputKind}
+              locale={locale}
+              themeId={themeId}
+              canvasWidth={canvas.width}
+              contentWidth={Math.max(0, canvas.width - canvas.paddingX * 2)}
+              backgroundColor={canvas.backgroundColor}
+              hasBackgroundImage={Boolean(backgroundUrl)}
+              transparent={canvas.transparent}
+            />
           </div>
         </div>
       </div>

@@ -8,6 +8,8 @@ import type {
   CanvasPreset,
   ExportFormat,
   InspectorTab,
+  SignatureStyle,
+  SignatureTone,
   ThemeId,
 } from '../types'
 import { Field } from './Field'
@@ -59,11 +61,13 @@ export function Inspector({
   const locale = useAppStore((state) => state.locale)
   const themeId = useAppStore((state) => state.themeId)
   const canvas = useAppStore((state) => state.canvas)
+  const signature = useAppStore((state) => state.signature)
   const exportConfig = useAppStore((state) => state.export)
   const customCss = useAppStore((state) => state.customCss)
   const activeTab = useAppStore((state) => state.inspectorTab)
   const setThemeId = useAppStore((state) => state.setThemeId)
   const updateCanvas = useAppStore((state) => state.updateCanvas)
+  const updateSignature = useAppStore((state) => state.updateSignature)
   const updateExport = useAppStore((state) => state.updateExport)
   const setCustomCss = useAppStore((state) => state.setCustomCss)
   const setInspectorTab = useAppStore((state) => state.setInspectorTab)
@@ -320,6 +324,54 @@ export function Inspector({
                   <X size={13} /> {t(locale, 'remove')}
                 </button>
               )}
+            </section>
+
+            <section className="control-section signature-controls">
+              <div className="section-heading">{t(locale, 'signature')}</div>
+              <p className="signature-hint">{t(locale, 'signatureHint')}</p>
+              <div className="signature-style-grid">
+                {(
+                  [
+                    ['minimal', 'signatureMinimal'],
+                    ['camera', 'signatureCamera'],
+                    ['stamp', 'signatureStamp'],
+                  ] as const
+                ).map(([style, label]) => (
+                  <button
+                    key={style}
+                    type="button"
+                    className={signature.style === style ? 'active' : ''}
+                    aria-pressed={signature.style === style}
+                    onClick={() =>
+                      updateSignature({ style: style as SignatureStyle })
+                    }
+                  >
+                    {t(locale, label)}
+                  </button>
+                ))}
+              </div>
+              <Field label={t(locale, 'signatureTone')}>
+                <div className="segmented">
+                  {(
+                    [
+                      ['subtle', 'signatureSubtle'],
+                      ['solid', 'signatureSolid'],
+                    ] as const
+                  ).map(([tone, label]) => (
+                    <button
+                      key={tone}
+                      type="button"
+                      className={signature.tone === tone ? 'active' : ''}
+                      aria-pressed={signature.tone === tone}
+                      onClick={() =>
+                        updateSignature({ tone: tone as SignatureTone })
+                      }
+                    >
+                      {t(locale, label)}
+                    </button>
+                  ))}
+                </div>
+              </Field>
             </section>
 
             <section className="control-section">

@@ -12,7 +12,7 @@ export const toolSamples: ToolDrafts = {
   code: `const idea = "Markdown"
 const image = await render(idea, {
   format: "png",
-  watermark: false,
+  scale: 2,
 })`,
 }
 

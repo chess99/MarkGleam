@@ -14,7 +14,7 @@ const toPlainText = (markdown: string) =>
     .replace(/\s+/g, ' ')
     .trim()
 
-export const suggestFilename = (markdown: string, fallback = 'md2img') => {
+export const suggestFilename = (markdown: string, fallback = 'markgleam') => {
   const content = stripFrontmatter(markdown).trimStart()
   const firstLine = content.split(/\r?\n/, 1)[0]?.trim() ?? ''
   const heading = firstLine.match(/^#\s+(.+?)(?:\s+#+)?$/)?.[1]

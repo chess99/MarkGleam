@@ -2,7 +2,7 @@ const GOOGLE_MEASUREMENT_ID =
   import.meta.env.VITE_GOOGLE_MEASUREMENT_ID || 'G-XRTY7G7G3Y'
 const BAIDU_SITE_ID =
   import.meta.env.VITE_BAIDU_ANALYTICS_ID ||
-  '771a2878fa58bca1d5d31f597f9315be'
+  '4c713833827d4fad6f6bc4800c163cee'
 
 type AnalyticsValue = string | number | boolean
 type AnalyticsProperties = Record<string, AnalyticsValue>

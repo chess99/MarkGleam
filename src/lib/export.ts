@@ -6,6 +6,7 @@ import {
   domToSvg,
   domToWebp,
 } from 'modern-screenshot'
+import { PRODUCT, requiresExportSignature } from '../config/product'
 import type { ExportConfig, ExportFormat, ExportResult } from '../types'
 import { assetToBlob, getAsset } from './assets'
 import { sanitizeFilename } from './css'
@@ -244,6 +245,7 @@ export const createSegment = (
   start: number,
   end: number,
   minHeight = 0,
+  includeSignature = true,
 ): HTMLElement => {
   const sourceContent = surface.querySelector<HTMLElement>('[data-export-content]')
   if (!sourceContent) throw new Error('Export content is missing')
@@ -256,6 +258,13 @@ export const createSegment = (
 
   surface.childNodes.forEach((node) => {
     if (node !== sourceContent) {
+      if (
+        !includeSignature &&
+        node instanceof HTMLElement &&
+        node.hasAttribute('data-export-signature')
+      ) {
+        return
+      }
       clone.append(node.cloneNode(true))
       return
     }
@@ -301,6 +310,41 @@ const getPageGroups = (
   return groupBlockHeights(heights, availableHeight, forcedBreaks, gapsBefore)
 }
 
+export const calculateSplitContentBudget = (
+  safePartHeight: number,
+  verticalPadding: number,
+  signatureOuterHeight: number,
+) =>
+  Math.max(
+    1,
+    Math.floor(safePartHeight - verticalPadding - signatureOuterHeight),
+  )
+
+const getSplitContentBudget = (
+  surface: HTMLElement,
+  config: ExportConfig,
+) => {
+  const surfaceStyle = getComputedStyle(surface)
+  const verticalPadding =
+    Number.parseFloat(surfaceStyle.paddingTop || '0') +
+    Number.parseFloat(surfaceStyle.paddingBottom || '0')
+  const signature = surface.querySelector<HTMLElement>(
+    '[data-export-signature]',
+  )
+  const signatureStyle = signature ? getComputedStyle(signature) : undefined
+  const signatureOuterHeight = signature
+    ? signature.offsetHeight +
+      Number.parseFloat(signatureStyle?.marginTop || '0') +
+      Number.parseFloat(signatureStyle?.marginBottom || '0')
+    : 0
+
+  return calculateSplitContentBudget(
+    calculateSafePartHeight(config.splitHeight, config.scale),
+    verticalPadding,
+    signatureOuterHeight,
+  )
+}
+
 export const decoratePdfSegment = (
   segment: HTMLElement,
   config: ExportConfig,
@@ -311,10 +355,15 @@ export const decoratePdfSegment = (
     const customText =
       position === 'header' ? config.pdfHeader.trim() : config.pdfFooter.trim()
     const showPageNumber = position === 'footer' && config.pdfPageNumbers
-    if (!customText && !showPageNumber) return
+    const showBrandSignature =
+      position === 'footer' && requiresExportSignature()
+    if (!customText && !showPageNumber && !showBrandSignature) return
 
     const decoration = document.createElement('div')
     decoration.dataset.md2imgPdfDecoration = position
+    if (showBrandSignature) {
+      decoration.dataset.exportSignature = 'pdf'
+    }
     decoration.style.display = 'flex'
     decoration.style.alignItems = 'center'
     decoration.style.justifyContent = 'space-between'
@@ -333,6 +382,12 @@ export const decoratePdfSegment = (
     const text = document.createElement('span')
     text.textContent = customText
     decoration.append(text)
+    if (showBrandSignature) {
+      const brand = document.createElement('span')
+      brand.textContent = `Made with ${PRODUCT.name} · ${PRODUCT.domain}`
+      brand.style.marginLeft = customText ? 'auto' : '0'
+      decoration.append(brand)
+    }
     if (showPageNumber) {
       const page = document.createElement('span')
       page.textContent = `${pageNumber} / ${pageCount}`
@@ -354,7 +409,11 @@ const exportSplitZip = async (
   baseName: string,
   options: RunExportOptions,
 ) => {
-  const groups = getPageGroups(surface, config)
+  const groups = getPageGroups(
+    surface,
+    config,
+    getSplitContentBudget(surface, config),
+  )
   const parts =
     groups.length > 0 ? groups : [{ start: 0, end: 9999, height: 0 }]
 
@@ -363,7 +422,13 @@ const exportSplitZip = async (
   for (let index = 0; index < parts.length; index += 1) {
     throwIfAborted(options.signal)
     const group = parts[index]
-    const segment = createSegment(surface, group.start, group.end)
+    const segment = createSegment(
+      surface,
+      group.start,
+      group.end,
+      0,
+      index === parts.length - 1,
+    )
     try {
       await waitForRenderReady(segment)
       const dataUrl = await domToPng(segment, screenshotOptions(segment, config))
@@ -408,7 +473,11 @@ const exportPdf = async (
     Number.parseFloat(surfaceStyle.paddingBottom || '0')
   const decorationHeight =
     (config.pdfHeader.trim() ? 44 : 0) +
-    (config.pdfFooter.trim() || config.pdfPageNumbers ? 44 : 0)
+    (config.pdfFooter.trim() ||
+    config.pdfPageNumbers ||
+    requiresExportSignature()
+      ? 44
+      : 0)
   const maxContentHeight = Math.max(
     120,
     calculatePageContentHeight(
@@ -438,6 +507,7 @@ const exportPdf = async (
       page.start,
       page.end,
       minPageSurfaceHeight,
+      false,
     )
     try {
       decoratePdfSegment(segment, config, index + 1, pages.length)

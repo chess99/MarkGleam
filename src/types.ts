@@ -1,6 +1,7 @@
 export type Locale = 'zh-CN' | 'en'
 
 export type ToolId =
+  | 'visual-workspace'
   | 'markdown-to-image'
   | 'markdown-long-image'
   | 'markdown-to-pdf'
@@ -55,6 +56,14 @@ export type ExportFormat =
 
 export type PdfSize = 'a4' | 'letter'
 export type PdfOrientation = 'portrait' | 'landscape'
+
+export type SignatureStyle = 'minimal' | 'camera' | 'stamp'
+export type SignatureTone = 'subtle' | 'solid'
+
+export interface SignatureConfig {
+  style: SignatureStyle
+  tone: SignatureTone
+}
 
 export interface ThemeConfig {
   id: ThemeId
@@ -111,6 +120,7 @@ export interface DocumentState {
   appearance: Appearance
   themeId: ThemeId
   canvas: CanvasConfig
+  signature: SignatureConfig
   export: ExportConfig
   customCss: string
   editorCollapsed: boolean

@@ -59,7 +59,11 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
   useEffect(() => {
     if (filenameInitialized.current) return
     filenameInitialized.current = true
-    if (!config.filename.trim() || config.filename === 'md2img') {
+    if (
+      !config.filename.trim() ||
+      config.filename === 'md2img' ||
+      config.filename === 'markgleam'
+    ) {
       updateExport({ filename: suggestFilename(markdown) })
     }
   }, [config.filename, markdown, updateExport])
@@ -378,6 +382,9 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
               </div>
             )}
           </div>
+          <p className="export-signature-notice">
+            {t(locale, 'exportSignatureNotice')}
+          </p>
           <button
             className={`primary-button export-now ${exporting ? 'is-cancel' : ''}`}
             type="button"

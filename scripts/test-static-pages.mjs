@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 const distRoot = join(projectRoot, 'dist')
-const siteOrigin = 'https://md2img.cearl.cc'
+const siteOrigin = 'https://markgleam.com'
 const manifest = JSON.parse(
   await readFile(join(projectRoot, 'src/data/toolPages.json'), 'utf8'),
 )
@@ -27,7 +27,7 @@ const matchOne = (html, pattern, label, path) => {
   return matches[0]
 }
 
-assert.equal(manifest.length, 8, 'SEO manifest must contain the eight roadmap tools')
+assert.equal(manifest.length, 9, 'SEO manifest must contain the workspace and eight tool pages')
 assert.equal(new Set(manifest.map((page) => page.id)).size, manifest.length, 'Tool page ids must be unique')
 assert.equal(new Set(manifest.map((page) => page.path)).size, manifest.length, 'Chinese paths must be unique')
 assert.equal(new Set(manifest.map((page) => page.enPath)).size, manifest.length, 'English paths must be unique')

@@ -29,6 +29,7 @@ import {
   resolveToolPage,
   toolPages,
 } from './data/toolPages'
+import { PRODUCT } from './config/product'
 import { getToolSample } from './data/toolSamples'
 import { t } from './i18n'
 import { useAppStore } from './store'
@@ -130,7 +131,10 @@ function App() {
 
   useEffect(() => {
     if (!resolvedPage) {
-      document.title = locale === 'zh-CN' ? '页面不存在 · MD2IMG' : 'Page not found · MD2IMG'
+      document.title =
+        locale === 'zh-CN'
+          ? `页面不存在 · ${PRODUCT.name}`
+          : `Page not found · ${PRODUCT.name}`
       document.querySelector('meta[name="robots"]')?.setAttribute('content', 'noindex,follow')
       return
     }
@@ -150,7 +154,7 @@ function App() {
     // The homepage is the general editor, so keep a returning user's export
     // and canvas choices. Purpose-specific routes intentionally apply the
     // settings needed to make their advertised workflow usable immediately.
-    if (page.id !== 'markdown-to-image') {
+    if (page.id !== 'visual-workspace') {
       updateExport({
         format: page.defaults.exportFormat,
         ...(page.defaults.splitHeight
@@ -175,7 +179,7 @@ function App() {
       ?.setAttribute('content', 'index,follow,max-image-preview:large')
     document
       .querySelector('link[rel="canonical"]')
-      ?.setAttribute('href', `https://md2img.cearl.cc${resolvedPage.canonicalPath}`)
+      ?.setAttribute('href', `${PRODUCT.origin}${resolvedPage.canonicalPath}`)
   }, [
     locale,
     resolvedPage,
@@ -308,7 +312,7 @@ function App() {
             : 'The address may have changed. Return to the Markdown to image tool.'}
         </p>
         <a href={locale === 'zh-CN' ? '/' : '/en/'}>
-          {locale === 'zh-CN' ? '返回首页' : 'Back to MD2IMG'}
+          {locale === 'zh-CN' ? '返回首页' : `Back to ${PRODUCT.name}`}
         </a>
       </main>
     )
@@ -323,11 +327,11 @@ function App() {
         >
           <BrandMark />
           <div className="brand-title">
-            <span>MD2IMG</span>
+            <span>{PRODUCT.name}</span>
             <span className="sr-only">
               {locale === 'zh-CN'
-                ? '免费 Markdown 转图片工具'
-                : 'Free Markdown to image converter'}
+                ? '结构化内容视觉工作台'
+                : 'Structured content visual workspace'}
             </span>
           </div>
           <span className="brand-tagline">

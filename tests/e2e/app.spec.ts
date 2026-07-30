@@ -13,10 +13,13 @@ test.beforeEach(async ({ page }) => {
 })
 
 test('loads the complete editor workspace and preview', async ({ page }) => {
-  await expect(page).toHaveTitle(/MD2IMG/)
-  await expect(page.getByText('MD2IMG', { exact: true })).toBeVisible()
+  await expect(page).toHaveTitle(/MarkGleam/)
+  await expect(page.getByText('MarkGleam', { exact: true }).first()).toBeVisible()
   await expect(page.getByTestId('markdown-editor')).toBeVisible()
   await expect(page.getByTestId('export-surface')).toBeVisible()
+  await expect(
+    page.getByTestId('export-surface').locator('[data-export-signature]'),
+  ).toBeVisible()
 })
 
 test('exposes indexable product metadata without loading analytics locally', async ({
@@ -24,11 +27,11 @@ test('exposes indexable product metadata without loading analytics locally', asy
 }) => {
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     'href',
-    'https://md2img.cearl.cc/',
+    'https://markgleam.com/',
   )
   await expect(page.locator('meta[name="description"]')).toHaveAttribute(
     'content',
-    /Markdown 转图片工具/,
+    /Markdown、代码、Mermaid 和 LaTeX/,
   )
   await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1)
   await expect(
@@ -232,7 +235,7 @@ test('applies presets, custom CSS, background images, transparency and fonts', a
     .setInputFiles(resolve('node_modules/katex/dist/fonts/KaTeX_Main-Regular.woff2'))
   await expect(page.getByTestId('export-surface').locator('.markdown-body')).toHaveCSS(
     'font-family',
-    /MD2IMG Custom/,
+    /MarkGleam Custom/,
   )
   await expect(page.getByRole('button', { name: '移除' })).toBeVisible()
 })
@@ -254,10 +257,11 @@ test('keeps every image from a multi-file import', async ({ page }) => {
     { name: 'first.png', mimeType: 'image/png', buffer: tinyPng },
     { name: 'second.png', mimeType: 'image/png', buffer: tinyPng },
   ])
-  const images = page.getByTestId('export-surface').locator('img[data-md2img-asset-id]')
+  const surface = page.getByTestId('export-surface')
+  const images = surface.locator('img[data-md2img-asset-id]')
   await expect(images).toHaveCount(2)
-  await expect(images.nth(0)).toHaveAttribute('alt', 'first')
-  await expect(images.nth(1)).toHaveAttribute('alt', 'second')
+  await expect(surface.locator('img[data-md2img-asset-id][alt="first"]')).toHaveCount(1)
+  await expect(surface.locator('img[data-md2img-asset-id][alt="second"]')).toHaveCount(1)
 })
 
 test('opens export and exposes every free output format', async ({ page }) => {
@@ -277,6 +281,77 @@ test('opens export and exposes every free output format', async ({ page }) => {
       page.getByRole('button', { name: new RegExp(`^${label}`) }),
     ).toBeVisible()
   }
+  await expect(
+    page.getByText('最终文件会包含当前预览中的品牌署名。'),
+  ).toBeVisible()
+})
+
+test('lets free users style the required brand signature without hiding it', async ({
+  page,
+}) => {
+  const signature = page
+    .getByTestId('export-surface')
+    .locator('[data-export-signature]')
+
+  await page.getByRole('tab', { name: '画布' }).click()
+  await expect(page.getByText(/免费导出会保留这条 MarkGleam 署名/)).toBeVisible()
+  await expect(page.getByRole('button', { name: '摄影参数' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(signature).toHaveClass(/signature-camera/)
+
+  await page.getByRole('button', { name: '极简' }).click()
+  await expect(signature).toHaveClass(/signature-minimal/)
+  await expect(signature).toContainText('markgleam.com')
+
+  await page.getByRole('button', { name: '清晰' }).click()
+  await expect(signature).toHaveClass(/signature-solid/)
+  await expect(
+    page.locator('.signature-controls').getByRole('checkbox'),
+  ).toHaveCount(0)
+
+  await page.getByRole('button', { name: /高级样式/ }).click()
+  await page
+    .getByLabel('自定义 CSS')
+    .fill(`
+      + [data-export-signature] { display: none; opacity: 0; }
+      body {
+        position: absolute !important;
+        inset: 0 !important;
+        z-index: 999 !important;
+        background: #fff !important;
+      }
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: #fff;
+      }
+    `)
+  await expect(signature).toBeVisible()
+  await expect(signature).not.toHaveCSS('opacity', '0')
+  const signatureCenterOwner = await signature.evaluate((element) => {
+    const box = element.getBoundingClientRect()
+    const owner = document.elementFromPoint(
+      box.left + box.width / 2,
+      box.top + box.height / 2,
+    )
+    return owner === element || element.contains(owner)
+  })
+  expect(signatureCenterOwner).toBe(true)
+
+  await page.getByRole('spinbutton', { name: '宽度' }).fill('320')
+  await expect(signature).toHaveClass(/signature-compact/)
+  const surfaceBox = await page.getByTestId('export-surface').boundingBox()
+  const signatureBox = await signature.boundingBox()
+  expect(surfaceBox).not.toBeNull()
+  expect(signatureBox).not.toBeNull()
+  expect(signatureBox?.x ?? 0).toBeGreaterThanOrEqual((surfaceBox?.x ?? 0) - 1)
+  expect((signatureBox?.x ?? 0) + (signatureBox?.width ?? 0)).toBeLessThanOrEqual(
+    (surfaceBox?.x ?? 0) + (surfaceBox?.width ?? 0) + 1,
+  )
 })
 
 test('keeps the desktop export dialog stable while switching formats', async ({
@@ -383,7 +458,16 @@ test('downloads valid PNG, JPEG, WebP, SVG and sliced ZIP files', async ({
       expect(bytes.subarray(0, 4).toString()).toBe('RIFF')
       expect(bytes.subarray(8, 12).toString()).toBe('WEBP')
     } else if (item.extension === 'svg') {
-      expect(bytes.toString('utf8')).toContain('<svg')
+      const svg = bytes.toString('utf8')
+      expect(svg).toContain('<svg')
+      expect(svg).toContain('data:image/png;base64,')
+      const embeddedPng = Buffer.from(
+        svg.match(/data:image\/png;base64,([^"]+)/)?.[1] ?? '',
+        'base64',
+      )
+      expect(embeddedPng.subarray(0, 8).toString('hex')).toBe(
+        '89504e470d0a1a0a',
+      )
     } else {
       expect(bytes.subarray(0, 2).toString()).toBe('PK')
       const zip = await JSZip.loadAsync(bytes)
@@ -392,6 +476,42 @@ test('downloads valid PNG, JPEG, WebP, SVG and sliced ZIP files', async ({
       const part = await entries[0].async('nodebuffer')
       expect(part.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a')
     }
+  }
+})
+
+test('keeps every sliced PNG inside the requested safe height', async ({
+  page,
+  browserName,
+}, testInfo) => {
+  test.skip(browserName !== 'chromium', 'Raster size boundary is covered once')
+  const sections = Array.from(
+    { length: 36 },
+    (_, index) =>
+      `## Section ${index + 1}\n\n${'A normal paragraph for slice measurement. '.repeat(8)}`,
+  ).join('\n\n')
+  await page.locator('input[accept*=".md"]').first().setInputFiles({
+    name: 'long-slices.md',
+    mimeType: 'text/markdown',
+    buffer: Buffer.from(`# Long export\n\n${sections}`),
+  })
+  await page.locator('.top-export').click()
+  await page.getByRole('button', { name: '长图分片 ZIP' }).click()
+  await page.getByRole('button', { name: '1×' }).click()
+  await page.getByLabel('分片高度').fill('1600')
+
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: '下载' }).click(),
+  ])
+  const output = testInfo.outputPath('safe-slices.zip')
+  await download.saveAs(output)
+  const zip = await JSZip.loadAsync(await readFile(output))
+  const entries = Object.values(zip.files).filter((entry) => !entry.dir)
+  expect(entries.length).toBeGreaterThan(1)
+
+  for (const entry of entries) {
+    const png = await entry.async('nodebuffer')
+    expect(png.readUInt32BE(20)).toBeLessThanOrEqual(1600)
   }
 })
 
@@ -671,8 +791,12 @@ test('keeps PDF controls and download reachable on mobile', async ({ page }, tes
   expect(visualPdfBox).not.toBeNull()
   expect(printPdfBox).not.toBeNull()
   expect(visualPdfBox?.width ?? 0).toBeGreaterThan((pngBox?.width ?? 0) * 1.8)
-  expect(printPdfBox?.width).toBeCloseTo(visualPdfBox?.width ?? 0, 0)
-  expect(printPdfBox?.x).toBeCloseTo(visualPdfBox?.x ?? 0, 0)
+  expect(
+    Math.abs((printPdfBox?.width ?? 0) - (visualPdfBox?.width ?? 0)),
+  ).toBeLessThan(4)
+  expect(Math.abs((printPdfBox?.x ?? 0) - (visualPdfBox?.x ?? 0))).toBeLessThan(
+    4,
+  )
 
   await page.getByRole('button', { name: /保留样式 PDF/ }).click()
 

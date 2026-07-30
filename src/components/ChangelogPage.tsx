@@ -16,7 +16,7 @@ export function ChangelogPage({ onBack }: { onBack: () => void }) {
       <header className="changelog-topbar">
         <div className="brand">
           <BrandMark />
-          <span className="brand-title">MD2IMG</span>
+          <span className="brand-title">MarkGleam</span>
         </div>
         <div className="changelog-actions">
           <LanguageSelect locale={locale} onChange={setLocale} />

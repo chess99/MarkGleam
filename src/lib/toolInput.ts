@@ -1,6 +1,7 @@
 import type { DocumentState, InputKind, ToolDrafts, ToolId } from '../types'
 
 const toolInputKinds: Record<ToolId, InputKind> = {
+  'visual-workspace': 'markdown',
   'markdown-to-image': 'markdown',
   'markdown-long-image': 'markdown',
   'markdown-to-pdf': 'markdown',

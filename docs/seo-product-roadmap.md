@@ -1,12 +1,12 @@
-# MD2IMG 关键词落地页与产品能力 Roadmap
+# MarkGleam 关键词落地页与产品能力 Roadmap
 
 更新时间：2026-07-30
 
-状态：已实现，等待人工审查。16 个双语静态页面、对应工具模式、SEO 合约测试和跨浏览器回归均已接入；发布前仍由站点所有者做最终文案与交互确认。
+状态：已实现，等待人工审查。18 个双语静态页面、对应工具模式、SEO 合约测试和跨浏览器回归均已接入；发布前仍由站点所有者做最终文案与交互确认。
 
 ## 目标
 
-这一轮不按关键词批量复制页面。每个可索引 URL 都必须对应真实可用的工具状态、独立示例和清楚的限制说明。首页继续承接 `markdown to image`、`markdown to png`、`md to image`、`markdown screenshot` 等高度重合的核心词，避免同义词页面互相竞争。
+这一轮不按关键词批量复制页面。每个可索引 URL 都必须对应真实可用的工具状态、独立示例和清楚的限制说明。首页介绍统一工作台，`/markdown-to-image/` 承接 `markdown to image`、`markdown to png`、`md to image`、`markdown screenshot` 等高度重合的核心词。
 
 ## 本轮范围
 
@@ -21,7 +21,8 @@
 
 | 路由 | 搜索意图 | 必须提供的实际差异 |
 |---|---|---|
-| `/` | Markdown 转图片 / PNG | 完整 Markdown 编辑、预览和多格式导出 |
+| `/` | 结构化内容视觉工作台 | Markdown、代码、Mermaid、LaTeX 等模式入口与统一工作台 |
+| `/markdown-to-image/` | Markdown 转图片 / PNG | 完整 Markdown 编辑、预览和多格式导出 |
 | `/markdown-long-image/` | Markdown 长图 | 长图画布、分片高度和 ZIP 导出预设 |
 | `/markdown-to-pdf/` | Markdown 转 PDF | A4/Letter、方向、边距、页码、页眉页脚、分页预览说明 |
 | `/mermaid-to-image/` | Mermaid 转图片 | 直接粘贴 Mermaid 源码，不要求手动加 Markdown 围栏 |

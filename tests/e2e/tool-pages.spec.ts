@@ -17,14 +17,41 @@ test('opens English tool URLs directly even when Chinese was saved', async ({
 
   await expect(page.locator('html')).toHaveAttribute('lang', 'en')
   await expect(
-    page.getByRole('heading', { name: 'Code to Image', level: 1 }),
+    page.locator('#tool-page-title'),
   ).toBeVisible()
+  await expect(page.locator('#tool-page-title')).toHaveText('Code to Image')
   await expect(page.getByLabel('Code language')).toHaveValue('typescript')
   await expect(page.locator('pre[data-render-state="ready"]')).toBeVisible()
 
   await page.goto('/en/mermaid-to-image/')
   await expect(page.locator('.cm-content')).toContainText('Enter source')
   await expect(page.locator('.cm-content')).not.toContainText('粘贴 Mermaid')
+})
+
+test('separates the brand homepage from the Markdown search landing page', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await expect(
+    page.getByRole('heading', {
+      name: '把结构化内容做成可分享的视觉作品',
+      level: 1,
+    }),
+  ).toBeVisible()
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    'href',
+    'https://markgleam.com/',
+  )
+
+  await page.goto('/markdown-to-image/')
+  await expect(
+    page.locator('#tool-page-title'),
+  ).toBeVisible()
+  await expect(page.locator('#tool-page-title')).toHaveText('Markdown 转图片')
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    'href',
+    'https://markgleam.com/markdown-to-image/',
+  )
 })
 
 test('uses raw Mermaid and formula input without showing wrapper syntax', async ({

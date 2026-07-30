@@ -15,6 +15,6 @@ describe('suggestFilename', () => {
   })
 
   it('falls back for empty content', () => {
-    expect(suggestFilename('   ')).toBe('md2img')
+    expect(suggestFilename('   ')).toBe('markgleam')
   })
 })

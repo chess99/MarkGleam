@@ -1,115 +1,129 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://md2img.cearl.cc/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/" />
+    <loc>https://markgleam.com/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://markgleam.com/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://markgleam.com/en/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://markgleam.com/" />
     <lastmod>2026-07-30</lastmod>
   </url>
   <url>
-    <loc>https://md2img.cearl.cc/en/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/" />
+    <loc>https://markgleam.com/en/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://markgleam.com/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://markgleam.com/en/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://markgleam.com/" />
     <lastmod>2026-07-30</lastmod>
   </url>
   <url>
-    <loc>https://md2img.cearl.cc/markdown-long-image/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/markdown-long-image/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/markdown-long-image/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/markdown-long-image/" />
+    <loc>https://markgleam.com/markdown-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://markgleam.com/markdown-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://markgleam.com/en/markdown-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://markgleam.com/markdown-to-image/" />
     <lastmod>2026-07-30</lastmod>
   </url>
   <url>
-    <loc>https://md2img.cearl.cc/en/markdown-long-image/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/markdown-long-image/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/markdown-long-image/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/markdown-long-image/" />
+    <loc>https://markgleam.com/en/markdown-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://markgleam.com/markdown-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://markgleam.com/en/markdown-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://markgleam.com/markdown-to-image/" />
     <lastmod>2026-07-30</lastmod>
   </url>
   <url>
-    <loc>https://md2img.cearl.cc/markdown-to-pdf/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/markdown-to-pdf/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/markdown-to-pdf/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/markdown-to-pdf/" />
+    <loc>https://markgleam.com/markdown-long-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://markgleam.com/markdown-long-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://markgleam.com/en/markdown-long-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://markgleam.com/markdown-long-image/" />
     <lastmod>2026-07-30</lastmod>
   </url>
   <url>
-    <loc>https://md2img.cearl.cc/en/markdown-to-pdf/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/markdown-to-pdf/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/markdown-to-pdf/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/markdown-to-pdf/" />
+    <loc>https://markgleam.com/en/markdown-long-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://markgleam.com/markdown-long-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://markgleam.com/en/markdown-long-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://markgleam.com/markdown-long-image/" />
     <lastmod>2026-07-30</lastmod>
   </url>
   <url>
-    <loc>https://md2img.cearl.cc/mermaid-to-image/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/mermaid-to-image/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/mermaid-to-image/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/mermaid-to-image/" />
+    <loc>https://markgleam.com/markdown-to-pdf/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://markgleam.com/markdown-to-pdf/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://markgleam.com/en/markdown-to-pdf/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://markgleam.com/markdown-to-pdf/" />
     <lastmod>2026-07-30</lastmod>
   </url>
   <url>
-    <loc>https://md2img.cearl.cc/en/mermaid-to-image/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/mermaid-to-image/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/mermaid-to-image/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/mermaid-to-image/" />
+    <loc>https://markgleam.com/en/markdown-to-pdf/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://markgleam.com/markdown-to-pdf/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://markgleam.com/en/markdown-to-pdf/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://markgleam.com/markdown-to-pdf/" />
     <lastmod>2026-07-30</lastmod>
   </url>
   <url>
-    <loc>https://md2img.cearl.cc/formula-to-image/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/formula-to-image/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/formula-to-image/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/formula-to-image/" />
+    <loc>https://markgleam.com/mermaid-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://markgleam.com/mermaid-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://markgleam.com/en/mermaid-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://markgleam.com/mermaid-to-image/" />
     <lastmod>2026-07-30</lastmod>
   </url>
   <url>
-    <loc>https://md2img.cearl.cc/en/formula-to-image/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/formula-to-image/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/formula-to-image/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/formula-to-image/" />
+    <loc>https://markgleam.com/en/mermaid-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://markgleam.com/mermaid-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://markgleam.com/en/mermaid-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://markgleam.com/mermaid-to-image/" />
     <lastmod>2026-07-30</lastmod>
   </url>
   <url>
-    <loc>https://md2img.cearl.cc/code-to-image/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/code-to-image/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/code-to-image/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/code-to-image/" />
+    <loc>https://markgleam.com/formula-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://markgleam.com/formula-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://markgleam.com/en/formula-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://markgleam.com/formula-to-image/" />
     <lastmod>2026-07-30</lastmod>
   </url>
   <url>
-    <loc>https://md2img.cearl.cc/en/code-to-image/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/code-to-image/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/code-to-image/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/code-to-image/" />
+    <loc>https://markgleam.com/en/formula-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://markgleam.com/formula-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://markgleam.com/en/formula-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://markgleam.com/formula-to-image/" />
     <lastmod>2026-07-30</lastmod>
   </url>
   <url>
-    <loc>https://md2img.cearl.cc/github-readme-to-image/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/github-readme-to-image/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/github-readme-to-image/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/github-readme-to-image/" />
+    <loc>https://markgleam.com/code-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://markgleam.com/code-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://markgleam.com/en/code-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://markgleam.com/code-to-image/" />
     <lastmod>2026-07-30</lastmod>
   </url>
   <url>
-    <loc>https://md2img.cearl.cc/en/github-readme-to-image/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/github-readme-to-image/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/github-readme-to-image/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/github-readme-to-image/" />
+    <loc>https://markgleam.com/en/code-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://markgleam.com/code-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://markgleam.com/en/code-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://markgleam.com/code-to-image/" />
     <lastmod>2026-07-30</lastmod>
   </url>
   <url>
-    <loc>https://md2img.cearl.cc/batch-markdown-to-image/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/batch-markdown-to-image/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/batch-markdown-to-image/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/batch-markdown-to-image/" />
+    <loc>https://markgleam.com/github-readme-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://markgleam.com/github-readme-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://markgleam.com/en/github-readme-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://markgleam.com/github-readme-to-image/" />
     <lastmod>2026-07-30</lastmod>
   </url>
   <url>
-    <loc>https://md2img.cearl.cc/en/batch-markdown-to-image/</loc>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/batch-markdown-to-image/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/batch-markdown-to-image/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/batch-markdown-to-image/" />
+    <loc>https://markgleam.com/en/github-readme-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://markgleam.com/github-readme-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://markgleam.com/en/github-readme-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://markgleam.com/github-readme-to-image/" />
+    <lastmod>2026-07-30</lastmod>
+  </url>
+  <url>
+    <loc>https://markgleam.com/batch-markdown-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://markgleam.com/batch-markdown-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://markgleam.com/en/batch-markdown-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://markgleam.com/batch-markdown-to-image/" />
+    <lastmod>2026-07-30</lastmod>
+  </url>
+  <url>
+    <loc>https://markgleam.com/en/batch-markdown-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://markgleam.com/batch-markdown-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://markgleam.com/en/batch-markdown-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://markgleam.com/batch-markdown-to-image/" />
     <lastmod>2026-07-30</lastmod>
   </url>
 </urlset>

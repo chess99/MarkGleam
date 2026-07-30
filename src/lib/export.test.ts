@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createSegment, decoratePdfSegment } from './export'
+import {
+  calculateSplitContentBudget,
+  createSegment,
+  decoratePdfSegment,
+} from './export'
 import type { ExportConfig } from '../types'
 
 const pdfConfig: ExportConfig = {
@@ -33,6 +37,7 @@ describe('createSegment', () => {
         <p>Third</p>
         <p>Fourth</p>
       </article>
+      <footer data-export-signature>Made with MarkGleam</footer>
     `
     const cloneSpy = vi.spyOn(surface, 'cloneNode')
 
@@ -54,6 +59,32 @@ describe('createSegment', () => {
       'Fourth',
     )
     expect(segment.querySelector('[data-page-break]')).not.toBeInTheDocument()
+    expect(segment.querySelector('[data-export-signature]')).toHaveTextContent(
+      'Made with MarkGleam',
+    )
+  })
+
+  it('can omit the full signature from intermediate export segments', () => {
+    const surface = document.createElement('div')
+    surface.innerHTML = `
+      <article data-export-content><p>First</p></article>
+      <footer data-export-signature>Made with MarkGleam</footer>
+    `
+
+    const segment = createSegment(surface, 0, 1, 0, false)
+
+    expect(segment.querySelector('[data-export-content]')).toHaveTextContent('First')
+    expect(segment.querySelector('[data-export-signature]')).not.toBeInTheDocument()
+  })
+})
+
+describe('calculateSplitContentBudget', () => {
+  it('reserves surface padding and the final signature inside the safe part height', () => {
+    expect(calculateSplitContentBudget(4096, 144, 96)).toBe(3856)
+  })
+
+  it('never returns a non-positive content budget', () => {
+    expect(calculateSplitContentBudget(640, 500, 300)).toBe(1)
   })
 })
 
@@ -68,12 +99,14 @@ describe('decoratePdfSegment', () => {
     const footer = segment.querySelector('[data-md2img-pdf-decoration="footer"]')
     expect(header).toHaveTextContent('Project brief')
     expect(footer).toHaveTextContent('Internal')
+    expect(footer).toHaveTextContent('Made with MarkGleam · markgleam.com')
     expect(footer).toHaveTextContent('2 / 5')
+    expect(footer).toHaveAttribute('data-export-signature', 'pdf')
     expect(segment.firstElementChild).toBe(header)
     expect(segment.lastElementChild).toBe(footer)
   })
 
-  it('does not add empty decoration rows', () => {
+  it('keeps the lightweight brand footer when custom decorations are empty', () => {
     const segment = document.createElement('section')
 
     decoratePdfSegment(
@@ -88,6 +121,13 @@ describe('decoratePdfSegment', () => {
       1,
     )
 
-    expect(segment.children).toHaveLength(0)
+    expect(segment.children).toHaveLength(1)
+    expect(segment.firstElementChild).toHaveAttribute(
+      'data-export-signature',
+      'pdf',
+    )
+    expect(segment.firstElementChild).toHaveTextContent(
+      'Made with MarkGleam · markgleam.com',
+    )
   })
 })

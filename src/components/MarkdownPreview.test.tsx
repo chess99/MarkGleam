@@ -41,6 +41,87 @@ describe('MarkdownPreview', () => {
     expect(screen.getByRole('table')).toBeInTheDocument()
     await waitFor(() => expect(document.querySelector('.katex')).toBeTruthy())
     expect(surfaceRef.current).toHaveAttribute('id', 'md2img-export-surface')
+    expect(
+      surfaceRef.current?.querySelector('[data-export-signature]'),
+    ).toHaveTextContent('MarkGleam')
+  })
+
+  it('renders the selected free signature style and tone', () => {
+    useAppStore.setState({
+      signature: { style: 'stamp', tone: 'solid' },
+    })
+    const surfaceRef = createRef<HTMLDivElement>()
+
+    render(<MarkdownPreview surfaceRef={surfaceRef} />)
+
+    const signature = surfaceRef.current?.querySelector('[data-export-signature]')
+    expect(signature).toHaveClass('signature-stamp', 'signature-solid')
+    expect(signature).toHaveTextContent('markgleam.com')
+  })
+
+  it('keeps the signature readable on a custom background and stacks it on narrow canvases', () => {
+    useAppStore.setState({
+      themeId: 'night',
+      canvas: {
+        ...useAppStore.getState().canvas,
+        width: 320,
+        paddingX: 72,
+        backgroundColor: '#ffffff',
+        transparent: false,
+      },
+    })
+    const surfaceRef = createRef<HTMLDivElement>()
+
+    render(<MarkdownPreview surfaceRef={surfaceRef} />)
+
+    const signature = surfaceRef.current?.querySelector<HTMLElement>(
+      '[data-export-signature]',
+    )
+    expect(signature).toHaveClass('signature-compact')
+    expect(signature?.style.getPropertyValue('--signature-ink')).toBe('#202326')
+    expect(signature?.style.getPropertyValue('--signature-muted')).toBe('#34393d')
+  })
+
+  it('adds a contrast panel when the canvas is transparent', () => {
+    useAppStore.setState({
+      canvas: {
+        ...useAppStore.getState().canvas,
+        transparent: true,
+      },
+    })
+    const surfaceRef = createRef<HTMLDivElement>()
+
+    render(<MarkdownPreview surfaceRef={surfaceRef} />)
+
+    const signature = surfaceRef.current?.querySelector<HTMLElement>(
+      '[data-export-signature]',
+    )
+    expect(signature).toHaveClass('signature-has-panel')
+    expect(signature?.style.getPropertyValue('--signature-panel')).not.toBe(
+      'transparent',
+    )
+  })
+
+  it('uses dark ink and a contrast panel on a middle-gray background', () => {
+    useAppStore.setState({
+      canvas: {
+        ...useAppStore.getState().canvas,
+        backgroundColor: '#999999',
+        transparent: false,
+      },
+    })
+    const surfaceRef = createRef<HTMLDivElement>()
+
+    render(<MarkdownPreview surfaceRef={surfaceRef} />)
+
+    const signature = surfaceRef.current?.querySelector<HTMLElement>(
+      '[data-export-signature]',
+    )
+    expect(signature).toHaveClass('signature-has-panel')
+    expect(signature?.style.getPropertyValue('--signature-ink')).toBe('#202326')
+    expect(signature?.style.getPropertyValue('--signature-panel')).toBe(
+      'rgba(255, 255, 255, 0.94)',
+    )
   })
 
   it('does not execute raw HTML from Markdown', () => {

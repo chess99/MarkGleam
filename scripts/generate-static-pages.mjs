@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 const distRoot = join(projectRoot, 'dist')
-const siteOrigin = 'https://md2img.cearl.cc'
+const siteOrigin = 'https://markgleam.com'
 const manifest = JSON.parse(
   await readFile(join(projectRoot, 'src/data/toolPages.json'), 'utf8'),
 )
@@ -60,7 +60,7 @@ const renderStructuredData = (page, locale, canonical, content) => {
     {
       '@type': 'WebSite',
       '@id': `${siteOrigin}/#website`,
-      name: 'MD2IMG',
+      name: 'MarkGleam',
       url: `${siteOrigin}/`,
     },
     app,
@@ -73,7 +73,7 @@ const renderStructuredData = (page, locale, canonical, content) => {
         {
           '@type': 'ListItem',
           position: 1,
-          name: locale === 'zh-CN' ? 'Markdown 转图片' : 'Markdown to Image',
+          name: 'MarkGleam',
           item: absoluteUrl(locale === 'zh-CN' ? '/' : '/en/'),
         },
         {
@@ -103,17 +103,17 @@ const renderStaticBody = (page, locale, content) => {
   const limitsTitle = locale === 'zh-CN' ? '使用限制' : 'Limitations'
   const sampleTitle = locale === 'zh-CN' ? '输入示例' : 'Input example'
   const tagline =
-    locale === 'zh-CN' ? '本地优先 · 永久免费' : 'Local first · Free to use'
+    locale === 'zh-CN' ? '本地处理 · 免费使用' : 'Local processing · Free to use'
   const noScript =
     locale === 'zh-CN'
-      ? 'MD2IMG 需要启用 JavaScript；Markdown、图片与导出处理均在你的浏览器本地完成。'
-      : 'MD2IMG requires JavaScript. Documents, images and exports are processed locally in your browser.'
+      ? 'MarkGleam 需要启用 JavaScript；文档、图片与导出处理均在你的浏览器本地完成。'
+      : 'MarkGleam requires JavaScript. Documents, images and exports are processed locally in your browser.'
 
   return {
     root: `<div id="root">
       <div class="app-bootstrap">
         <header class="app-bootstrap__bar">
-          <p class="app-bootstrap__brand">MD2IMG <span>${escapeHtml(tagline)}</span></p>
+          <p class="app-bootstrap__brand">MarkGleam <span>${escapeHtml(tagline)}</span></p>
         </header>
         <main class="app-bootstrap__main">
           <article class="app-bootstrap__copy">

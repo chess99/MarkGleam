@@ -146,7 +146,7 @@ export function BatchPane({
       if (!canceledRef.current) {
         if (errors.length) zip.file('errors.txt', errors.join('\n'))
         const blob = await zip.generateAsync({ type: 'blob' })
-        downloadBlob(blob, 'md2img-batch.zip')
+        downloadBlob(blob, 'markgleam-batch.zip')
         onToast(
           locale === 'zh-CN'
             ? `批量导出完成：成功 ${items.length - errors.length} 个，失败 ${errors.length} 个。`

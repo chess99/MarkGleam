@@ -119,6 +119,7 @@ export function EditorPane({
 
   const handleFiles = async (files: FileList | File[]) => {
     let nextMarkdown = useAppStore.getState().markdown
+    let changed = false
     try {
       for (const file of [...files]) {
         const imported = await importFile(file, nextMarkdown)
@@ -127,8 +128,11 @@ export function EditorPane({
           continue
         }
         nextMarkdown = imported
-        setMarkdown(nextMarkdown)
+        changed = true
       }
+      // Commit a multi-file import once. Incremental preview rerenders can
+      // revoke an earlier image's Blob URL before Firefox has decoded it.
+      if (changed) setMarkdown(nextMarkdown)
     } catch (error) {
       console.error(error)
       onToast(t(locale, 'importFailed'), 'error')

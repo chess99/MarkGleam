@@ -1,16 +1,55 @@
 [
   {
-    "id": "markdown-to-image",
+    "id": "visual-workspace",
     "path": "/",
     "enPath": "/en/",
     "inputKind": "markdown",
     "title": {
-      "zh-CN": "免费 Markdown 转图片工具：PNG、WebP、SVG · MD2IMG",
-      "en": "Free Markdown to Image Converter: PNG, WebP, SVG · MD2IMG"
+      "zh-CN": "MarkGleam：Markdown、代码与图表转图片",
+      "en": "MarkGleam: Markdown, Code and Diagrams to Images"
     },
     "description": {
-      "zh-CN": "免费 Markdown 转图片工具，在浏览器本地导出 PNG、JPEG、WebP、SVG 或 PDF。支持代码高亮、KaTeX、Mermaid，无需登录且没有水印。",
-      "en": "Convert Markdown to PNG, JPEG, WebP, SVG or PDF locally in your browser, with syntax highlighting, KaTeX and Mermaid. No sign-in or watermark."
+      "zh-CN": "把 Markdown、代码、Mermaid 和 LaTeX 做成可分享的 PNG、WebP、SVG 或 PDF。浏览器本地处理，无需登录；免费导出包含简洁品牌署名。",
+      "en": "Turn Markdown, code, Mermaid and LaTeX into share-ready PNG, WebP, SVG or PDF files. Processing stays in your browser; free exports include a small brand signature."
+    },
+    "h1": {
+      "zh-CN": "把结构化内容做成可分享的视觉作品",
+      "en": "Turn structured content into share-ready visuals"
+    },
+    "intro": {
+      "zh-CN": "在同一工作台中编辑 Markdown、代码、Mermaid 和 LaTeX，调整主题、画布与字体，再导出适合文档或社交平台的图片和 PDF。",
+      "en": "Edit Markdown, code, Mermaid and LaTeX in one workspace. Adjust the theme, canvas and type, then export images or PDFs sized for documents and social platforms."
+    },
+    "steps": {
+      "zh-CN": ["选择内容类型并粘贴原文", "调整主题、画布和品牌署名", "选择图片或 PDF 格式并导出"],
+      "en": ["Choose a content type and paste the source", "Adjust the theme, canvas and brand signature", "Export an image or PDF"]
+    },
+    "limitations": {
+      "zh-CN": "远程图片能否导出取决于原站的 CORS 设置。免费导出会保留预览中显示的 MarkGleam 署名。",
+      "en": "Remote image export depends on the source site's CORS policy. Free exports keep the MarkGleam signature shown in the preview."
+    },
+    "sample": {
+      "zh-CN": "# MarkGleam\n\n把结构清楚的内容，做成可以直接分享的图片。\n\n- Markdown\n- 代码\n- Mermaid 与公式",
+      "en": "# MarkGleam\n\nTurn structured content into visuals you can share directly.\n\n- Markdown\n- Code\n- Mermaid and formulas"
+    },
+    "defaults": { "exportFormat": "png", "canvasPreset": "auto", "inspectorTab": "canvas" },
+    "schemaFeatures": {
+      "zh-CN": ["Markdown、代码、Mermaid 与 LaTeX 输入", "PNG、JPEG、WebP、SVG 和 PDF 导出", "浏览器本地处理，免费导出包含品牌署名"],
+      "en": ["Markdown, code, Mermaid and LaTeX input", "PNG, JPEG, WebP, SVG and PDF export", "Local browser processing with a brand signature on free exports"]
+    }
+  },
+  {
+    "id": "markdown-to-image",
+    "path": "/markdown-to-image/",
+    "enPath": "/en/markdown-to-image/",
+    "inputKind": "markdown",
+    "title": {
+      "zh-CN": "免费 Markdown 转图片工具：PNG、WebP、SVG · MarkGleam",
+      "en": "Free Markdown to Image Converter: PNG, WebP, SVG · MarkGleam"
+    },
+    "description": {
+      "zh-CN": "免费把 Markdown 转为 PNG、JPEG、WebP、SVG 或 PDF。支持代码高亮、KaTeX 和 Mermaid，浏览器本地处理；导出包含简洁品牌署名。",
+      "en": "Convert Markdown to PNG, JPEG, WebP, SVG or PDF locally in your browser, with syntax highlighting, KaTeX and Mermaid. No sign-in; free exports include a small brand signature."
     },
     "h1": {
       "zh-CN": "Markdown 转图片",
@@ -29,13 +68,13 @@
       "en": "Remote image export depends on the image host's CORS policy. If it is blocked, download the image and drop the local file into the editor."
     },
     "sample": {
-      "zh-CN": "# Markdown 转图片\n\n直接编辑内容，并在右侧调整画布。\n\n```js\nconsole.log('MD2IMG')\n```",
-      "en": "# Markdown to Image\n\nEdit this document and adjust the canvas on the right.\n\n```js\nconsole.log('MD2IMG')\n```"
+      "zh-CN": "# Markdown 转图片\n\n直接编辑内容，并在右侧调整画布。\n\n```js\nconsole.log('MarkGleam')\n```",
+      "en": "# Markdown to Image\n\nEdit this document and adjust the canvas on the right.\n\n```js\nconsole.log('MarkGleam')\n```"
     },
     "defaults": { "exportFormat": "png", "canvasPreset": "auto", "inspectorTab": "theme" },
     "schemaFeatures": {
-      "zh-CN": ["Markdown 转 PNG、JPEG、WebP、SVG 和 PDF", "代码高亮、KaTeX 公式与 Mermaid 图表", "浏览器本地处理且无水印"],
-      "en": ["Markdown to PNG, JPEG, WebP, SVG and PDF", "Syntax highlighting, KaTeX formulas and Mermaid diagrams", "Local browser processing with no watermark"]
+      "zh-CN": ["Markdown 转 PNG、JPEG、WebP、SVG 和 PDF", "代码高亮、KaTeX 公式与 Mermaid 图表", "浏览器本地处理，免费导出包含品牌署名"],
+      "en": ["Markdown to PNG, JPEG, WebP, SVG and PDF", "Syntax highlighting, KaTeX formulas and Mermaid diagrams", "Local browser processing with a brand signature on free exports"]
     }
   },
   {
@@ -43,12 +82,12 @@
     "path": "/markdown-long-image/",
     "enPath": "/en/markdown-long-image/",
     "inputKind": "markdown",
-    "title": { "zh-CN": "Markdown 转长图与分片 ZIP · MD2IMG", "en": "Markdown to Long Image and Split ZIP · MD2IMG" },
+    "title": { "zh-CN": "Markdown 转长图与分片 ZIP · MarkGleam", "en": "Markdown to Long Image and Split ZIP · MarkGleam" },
     "description": { "zh-CN": "把长篇 Markdown 排成连续长图；内容超出浏览器画布上限时，按指定高度分片并下载 ZIP。", "en": "Turn long Markdown documents into continuous images, or split oversized output at a chosen height and download the parts as a ZIP." },
     "h1": { "zh-CN": "Markdown 转长图", "en": "Markdown to Long Image" },
     "intro": { "zh-CN": "这个模式使用自适应高度画布，并把导出预设为分片 ZIP。分片宽度、主题和排版与完整预览保持一致。", "en": "This mode uses an auto-height canvas and presets export to a split ZIP. Every part keeps the width, theme and typography of the full preview." },
     "steps": { "zh-CN": ["粘贴长篇 Markdown", "设置画布宽度和分片高度", "导出分片 ZIP"], "en": ["Paste a long Markdown document", "Set the canvas width and split height", "Export the image parts as a ZIP"] },
-    "limitations": { "zh-CN": "分片会按固定像素高度切割，复杂表格或大图可能跨越分片边界；导出前请检查预览。", "en": "Parts are cut at a fixed pixel height, so a large table or image can cross a split boundary. Check the preview before exporting." },
+    "limitations": { "zh-CN": "工具会尽量在段落、标题等内容块之间分片；如果单张大图或复杂表格本身就超过分片高度，该图片仍可能高于设定值。", "en": "The tool splits between content blocks where possible. A single image or complex table that is taller than the chosen part height can still produce an oversized part." },
     "sample": { "zh-CN": "# 长图示例\n\n## 第一节\n\n长篇笔记可以保留统一排版。\n\n## 第二节\n\n超过画布上限时可分片下载。", "en": "# Long image example\n\n## Part one\n\nKeep consistent styling across a long document.\n\n## Part two\n\nSplit output when it exceeds browser canvas limits." },
     "defaults": { "exportFormat": "split-zip", "canvasPreset": "auto", "inspectorTab": "export", "splitHeight": 4096 },
     "schemaFeatures": { "zh-CN": ["自适应高度 Markdown 长图", "可调分片高度", "多张 PNG 打包为 ZIP"], "en": ["Auto-height Markdown images", "Adjustable split height", "PNG parts packaged as a ZIP"] }
@@ -58,7 +97,7 @@
     "path": "/markdown-to-pdf/",
     "enPath": "/en/markdown-to-pdf/",
     "inputKind": "markdown",
-    "title": { "zh-CN": "Markdown 转 PDF：分页与打印设置 · MD2IMG", "en": "Markdown to PDF with Page and Print Settings · MD2IMG" },
+    "title": { "zh-CN": "Markdown 转 PDF：分页与打印设置 · MarkGleam", "en": "Markdown to PDF with Page and Print Settings · MarkGleam" },
     "description": { "zh-CN": "将 Markdown 导出为保留主题的 PDF，或用浏览器打印生成可搜索 PDF。支持 A4/Letter、方向、边距与分页设置。", "en": "Export Markdown as a styled PDF or use browser printing for searchable text, with A4/Letter size, orientation, margins and page settings." },
     "h1": { "zh-CN": "Markdown 转 PDF", "en": "Markdown to PDF" },
     "intro": { "zh-CN": "保留样式 PDF 适合分享视觉稿；打印模式保留可搜索、可复制的文字。两种方式都可调整纸张、方向和页边距。", "en": "Styled PDF keeps the visual theme for sharing. Print mode keeps text searchable and selectable. Both support paper size, orientation and margins." },
@@ -73,7 +112,7 @@
     "path": "/mermaid-to-image/",
     "enPath": "/en/mermaid-to-image/",
     "inputKind": "mermaid",
-    "title": { "zh-CN": "Mermaid 转图片：在线 PNG 与 SVG 导出 · MD2IMG", "en": "Mermaid to Image: Export PNG and SVG Online · MD2IMG" },
+    "title": { "zh-CN": "Mermaid 转图片：在线 PNG 与 SVG 导出 · MarkGleam", "en": "Mermaid to Image: Export PNG and SVG Online · MarkGleam" },
     "description": { "zh-CN": "直接粘贴 Mermaid 源码并预览流程图，无需添加 Markdown 代码围栏；可调整背景和画布后导出 PNG、WebP 或 SVG。", "en": "Paste Mermaid source directly without Markdown fences, preview the diagram, adjust its canvas and export PNG, WebP or SVG." },
     "h1": { "zh-CN": "Mermaid 转图片", "en": "Mermaid to Image" },
     "intro": { "zh-CN": "编辑器接收原始 Mermaid 语法，页面会自动包装并渲染图表。导出前可以调整画布宽度、留白和背景。", "en": "The editor accepts raw Mermaid syntax and wraps it for rendering automatically. Adjust canvas width, padding and background before export." },
@@ -88,7 +127,7 @@
     "path": "/formula-to-image/",
     "enPath": "/en/formula-to-image/",
     "inputKind": "formula",
-    "title": { "zh-CN": "LaTeX 公式转图片：KaTeX 实时预览 · MD2IMG", "en": "LaTeX Formula to Image with KaTeX Preview · MD2IMG" },
+    "title": { "zh-CN": "LaTeX 公式转图片：KaTeX 实时预览 · MarkGleam", "en": "LaTeX Formula to Image with KaTeX Preview · MarkGleam" },
     "description": { "zh-CN": "直接输入 LaTeX 数学公式，通过 KaTeX 实时预览，再用透明或自定义背景导出 PNG、WebP 或 SVG。", "en": "Enter a LaTeX formula directly, preview it with KaTeX, then export PNG, WebP or SVG with a transparent or custom background." },
     "h1": { "zh-CN": "LaTeX 公式转图片", "en": "LaTeX Formula to Image" },
     "intro": { "zh-CN": "只需输入公式内容，不必手动添加美元符号。页面会将内容作为独立公式渲染，并保留常用 KaTeX 排版。", "en": "Enter only the formula—no dollar delimiters are needed. The page renders it as a display equation with standard KaTeX typesetting." },
@@ -103,7 +142,7 @@
     "path": "/code-to-image/",
     "enPath": "/en/code-to-image/",
     "inputKind": "code",
-    "title": { "zh-CN": "代码转图片：语法高亮与主题 · MD2IMG", "en": "Code to Image with Syntax Highlighting and Themes · MD2IMG" },
+    "title": { "zh-CN": "代码转图片：语法高亮与主题 · MarkGleam", "en": "Code to Image with Syntax Highlighting and Themes · MarkGleam" },
     "description": { "zh-CN": "粘贴代码、选择语言并生成带语法高亮的图片。支持主题、画布、背景和 PNG、WebP、SVG 导出。", "en": "Paste code, choose its language and create a syntax-highlighted image with configurable themes, canvas, background and PNG, WebP or SVG export." },
     "h1": { "zh-CN": "代码转图片", "en": "Code to Image" },
     "intro": { "zh-CN": "代码模式直接接收源码，并自动包装为高亮代码块。选择正确的语言后，再调整主题、字号和画布。", "en": "Code mode accepts source directly and wraps it as a highlighted block. Choose the correct language, then adjust the theme, type size and canvas." },
@@ -118,7 +157,7 @@
     "path": "/github-readme-to-image/",
     "enPath": "/en/github-readme-to-image/",
     "inputKind": "github-readme",
-    "title": { "zh-CN": "GitHub README 转图片：从公开仓库导入 · MD2IMG", "en": "GitHub README to Image from a Public Repository · MD2IMG" },
+    "title": { "zh-CN": "GitHub README 转图片：从公开仓库导入 · MarkGleam", "en": "GitHub README to Image from a Public Repository · MarkGleam" },
     "description": { "zh-CN": "输入公开 GitHub 仓库、README 或 raw 文件地址，加载内容并修正相对资源路径，再导出为图片或 PDF。", "en": "Load a public GitHub repository, README or raw file URL, resolve relative asset paths, then export the document as an image or PDF." },
     "h1": { "zh-CN": "GitHub README 转图片", "en": "GitHub README to Image" },
     "intro": { "zh-CN": "粘贴公开仓库或 README 地址即可载入内容。相对图片和链接会按文件所在目录解析，原始 Markdown 仍可继续编辑。", "en": "Paste a public repository or README URL to load it. Relative images and links resolve from the file location, and the imported Markdown remains editable." },
@@ -133,7 +172,7 @@
     "path": "/batch-markdown-to-image/",
     "enPath": "/en/batch-markdown-to-image/",
     "inputKind": "batch",
-    "title": { "zh-CN": "批量 Markdown 转图片与 ZIP 下载 · MD2IMG", "en": "Batch Markdown to Images and ZIP Download · MD2IMG" },
+    "title": { "zh-CN": "批量 Markdown 转图片与 ZIP 下载 · MarkGleam", "en": "Batch Markdown to Images and ZIP Download · MarkGleam" },
     "description": { "zh-CN": "一次导入多个 Markdown 文件，使用相同主题逐个生成 PNG，并将成功结果打包为 ZIP；单个失败不会中断队列。", "en": "Import multiple Markdown files, render each as PNG with shared styling and download successful results as a ZIP without one failure stopping the queue." },
     "h1": { "zh-CN": "批量 Markdown 转图片", "en": "Batch Markdown to Images" },
     "intro": { "zh-CN": "批量模式为所有文件应用同一套主题和画布设置。队列会逐个渲染，完成后统一下载 PNG ZIP。", "en": "Batch mode applies one theme and canvas configuration to every file. The queue renders files one at a time and packages the PNG results in a ZIP." },

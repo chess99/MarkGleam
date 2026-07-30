@@ -1,6 +1,6 @@
-# MD2IMG
+# MarkGleam
 
-一款完全免费、本地优先的 Markdown 转图片工具。无需登录，没有次数限制，导出图片不带水印。
+一个在浏览器中运行的结构化内容视觉工作台。支持 Markdown、代码、Mermaid、LaTeX 和 README；免费导出不限次数，并保留画布中显示的 MarkGleam 品牌署名。
 
 ## 功能
 
@@ -12,6 +12,7 @@
 - Markdown 文件、图片拖放导入和浏览器本地自动保存
 - 中文与英文界面、桌面三栏工作台和移动端模式切换
 - 所有内容和导出均在浏览器本地处理
+- 极简、摄影参数和印章三种品牌署名样式
 
 ## 本地开发
 
@@ -43,7 +44,7 @@ npx playwright install chromium firefox webkit
 
 - 复制图片依赖 `ClipboardItem` 和安全上下文，不支持时会自动下载 PNG。
 - 远程图片受原站 CORS 策略约束。将图片下载到本地后拖入编辑器最可靠。
-- 超长图片可能超过浏览器画布上限，MD2IMG 会自动改为分片 ZIP。
+- 超长图片可能超过浏览器画布上限，MarkGleam 会自动改为分片 ZIP；品牌署名只出现在最后一张分片中。
 - 本地上传的图片和字体保存在 IndexedDB；Markdown 与设置保存在 localStorage。
 
 ## GitHub Pages 部署
@@ -52,18 +53,18 @@ npx playwright install chromium firefox webkit
 
 Vite 使用根路径资源，生产站应部署在域名根目录。当前 canonical、静态工具页和 sitemap 都指向：
 
-- `https://md2img.cearl.cc/`
+- `https://markgleam.com/`
 
 如果改用 `https://chess99.github.io/markdown-to-image/` 这类项目子路径，需要同时调整 Vite `base`、canonical、sitemap 和静态页生成逻辑，不能直接复用当前构建产物。
 
-仓库不包含 `CNAME` 文件。自定义域名由 GitHub Pages 与 DNS 后台配置。
+仓库通过 `public/CNAME` 固定部署到 `markgleam.com`。旧域名跳转和 `www` 域名规范化需要在 DNS/CDN 平台配置。
 
 ## 访问统计
 
 生产环境会在页面加载完成后的浏览器空闲时段接入 Google Analytics 4 与百度统计，本地开发和 `127.0.0.1` 预览不会上报。
 
 - 默认 GA4 Measurement ID：`G-XRTY7G7G3Y`
-- 默认百度统计站点 ID：`771a2878fa58bca1d5d31f597f9315be`
+- 默认百度统计站点 ID：`4c713833827d4fad6f6bc4800c163cee`
 - 自定义事件：`export_completed`，只包含导出格式、倍率和分片数量
 
 如需在其他部署环境覆盖默认统计配置，可在构建时设置：
@@ -73,11 +74,11 @@ VITE_GOOGLE_MEASUREMENT_ID=G-XXXXXXXXXX
 VITE_BAIDU_ANALYTICS_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-本站默认使用 `md2img.cearl.cc` 的独立数据流与站点 ID，避免和其他域名的数据混在一起。
+GA4 沿用迁移前的数据流以保留历史连续性；百度统计使用 `markgleam.com` 的独立站点 ID。两者都可以通过环境变量覆盖。
 
 ## 隐私
 
-MD2IMG 没有内容服务器。Markdown、本地图片、字体、文件名和导出文件不会上传。生产站点会向 Google Analytics 与百度统计发送页面访问和不含内容的导出事件；使用远程图片链接时，浏览器会直接向图片原地址发起请求。
+MarkGleam 没有内容服务器。Markdown、本地图片、字体、文件名和导出文件不会上传。生产站点会向 Google Analytics 与百度统计发送页面访问和不含内容的导出事件；使用远程图片链接时，浏览器会直接向图片原地址发起请求。
 
 ## PDF 与打印
 
@@ -91,7 +92,7 @@ MD2IMG 没有内容服务器。Markdown、本地图片、字体、文件名和�
 
 ## English
 
-MD2IMG is a free, local-first Markdown-to-image studio. It supports rich Markdown, math, diagrams, themes, local assets, and watermark-free exports. Run `npm install && npm run dev` to start.
+MarkGleam is a local-first workspace for turning Markdown, code, diagrams and formulas into share-ready visuals. Free exports include the brand signature shown on the canvas. Run `npm install && npm run dev` to start.
 
 ## License
 
