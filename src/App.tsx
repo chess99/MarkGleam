@@ -491,10 +491,6 @@ function App() {
                 {canvas.width} × {Math.max(canvas.minHeight, outputHeight)}
                 px
               </span>
-              <span className="local-chip">
-                <LockKeyhole size={12} />
-                {t(locale, 'free')}
-              </span>
             </div>
           </header>
           <MarkdownPreview

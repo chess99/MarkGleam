@@ -330,8 +330,7 @@ select:focus-visible {
 .pane-actions,
 .preview-meta,
 .statusbar > div,
-.saved-status,
-.local-chip {
+.saved-status {
   display: flex;
   align-items: center;
 }
@@ -507,7 +506,7 @@ select:focus-visible {
   top: calc(100% + 8px);
   right: 0;
   z-index: 120;
-  min-width: 100%;
+  min-width: max(100%, 144px);
   overflow: hidden;
   color: var(--ink);
   border: 1px solid var(--line);
@@ -540,6 +539,7 @@ select:focus-visible {
   outline: none;
   cursor: pointer;
   user-select: none;
+  white-space: nowrap;
 }
 
 .language-menu-item:hover,
@@ -961,16 +961,6 @@ select:focus-visible {
   gap: 10px;
   color: var(--muted);
   font-size: 11px;
-}
-
-.local-chip {
-  gap: 4px;
-  padding: 4px 7px;
-  color: var(--success-ink);
-  font-weight: 700;
-  border: 1px solid var(--success-border);
-  border-radius: 99px;
-  background: var(--success-bg);
 }
 
 .preview-container {

@@ -712,7 +712,14 @@ test('keeps mobile language switching and native editor scrolling available', as
     await language.evaluate((element) => element.clientHeight),
   )
   await language.click()
-  await expect(page.getByRole('option')).toHaveCount(2)
+  const languageOptions = page.getByRole('option')
+  await expect(languageOptions).toHaveCount(2)
+  for (const option of await languageOptions.all()) {
+    await expect(option).toHaveCSS('white-space', 'nowrap')
+    expect(await option.evaluate((element) => element.scrollHeight)).toBe(
+      await option.evaluate((element) => element.clientHeight),
+    )
+  }
   await page.getByRole('option', { name: 'English' }).click()
   await expect(page.locator('.mobile-export')).toContainText('Export')
 
