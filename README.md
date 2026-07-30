@@ -90,10 +90,20 @@ MarkGleam 没有内容服务器。Markdown、本地图片、字体、文件名�
 
 打印实现、浏览器行为和已知边界见 [打印工作流说明](./docs/printing.md)。
 
+## 许可证
+
+MarkGleam 源代码采用 [Functional Source License 1.1，MIT Future License（FSL-1.1-MIT）](./LICENSE)。你可以查看、复制、修改和再分发代码，并将其用于内部使用、非商业教育、非商业研究等非竞争性用途。
+
+在每个版本发布后的两年内，不得将该版本作为能够替代 MarkGleam、替代版权方基于 MarkGleam 提供的产品或服务，或提供相同及实质相似功能的商业产品或服务向他人提供。每个版本发布满两年后，该版本自动获得 MIT 许可证授权。需要竞争性商业使用授权时，请联系版权方。
+
+本项目是源码可见软件，不是 [OSI](https://opensource.org/osd) 定义的开源软件。本次许可证变更不追溯影响此前已经按照 MIT 许可证发布的版本。
+
+MarkGleam 名称、Logo、产品标识及其他品牌资产不随源代码授权；除注明软件来源外，许可证不授予使用这些品牌资产的权利。
+
 ## English
 
 MarkGleam is a local-first workspace for turning Markdown, code, diagrams and formulas into share-ready visuals. Free exports include the brand signature shown on the canvas. Run `npm install && npm run dev` to start.
 
 ## License
 
-[MIT](./LICENSE)
+MarkGleam is licensed under the [Functional Source License 1.1, MIT Future License (FSL-1.1-MIT)](./LICENSE). Competing commercial use is prohibited for two years after each version is released; that version then becomes available under the MIT License. MarkGleam names, logos, product identities, and other brand assets are not licensed with the source code. Versions previously released under the MIT License remain available under their original terms.
