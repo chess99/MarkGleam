@@ -215,6 +215,14 @@ test('applies presets, custom CSS, background images, transparency and fonts', a
     'background-image',
     /blob:/,
   )
+  const backgroundSignature = page
+    .getByTestId('export-surface')
+    .locator('[data-export-signature]')
+  await expect(backgroundSignature).not.toHaveClass(/signature-has-panel/)
+  await expect(backgroundSignature).toHaveCSS(
+    'background-color',
+    'rgba(0, 0, 0, 0)',
+  )
 
   const transparent = page.getByRole('checkbox', { name: '透明背景' })
   await transparent.check()
@@ -227,6 +235,7 @@ test('applies presets, custom CSS, background images, transparency and fonts', a
     'none',
   )
   await expect(page.getByRole('button', { name: '背景图片' })).toBeDisabled()
+  await expect(backgroundSignature).toHaveClass(/signature-has-panel/)
   await transparent.uncheck()
 
   await page.getByRole('tab', { name: '主题' }).click()
@@ -302,6 +311,10 @@ test('lets free users style the required brand signature without hiding it', asy
   await expect(signature).toHaveClass(/signature-minimal/)
   await expect(signature).toContainText('使用 MarkGleam 制作')
   await expect(signature).toContainText('markgleam.com')
+  await expect(signature.locator('.signature-minimal-copy')).toHaveCSS(
+    'white-space',
+    'nowrap',
+  )
 
   await page.getByRole('button', { name: '作品信息' }).click()
   await expect(signature).toHaveClass(/signature-camera/)

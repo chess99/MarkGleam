@@ -24,7 +24,6 @@ interface ExportSignatureProps {
   canvasWidth: number
   contentWidth: number
   backgroundColor: string
-  hasBackgroundImage: boolean
   transparent: boolean
 }
 
@@ -36,16 +35,14 @@ export function ExportSignature({
   canvasWidth,
   contentWidth,
   backgroundColor,
-  hasBackgroundImage,
   transparent,
 }: ExportSignatureProps) {
   const theme = getTheme(themeId)
   const inputLabel = inputLabels[inputKind][locale]
   const fontSize = Math.max(11, Math.min(18, canvasWidth * 0.014))
-  const needsPanel = transparent || hasBackgroundImage
   const palette = getSignaturePalette(
     transparent ? theme.surface : backgroundColor,
-    needsPanel,
+    transparent,
   )
 
   return (

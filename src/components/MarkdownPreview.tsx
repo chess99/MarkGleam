@@ -298,7 +298,6 @@ export function MarkdownPreview({
               canvasWidth={canvas.width}
               contentWidth={Math.max(0, canvas.width - canvas.paddingX * 2)}
               backgroundColor={canvas.backgroundColor}
-              hasBackgroundImage={Boolean(backgroundUrl)}
               transparent={canvas.transparent}
             />
           </div>

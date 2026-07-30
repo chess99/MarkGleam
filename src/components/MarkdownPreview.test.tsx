@@ -59,7 +59,7 @@ describe('MarkdownPreview', () => {
     expect(signature).toHaveTextContent('markgleam.com')
   })
 
-  it('keeps the signature readable on a custom background and stacks it on narrow canvases', () => {
+  it('uses the veiled canvas color without adding a panel and stacks on narrow canvases', () => {
     useAppStore.setState({
       themeId: 'night',
       canvas: {
@@ -78,6 +78,7 @@ describe('MarkdownPreview', () => {
       '[data-export-signature]',
     )
     expect(signature).toHaveClass('signature-compact')
+    expect(signature).not.toHaveClass('signature-has-panel')
     expect(signature?.style.getPropertyValue('--signature-ink')).toBe('#202326')
     expect(signature?.style.getPropertyValue('--signature-muted')).toBe('#34393d')
   })

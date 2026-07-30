@@ -1080,6 +1080,11 @@ select:focus-visible {
   color: var(--signature-accent, var(--theme-accent));
 }
 
+.signature-minimal-copy {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 .signature-domain {
   min-width: 0;
   font-size: 0.82em;
