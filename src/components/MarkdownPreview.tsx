@@ -14,13 +14,20 @@ import { loadAssetUrl } from '../lib/assets'
 import { scopeCustomCss } from '../lib/css'
 import { remarkPageBreak } from '../lib/pagebreak'
 import { useAppStore } from '../store'
+import type { InputKind } from '../types'
 import { AssetImage } from './AssetImage'
+import { CodePreview } from './CodePreview'
+import { FormulaPreview } from './FormulaPreview'
 import { MermaidBlock } from './MermaidBlock'
 
 interface MarkdownPreviewProps {
   surfaceRef: React.RefObject<HTMLDivElement | null>
   onSurfaceReady?: (surface: HTMLDivElement) => void
   onHeightChange?: (height: number) => void
+  source?: string
+  inputKind?: InputKind
+  codeLanguage?: string
+  surfaceId?: string
 }
 
 const remarkPlugins = [remarkPageBreak, remarkGfm, remarkMath]
@@ -57,8 +64,17 @@ export function MarkdownPreview({
   surfaceRef,
   onSurfaceReady,
   onHeightChange,
+  source,
+  inputKind: explicitInputKind,
+  codeLanguage: explicitCodeLanguage,
+  surfaceId = 'md2img-export-surface',
 }: MarkdownPreviewProps) {
-  const markdown = useAppStore((state) => state.markdown)
+  const storedMarkdown = useAppStore((state) => state.markdown)
+  const storedInputKind = useAppStore((state) => state.inputKind)
+  const storedCodeLanguage = useAppStore((state) => state.codeLanguage)
+  const markdown = source ?? storedMarkdown
+  const inputKind = explicitInputKind ?? storedInputKind
+  const codeLanguage = explicitCodeLanguage ?? storedCodeLanguage
   const themeId = useAppStore((state) => state.themeId)
   const canvas = useAppStore((state) => state.canvas)
   const customCss = useAppStore((state) => state.customCss)
@@ -73,10 +89,13 @@ export function MarkdownPreview({
   const [katexPlugin, setKatexPlugin] = useState<RehypePlugin>()
   const [highlightPlugin, setHighlightPlugin] = useState<RehypePlugin>()
   const theme = useMemo(() => getTheme(themeId), [themeId])
-  const needsKatex = useMemo(() => containsMath(markdown), [markdown])
+  const needsKatex = useMemo(
+    () => inputKind === 'markdown' && containsMath(markdown),
+    [inputKind, markdown],
+  )
   const needsHighlight = useMemo(
-    () => containsHighlightedCode(markdown),
-    [markdown],
+    () => inputKind === 'markdown' && containsHighlightedCode(markdown),
+    [inputKind, markdown],
   )
   const rehypePlugins = useMemo(
     () =>
@@ -88,6 +107,9 @@ export function MarkdownPreview({
       >,
     [highlightPlugin, katexPlugin, needsHighlight, needsKatex],
   )
+  const markdownPluginsLoading =
+    inputKind === 'markdown' &&
+    ((needsKatex && !katexPlugin) || (needsHighlight && !highlightPlugin))
 
   useEffect(() => {
     if (!needsKatex || katexPlugin) return
@@ -235,22 +257,34 @@ export function MarkdownPreview({
               surfaceRef.current = node
               if (node) onSurfaceReady?.(node)
             }}
-            id="md2img-export-surface"
+            id={surfaceId}
             className={`export-surface ${canvas.shadow ? 'has-shadow' : ''}`}
             style={style}
             data-testid="export-surface"
+            data-input-kind={inputKind}
             data-md2img-background-asset-id={canvas.backgroundAssetId}
           >
             {scopedCss && <style>{scopedCss}</style>}
-            <article className="markdown-body" data-export-content>
-              <ReactMarkdown
-                remarkPlugins={remarkPlugins}
-                rehypePlugins={rehypePlugins}
-                components={markdownComponents}
-                urlTransform={markdownUrlTransform}
-              >
-                {markdown}
-              </ReactMarkdown>
+            <article
+              className="markdown-body"
+              data-export-content
+              data-render-state={markdownPluginsLoading ? 'loading' : 'ready'}
+            >
+              {inputKind === 'markdown' && (
+                <ReactMarkdown
+                  remarkPlugins={remarkPlugins}
+                  rehypePlugins={rehypePlugins}
+                  components={markdownComponents}
+                  urlTransform={markdownUrlTransform}
+                >
+                  {markdown}
+                </ReactMarkdown>
+              )}
+              {inputKind === 'mermaid' && <MermaidBlock chart={markdown} />}
+              {inputKind === 'formula' && <FormulaPreview formula={markdown} />}
+              {inputKind === 'code' && (
+                <CodePreview code={markdown} language={codeLanguage} />
+              )}
             </article>
           </div>
         </div>

@@ -1,9 +1,115 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://md2img.cearl.cc/</loc>
-    <lastmod>2026-07-24</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/" />
+    <lastmod>2026-07-30</lastmod>
+  </url>
+  <url>
+    <loc>https://md2img.cearl.cc/en/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/" />
+    <lastmod>2026-07-30</lastmod>
+  </url>
+  <url>
+    <loc>https://md2img.cearl.cc/markdown-long-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/markdown-long-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/markdown-long-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/markdown-long-image/" />
+    <lastmod>2026-07-30</lastmod>
+  </url>
+  <url>
+    <loc>https://md2img.cearl.cc/en/markdown-long-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/markdown-long-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/markdown-long-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/markdown-long-image/" />
+    <lastmod>2026-07-30</lastmod>
+  </url>
+  <url>
+    <loc>https://md2img.cearl.cc/markdown-to-pdf/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/markdown-to-pdf/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/markdown-to-pdf/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/markdown-to-pdf/" />
+    <lastmod>2026-07-30</lastmod>
+  </url>
+  <url>
+    <loc>https://md2img.cearl.cc/en/markdown-to-pdf/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/markdown-to-pdf/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/markdown-to-pdf/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/markdown-to-pdf/" />
+    <lastmod>2026-07-30</lastmod>
+  </url>
+  <url>
+    <loc>https://md2img.cearl.cc/mermaid-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/mermaid-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/mermaid-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/mermaid-to-image/" />
+    <lastmod>2026-07-30</lastmod>
+  </url>
+  <url>
+    <loc>https://md2img.cearl.cc/en/mermaid-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/mermaid-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/mermaid-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/mermaid-to-image/" />
+    <lastmod>2026-07-30</lastmod>
+  </url>
+  <url>
+    <loc>https://md2img.cearl.cc/formula-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/formula-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/formula-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/formula-to-image/" />
+    <lastmod>2026-07-30</lastmod>
+  </url>
+  <url>
+    <loc>https://md2img.cearl.cc/en/formula-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/formula-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/formula-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/formula-to-image/" />
+    <lastmod>2026-07-30</lastmod>
+  </url>
+  <url>
+    <loc>https://md2img.cearl.cc/code-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/code-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/code-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/code-to-image/" />
+    <lastmod>2026-07-30</lastmod>
+  </url>
+  <url>
+    <loc>https://md2img.cearl.cc/en/code-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/code-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/code-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/code-to-image/" />
+    <lastmod>2026-07-30</lastmod>
+  </url>
+  <url>
+    <loc>https://md2img.cearl.cc/github-readme-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/github-readme-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/github-readme-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/github-readme-to-image/" />
+    <lastmod>2026-07-30</lastmod>
+  </url>
+  <url>
+    <loc>https://md2img.cearl.cc/en/github-readme-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/github-readme-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/github-readme-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/github-readme-to-image/" />
+    <lastmod>2026-07-30</lastmod>
+  </url>
+  <url>
+    <loc>https://md2img.cearl.cc/batch-markdown-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/batch-markdown-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/batch-markdown-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/batch-markdown-to-image/" />
+    <lastmod>2026-07-30</lastmod>
+  </url>
+  <url>
+    <loc>https://md2img.cearl.cc/en/batch-markdown-to-image/</loc>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://md2img.cearl.cc/batch-markdown-to-image/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://md2img.cearl.cc/en/batch-markdown-to-image/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://md2img.cearl.cc/batch-markdown-to-image/" />
+    <lastmod>2026-07-30</lastmod>
   </url>
 </urlset>

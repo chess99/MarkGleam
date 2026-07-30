@@ -12,14 +12,11 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/')
 })
 
-test('loads the complete editor workspace and rich preview', async ({ page }) => {
+test('loads the complete editor workspace and preview', async ({ page }) => {
   await expect(page).toHaveTitle(/MD2IMG/)
   await expect(page.getByText('MD2IMG', { exact: true })).toBeVisible()
   await expect(page.getByTestId('markdown-editor')).toBeVisible()
   await expect(page.getByTestId('export-surface')).toBeVisible()
-  await expect(page.locator('.katex')).toHaveCount(2)
-  await expect(page.locator('.katex').first()).toBeVisible()
-  await expect(page.locator('[data-mermaid-state="ready"]')).toBeVisible()
 })
 
 test('exposes indexable product metadata without loading analytics locally', async ({
@@ -44,6 +41,7 @@ test('exposes indexable product metadata without loading analytics locally', asy
 test('keeps Mermaid rendered when the workspace layout changes', async ({
   page,
 }) => {
+  await page.goto('/mermaid-to-image/')
   const surface = page.getByTestId('export-surface')
   await expect(
     surface.locator('[data-mermaid-state="ready"]'),

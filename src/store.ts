@@ -1,22 +1,32 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { sampleMarkdown } from './data/sample'
+import { createToolDrafts } from './data/toolSamples'
 import { getTheme } from './data/themes'
 import { suggestFilename } from './lib/filename'
+import {
+  getToolInputKind,
+  switchToolInput,
+} from './lib/toolInput'
 import type {
   Appearance,
   CanvasConfig,
   DocumentState,
   ExportConfig,
+  InputKind,
   InspectorTab,
   Locale,
   MobilePane,
+  ToolId,
   ThemeId,
 } from './types'
 
 type PersistedDocumentState = Pick<
   DocumentState,
   | 'markdown'
+  | 'inputKind'
+  | 'drafts'
+  | 'codeLanguage'
   | 'locale'
   | 'appearance'
   | 'themeId'
@@ -49,11 +59,18 @@ export const defaultExport: ExportConfig = {
   pdfSize: 'a4',
   pdfOrientation: 'portrait',
   pdfMargin: 12,
+  pdfHeader: '',
+  pdfFooter: '',
+  pdfPageNumbers: true,
   splitHeight: 4096,
 }
 
 export const defaultDocumentState: DocumentState = {
+  toolId: 'markdown-to-image',
+  inputKind: 'markdown',
+  drafts: createToolDrafts(),
   markdown: sampleMarkdown,
+  codeLanguage: 'typescript',
   locale: 'zh-CN',
   appearance: 'light',
   themeId: 'paper',
@@ -67,7 +84,10 @@ export const defaultDocumentState: DocumentState = {
 }
 
 interface AppStore extends DocumentState {
+  setToolId: (toolId: ToolId) => void
+  setInputKind: (inputKind: InputKind) => void
   setMarkdown: (markdown: string) => void
+  setCodeLanguage: (codeLanguage: string) => void
   setLocale: (locale: Locale) => void
   setAppearance: (appearance: Appearance) => void
   setThemeId: (themeId: ThemeId) => void
@@ -86,6 +106,13 @@ export const useAppStore = create<AppStore>()(
   persist(
     (set) => ({
       ...defaultDocumentState,
+      setToolId: (toolId) =>
+        set((state) => ({
+          toolId,
+          ...switchToolInput(state, getToolInputKind(toolId)),
+        })),
+      setInputKind: (inputKind) =>
+        set((state) => switchToolInput(state, inputKind)),
       setMarkdown: (markdown) =>
         set((state) => {
           const currentSuggestion = suggestFilename(state.markdown)
@@ -95,11 +122,16 @@ export const useAppStore = create<AppStore>()(
             state.export.filename === currentSuggestion
           return {
             markdown,
+            drafts: {
+              ...state.drafts,
+              [state.inputKind]: markdown,
+            },
             export: shouldRefreshFilename
               ? { ...state.export, filename: suggestFilename(markdown) }
               : state.export,
           }
         }),
+      setCodeLanguage: (codeLanguage) => set({ codeLanguage }),
       setLocale: (locale) => set({ locale }),
       setAppearance: (appearance) => set({ appearance }),
       setThemeId: (themeId) =>
@@ -123,10 +155,14 @@ export const useAppStore = create<AppStore>()(
       setInspectorTab: (inspectorTab) => set({ inspectorTab }),
       resetDocument: () =>
         set((state) => ({
-          markdown: sampleMarkdown,
+          markdown: createToolDrafts()[state.inputKind],
+          drafts: {
+            ...state.drafts,
+            [state.inputKind]: createToolDrafts()[state.inputKind],
+          },
           export: {
             ...state.export,
-            filename: suggestFilename(sampleMarkdown),
+            filename: suggestFilename(createToolDrafts()[state.inputKind]),
           },
         })),
       resetSettings: () =>
@@ -143,14 +179,15 @@ export const useAppStore = create<AppStore>()(
     }),
     {
       name: 'md2img-state-v1',
-      version: 2,
+      version: 3,
       migrate: (persisted, version) => {
         const saved = persisted as PersistedDocumentState
+        let migrated: PersistedDocumentState = saved
         if (
           version < 2 &&
           saved.canvas?.backgroundColor === '#f2eee6'
         ) {
-          return {
+          migrated = {
             ...saved,
             canvas: {
               ...saved.canvas,
@@ -158,10 +195,23 @@ export const useAppStore = create<AppStore>()(
             },
           }
         }
-        return saved
+        if (version < 3) {
+          const drafts = createToolDrafts()
+          drafts.markdown = saved.markdown ?? sampleMarkdown
+          migrated = {
+            ...migrated,
+            inputKind: 'markdown',
+            drafts,
+            codeLanguage: 'typescript',
+          }
+        }
+        return migrated
       },
       partialize: (state) => ({
         markdown: state.markdown,
+        inputKind: state.inputKind,
+        drafts: state.drafts,
+        codeLanguage: state.codeLanguage,
         locale: state.locale,
         appearance: state.appearance,
         themeId: state.themeId,
@@ -176,6 +226,7 @@ export const useAppStore = create<AppStore>()(
         return {
           ...current,
           ...saved,
+          drafts: { ...current.drafts, ...saved.drafts },
           canvas: { ...current.canvas, ...saved.canvas },
           export: { ...current.export, ...saved.export },
         }

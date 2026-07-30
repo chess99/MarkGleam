@@ -94,4 +94,57 @@ describe('MarkdownPreview', () => {
     expect(mermaidLifecycle.mounts).toBe(1)
     expect(mermaidLifecycle.unmounts).toBe(0)
   })
+
+  it('renders an explicit Mermaid source without changing the active draft', () => {
+    const surfaceRef = createRef<HTMLDivElement>()
+    render(
+      <MarkdownPreview
+        surfaceRef={surfaceRef}
+        source={'flowchart LR\n  Input --> Image'}
+        inputKind="mermaid"
+      />,
+    )
+
+    expect(screen.getByTestId('mermaid-mock')).toHaveTextContent(
+      'Input --> Image',
+    )
+    expect(surfaceRef.current).toHaveAttribute('data-input-kind', 'mermaid')
+    expect(useAppStore.getState().markdown).toContain('# Hello')
+  })
+
+  it('renders raw code as highlighted text rather than Markdown', async () => {
+    const surfaceRef = createRef<HTMLDivElement>()
+    render(
+      <MarkdownPreview
+        surfaceRef={surfaceRef}
+        source={'const tag = "<strong>safe</strong>"'}
+        inputKind="code"
+        codeLanguage="typescript"
+      />,
+    )
+
+    await waitFor(() =>
+      expect(
+        document.querySelector('[data-render-state="ready"] code.hljs'),
+      ).toBeTruthy(),
+    )
+    expect(document.querySelector('.markdown-body strong')).not.toBeInTheDocument()
+    expect(document.querySelector('.markdown-body code')).toHaveTextContent(
+      '<strong>safe</strong>',
+    )
+  })
+
+  it('renders a raw formula without Markdown delimiters', async () => {
+    const surfaceRef = createRef<HTMLDivElement>()
+    render(
+      <MarkdownPreview
+        surfaceRef={surfaceRef}
+        source={'E = mc^2'}
+        inputKind="formula"
+      />,
+    )
+
+    await waitFor(() => expect(document.querySelector('.katex')).toBeTruthy())
+    expect(document.querySelector('[data-render-state="ready"]')).toBeTruthy()
+  })
 })

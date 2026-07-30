@@ -10,6 +10,20 @@ import { t } from '../i18n'
 import { saveAsset } from '../lib/assets'
 import { useAppStore } from '../store'
 
+const codeLanguages = [
+  'typescript',
+  'javascript',
+  'python',
+  'java',
+  'go',
+  'rust',
+  'bash',
+  'json',
+  'css',
+  'html',
+  'plaintext',
+]
+
 const DesktopMarkdownEditor = lazy(() => import('./DesktopMarkdownEditor'))
 
 const useMobileEditor = () => {
@@ -38,7 +52,10 @@ export function EditorPane({
   const markdown = useAppStore((state) => state.markdown)
   const locale = useAppStore((state) => state.locale)
   const appearance = useAppStore((state) => state.appearance)
+  const inputKind = useAppStore((state) => state.inputKind)
+  const codeLanguage = useAppStore((state) => state.codeLanguage)
   const setMarkdown = useAppStore((state) => state.setMarkdown)
+  const setCodeLanguage = useAppStore((state) => state.setCodeLanguage)
   const resetDocument = useAppStore((state) => state.resetDocument)
   const inputRef = useRef<HTMLInputElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
@@ -47,6 +64,19 @@ export function EditorPane({
   const [dragging, setDragging] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const mobileEditor = useMobileEditor()
+  const inputLabel =
+    inputKind === 'mermaid'
+      ? 'Mermaid'
+      : inputKind === 'formula'
+        ? locale === 'zh-CN'
+          ? 'LaTeX 公式'
+          : 'LaTeX formula'
+        : inputKind === 'code'
+          ? locale === 'zh-CN'
+            ? '代码'
+            : 'Code'
+          : t(locale, 'markdown')
+  const acceptsMarkdownFiles = inputKind === 'markdown'
 
   useEffect(() => {
     if (!menuOpen) return
@@ -116,10 +146,10 @@ export function EditorPane({
   return (
     <section
       className={`pane editor-pane ${dragging ? 'is-dragging' : ''}`}
-      aria-label={t(locale, 'markdown')}
+      aria-label={inputLabel}
       onDragEnter={(event) => {
         event.preventDefault()
-        setDragging(true)
+        if (acceptsMarkdownFiles) setDragging(true)
       }}
       onDragOver={(event) => event.preventDefault()}
       onDragLeave={(event) => {
@@ -128,7 +158,7 @@ export function EditorPane({
       onDrop={(event) => {
         event.preventDefault()
         setDragging(false)
-        void handleFiles(event.dataTransfer.files)
+        if (acceptsMarkdownFiles) void handleFiles(event.dataTransfer.files)
       }}
     >
       <header className="pane-header">
@@ -136,27 +166,45 @@ export function EditorPane({
           <span className="pane-icon pane-icon-coral" aria-hidden="true">
             <FileUp size={17} />
           </span>
-          <span>{t(locale, 'markdown')}</span>
+          <span>{inputLabel}</span>
         </div>
         <div className="pane-actions">
-          <button
-            className="icon-button"
-            type="button"
-            title={t(locale, 'uploadMd')}
-            aria-label={t(locale, 'uploadMd')}
-            onClick={() => inputRef.current?.click()}
-          >
-            <FileUp size={17} />
-          </button>
-          <button
-            className="icon-button"
-            type="button"
-            title={t(locale, 'uploadAsset')}
-            aria-label={t(locale, 'uploadAsset')}
-            onClick={() => imageInputRef.current?.click()}
-          >
-            <FileImage size={17} />
-          </button>
+          {inputKind === 'code' && (
+            <select
+              className="code-language-select"
+              aria-label={locale === 'zh-CN' ? '代码语言' : 'Code language'}
+              value={codeLanguage}
+              onChange={(event) => setCodeLanguage(event.target.value)}
+            >
+              {codeLanguages.map((language) => (
+                <option value={language} key={language}>
+                  {language}
+                </option>
+              ))}
+            </select>
+          )}
+          {acceptsMarkdownFiles && (
+            <>
+              <button
+                className="icon-button"
+                type="button"
+                title={t(locale, 'uploadMd')}
+                aria-label={t(locale, 'uploadMd')}
+                onClick={() => inputRef.current?.click()}
+              >
+                <FileUp size={17} />
+              </button>
+              <button
+                className="icon-button"
+                type="button"
+                title={t(locale, 'uploadAsset')}
+                aria-label={t(locale, 'uploadAsset')}
+                onClick={() => imageInputRef.current?.click()}
+              >
+                <FileImage size={17} />
+              </button>
+            </>
+          )}
           <div className="menu-anchor" ref={menuRef}>
             <button
               ref={menuButtonRef}
@@ -202,7 +250,7 @@ export function EditorPane({
         {mobileEditor ? (
           <textarea
             className="mobile-markdown-editor"
-            aria-label={t(locale, 'markdown')}
+            aria-label={inputLabel}
             value={markdown}
             onChange={(event) => setMarkdown(event.target.value)}
             spellCheck={false}
@@ -212,7 +260,7 @@ export function EditorPane({
             fallback={
               <textarea
                 className="mobile-markdown-editor"
-                aria-label={t(locale, 'markdown')}
+                aria-label={inputLabel}
                 value={markdown}
                 onChange={(event) => setMarkdown(event.target.value)}
                 spellCheck={false}
@@ -229,11 +277,21 @@ export function EditorPane({
       </div>
 
       <div className="editor-status">
-        <span>{t(locale, 'dropHint')}</span>
-        <span className="markdown-badge">M↓</span>
+        <span>
+          {acceptsMarkdownFiles
+            ? t(locale, 'dropHint')
+            : locale === 'zh-CN'
+              ? `直接输入${inputLabel}`
+              : `Enter ${inputLabel} directly`}
+        </span>
+        <span className="markdown-badge">
+          {inputKind === 'markdown' ? 'M↓' : inputKind.slice(0, 2).toUpperCase()}
+        </span>
       </div>
 
-      {dragging && <div className="drop-overlay">{t(locale, 'dropHint')}</div>}
+      {dragging && acceptsMarkdownFiles && (
+        <div className="drop-overlay">{t(locale, 'dropHint')}</div>
+      )}
 
       <input
         ref={inputRef}

@@ -28,6 +28,14 @@ export interface RunExportOptions {
   optimizeLongPdf?: boolean
 }
 
+export type ImageArtifactFormat = 'png' | 'jpeg' | 'webp' | 'svg'
+
+export interface GeneratedArtifact {
+  blob: Blob
+  filename: string
+  format: ImageArtifactFormat
+}
+
 const throwIfAborted = (signal?: AbortSignal) => {
   if (signal?.aborted) {
     throw new DOMException('Export canceled', 'AbortError')
@@ -62,12 +70,14 @@ export const downloadBlob = (blob: Blob, filename: string) => {
 const extensionFor = (format: ExportFormat) =>
   format === 'jpeg' ? 'jpg' : format === 'clipboard' ? 'png' : format
 
-const waitForRenderReady = async (surface: HTMLElement) => {
+export const waitForRenderReady = async (surface: HTMLElement) => {
   await document.fonts?.ready
   const timeoutAt = Date.now() + 8000
 
   while (
-    surface.querySelector('[data-mermaid-state="loading"]') &&
+    surface.querySelector(
+      '[data-mermaid-state="loading"], [data-render-state="loading"]',
+    ) &&
     Date.now() < timeoutAt
   ) {
     await new Promise((resolve) => setTimeout(resolve, 80))
@@ -84,6 +94,44 @@ const waitForRenderReady = async (surface: HTMLElement) => {
       })
     }),
   )
+}
+
+const renderImageBlob = async (
+  snapshot: HTMLElement,
+  config: ExportConfig,
+  format: ImageArtifactFormat,
+) => {
+  const renderers = {
+    png: () => domToPng(snapshot, screenshotOptions(snapshot, config)),
+    jpeg: () =>
+      domToJpeg(snapshot, screenshotOptions(snapshot, config, 'image/jpeg')),
+    webp: () =>
+      domToWebp(snapshot, screenshotOptions(snapshot, config, 'image/webp')),
+    svg: () =>
+      domToSvg(snapshot, screenshotOptions(snapshot, { ...config, scale: 1 })),
+  }
+  const dataUrl = await renderers[format]()
+  const blob = await dataUrlToBlob(dataUrl)
+  if (blob.size < 128) throw new Error('Rendered image is unexpectedly empty')
+  return blob
+}
+
+export const generateImageArtifact = async (
+  surface: HTMLElement,
+  config: ExportConfig,
+  format: ImageArtifactFormat = 'png',
+): Promise<GeneratedArtifact> => {
+  const snapshot = await createExportSnapshot(surface)
+  try {
+    const blob = await renderImageBlob(snapshot, config, format)
+    return {
+      blob,
+      filename: `${sanitizeFilename(config.filename)}.${extensionFor(format)}`,
+      format,
+    }
+  } finally {
+    removeMountedSnapshot(snapshot)
+  }
 }
 
 const prepareSnapshotNode = (snapshot: HTMLElement) => {
@@ -253,6 +301,53 @@ const getPageGroups = (
   return groupBlockHeights(heights, availableHeight, forcedBreaks, gapsBefore)
 }
 
+export const decoratePdfSegment = (
+  segment: HTMLElement,
+  config: ExportConfig,
+  pageNumber: number,
+  pageCount: number,
+) => {
+  const addDecoration = (position: 'header' | 'footer') => {
+    const customText =
+      position === 'header' ? config.pdfHeader.trim() : config.pdfFooter.trim()
+    const showPageNumber = position === 'footer' && config.pdfPageNumbers
+    if (!customText && !showPageNumber) return
+
+    const decoration = document.createElement('div')
+    decoration.dataset.md2imgPdfDecoration = position
+    decoration.style.display = 'flex'
+    decoration.style.alignItems = 'center'
+    decoration.style.justifyContent = 'space-between'
+    decoration.style.gap = '20px'
+    decoration.style.minHeight = '34px'
+    decoration.style.color = 'var(--theme-muted)'
+    decoration.style.fontFamily = 'var(--theme-body-font)'
+    decoration.style.fontSize = '12px'
+    decoration.style.lineHeight = '1.4'
+    decoration.style.borderTop =
+      position === 'footer' ? '1px solid var(--theme-border)' : '0'
+    decoration.style.borderBottom =
+      position === 'header' ? '1px solid var(--theme-border)' : '0'
+    decoration.style.padding = position === 'header' ? '0 0 10px' : '10px 0 0'
+
+    const text = document.createElement('span')
+    text.textContent = customText
+    decoration.append(text)
+    if (showPageNumber) {
+      const page = document.createElement('span')
+      page.textContent = `${pageNumber} / ${pageCount}`
+      page.style.marginLeft = 'auto'
+      decoration.append(page)
+    }
+
+    if (position === 'header') segment.prepend(decoration)
+    else segment.append(decoration)
+  }
+
+  addDecoration('header')
+  addDecoration('footer')
+}
+
 const exportSplitZip = async (
   surface: HTMLElement,
   config: ExportConfig,
@@ -311,11 +406,17 @@ const exportPdf = async (
   const verticalPadding =
     Number.parseFloat(surfaceStyle.paddingTop || '0') +
     Number.parseFloat(surfaceStyle.paddingBottom || '0')
-  const maxContentHeight = calculatePageContentHeight(
-    surface.clientWidth,
-    verticalPadding,
-    imageWidth,
-    imageHeight,
+  const decorationHeight =
+    (config.pdfHeader.trim() ? 44 : 0) +
+    (config.pdfFooter.trim() || config.pdfPageNumbers ? 44 : 0)
+  const maxContentHeight = Math.max(
+    120,
+    calculatePageContentHeight(
+      surface.clientWidth,
+      verticalPadding,
+      imageWidth,
+      imageHeight,
+    ) - decorationHeight,
   )
   const groups = getPageGroups(surface, config, maxContentHeight)
   const pages = groups.length > 0 ? groups : [{ start: 0, end: 9999, height: 0 }]
@@ -339,6 +440,7 @@ const exportPdf = async (
       minPageSurfaceHeight,
     )
     try {
+      decoratePdfSegment(segment, config, index + 1, pages.length)
       await waitForRenderReady(segment)
       const computedBackground = getComputedStyle(segment).backgroundColor
       const backgroundColor =
@@ -441,22 +543,10 @@ export const runExport = async (
       return { filename: `${baseName}.png`, format: 'png' }
     }
 
-    const renderers = {
-      png: () => domToPng(snapshot, screenshotOptions(snapshot, config)),
-      jpeg: () =>
-        domToJpeg(snapshot, screenshotOptions(snapshot, config, 'image/jpeg')),
-      webp: () =>
-        domToWebp(snapshot, screenshotOptions(snapshot, config, 'image/webp')),
-      svg: () =>
-        domToSvg(snapshot, screenshotOptions(snapshot, { ...config, scale: 1 })),
-    }
-
-    const format = config.format as keyof typeof renderers
-    const dataUrl = await renderers[format]()
+    const format = config.format as ImageArtifactFormat
     throwIfAborted(options.signal)
     const extension = extensionFor(format)
-    const blob = await dataUrlToBlob(dataUrl)
-    if (blob.size < 128) throw new Error('Rendered image is unexpectedly empty')
+    const blob = await renderImageBlob(snapshot, config, format)
     downloadBlob(blob, `${baseName}.${extension}`)
     return { filename: `${baseName}.${extension}`, format }
   } finally {

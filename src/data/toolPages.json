@@ -1,0 +1,146 @@
+[
+  {
+    "id": "markdown-to-image",
+    "path": "/",
+    "enPath": "/en/",
+    "inputKind": "markdown",
+    "title": {
+      "zh-CN": "免费 Markdown 转图片工具：PNG、WebP、SVG · MD2IMG",
+      "en": "Free Markdown to Image Converter: PNG, WebP, SVG · MD2IMG"
+    },
+    "description": {
+      "zh-CN": "免费 Markdown 转图片工具，在浏览器本地导出 PNG、JPEG、WebP、SVG 或 PDF。支持代码高亮、KaTeX、Mermaid，无需登录且没有水印。",
+      "en": "Convert Markdown to PNG, JPEG, WebP, SVG or PDF locally in your browser, with syntax highlighting, KaTeX and Mermaid. No sign-in or watermark."
+    },
+    "h1": {
+      "zh-CN": "Markdown 转图片",
+      "en": "Markdown to Image Converter"
+    },
+    "intro": {
+      "zh-CN": "粘贴 Markdown 后即可调整主题、画布和字体，再导出需要的图片格式。正文和本地素材只在当前浏览器中处理。",
+      "en": "Paste Markdown, adjust the theme, canvas and type, then export the image format you need. Your document and local assets stay in this browser."
+    },
+    "steps": {
+      "zh-CN": ["粘贴或导入 Markdown 文件", "在预览中调整主题与画布", "选择格式并导出"],
+      "en": ["Paste text or import a Markdown file", "Adjust the theme and canvas in the preview", "Choose a format and export"]
+    },
+    "limitations": {
+      "zh-CN": "远程图片是否能导出取决于图片站点的 CORS 设置；遇到限制时，请先下载图片再拖入编辑器。",
+      "en": "Remote image export depends on the image host's CORS policy. If it is blocked, download the image and drop the local file into the editor."
+    },
+    "sample": {
+      "zh-CN": "# Markdown 转图片\n\n直接编辑内容，并在右侧调整画布。\n\n```js\nconsole.log('MD2IMG')\n```",
+      "en": "# Markdown to Image\n\nEdit this document and adjust the canvas on the right.\n\n```js\nconsole.log('MD2IMG')\n```"
+    },
+    "defaults": { "exportFormat": "png", "canvasPreset": "auto", "inspectorTab": "theme" },
+    "schemaFeatures": {
+      "zh-CN": ["Markdown 转 PNG、JPEG、WebP、SVG 和 PDF", "代码高亮、KaTeX 公式与 Mermaid 图表", "浏览器本地处理且无水印"],
+      "en": ["Markdown to PNG, JPEG, WebP, SVG and PDF", "Syntax highlighting, KaTeX formulas and Mermaid diagrams", "Local browser processing with no watermark"]
+    }
+  },
+  {
+    "id": "markdown-long-image",
+    "path": "/markdown-long-image/",
+    "enPath": "/en/markdown-long-image/",
+    "inputKind": "markdown",
+    "title": { "zh-CN": "Markdown 转长图与分片 ZIP · MD2IMG", "en": "Markdown to Long Image and Split ZIP · MD2IMG" },
+    "description": { "zh-CN": "把长篇 Markdown 排成连续长图；内容超出浏览器画布上限时，按指定高度分片并下载 ZIP。", "en": "Turn long Markdown documents into continuous images, or split oversized output at a chosen height and download the parts as a ZIP." },
+    "h1": { "zh-CN": "Markdown 转长图", "en": "Markdown to Long Image" },
+    "intro": { "zh-CN": "这个模式使用自适应高度画布，并把导出预设为分片 ZIP。分片宽度、主题和排版与完整预览保持一致。", "en": "This mode uses an auto-height canvas and presets export to a split ZIP. Every part keeps the width, theme and typography of the full preview." },
+    "steps": { "zh-CN": ["粘贴长篇 Markdown", "设置画布宽度和分片高度", "导出分片 ZIP"], "en": ["Paste a long Markdown document", "Set the canvas width and split height", "Export the image parts as a ZIP"] },
+    "limitations": { "zh-CN": "分片会按固定像素高度切割，复杂表格或大图可能跨越分片边界；导出前请检查预览。", "en": "Parts are cut at a fixed pixel height, so a large table or image can cross a split boundary. Check the preview before exporting." },
+    "sample": { "zh-CN": "# 长图示例\n\n## 第一节\n\n长篇笔记可以保留统一排版。\n\n## 第二节\n\n超过画布上限时可分片下载。", "en": "# Long image example\n\n## Part one\n\nKeep consistent styling across a long document.\n\n## Part two\n\nSplit output when it exceeds browser canvas limits." },
+    "defaults": { "exportFormat": "split-zip", "canvasPreset": "auto", "inspectorTab": "export", "splitHeight": 4096 },
+    "schemaFeatures": { "zh-CN": ["自适应高度 Markdown 长图", "可调分片高度", "多张 PNG 打包为 ZIP"], "en": ["Auto-height Markdown images", "Adjustable split height", "PNG parts packaged as a ZIP"] }
+  },
+  {
+    "id": "markdown-to-pdf",
+    "path": "/markdown-to-pdf/",
+    "enPath": "/en/markdown-to-pdf/",
+    "inputKind": "markdown",
+    "title": { "zh-CN": "Markdown 转 PDF：分页与打印设置 · MD2IMG", "en": "Markdown to PDF with Page and Print Settings · MD2IMG" },
+    "description": { "zh-CN": "将 Markdown 导出为保留主题的 PDF，或用浏览器打印生成可搜索 PDF。支持 A4/Letter、方向、边距与分页设置。", "en": "Export Markdown as a styled PDF or use browser printing for searchable text, with A4/Letter size, orientation, margins and page settings." },
+    "h1": { "zh-CN": "Markdown 转 PDF", "en": "Markdown to PDF" },
+    "intro": { "zh-CN": "保留样式 PDF 适合分享视觉稿；打印模式保留可搜索、可复制的文字。两种方式都可调整纸张、方向和页边距。", "en": "Styled PDF keeps the visual theme for sharing. Print mode keeps text searchable and selectable. Both support paper size, orientation and margins." },
+    "steps": { "zh-CN": ["输入 Markdown 并检查分页", "选择纸张、方向和边距", "导出样式 PDF 或打开打印模式"], "en": ["Enter Markdown and check page breaks", "Choose paper size, orientation and margins", "Export a styled PDF or open print mode"] },
+    "limitations": { "zh-CN": "保留样式 PDF 会把页面内容转为图片；需要搜索或复制文字时，请选择“打印 / 可搜索 PDF”。", "en": "Styled PDF turns page content into images. Choose Print / Searchable PDF when readers need to search or copy the text." },
+    "sample": { "zh-CN": "# 项目说明\n\n这份文档用于检查 PDF 分页。\n\n## 要点\n\n- A4 或 Letter\n- 纵向或横向\n- 自定义页边距", "en": "# Project brief\n\nUse this document to check PDF pagination.\n\n## Options\n\n- A4 or Letter\n- Portrait or landscape\n- Custom margins" },
+    "defaults": { "exportFormat": "pdf", "canvasPreset": "a4", "inspectorTab": "export" },
+    "schemaFeatures": { "zh-CN": ["保留主题的图片型 PDF", "可搜索的浏览器打印 PDF", "A4/Letter、方向与页边距"], "en": ["Theme-preserving image PDF", "Searchable browser print PDF", "A4/Letter, orientation and margin controls"] }
+  },
+  {
+    "id": "mermaid-to-image",
+    "path": "/mermaid-to-image/",
+    "enPath": "/en/mermaid-to-image/",
+    "inputKind": "mermaid",
+    "title": { "zh-CN": "Mermaid 转图片：在线 PNG 与 SVG 导出 · MD2IMG", "en": "Mermaid to Image: Export PNG and SVG Online · MD2IMG" },
+    "description": { "zh-CN": "直接粘贴 Mermaid 源码并预览流程图，无需添加 Markdown 代码围栏；可调整背景和画布后导出 PNG、WebP 或 SVG。", "en": "Paste Mermaid source directly without Markdown fences, preview the diagram, adjust its canvas and export PNG, WebP or SVG." },
+    "h1": { "zh-CN": "Mermaid 转图片", "en": "Mermaid to Image" },
+    "intro": { "zh-CN": "编辑器接收原始 Mermaid 语法，页面会自动包装并渲染图表。导出前可以调整画布宽度、留白和背景。", "en": "The editor accepts raw Mermaid syntax and wraps it for rendering automatically. Adjust canvas width, padding and background before export." },
+    "steps": { "zh-CN": ["粘贴 Mermaid 源码", "修正预览中的语法错误", "设置画布并导出图片"], "en": ["Paste Mermaid source", "Fix any syntax error shown in the preview", "Set the canvas and export an image"] },
+    "limitations": { "zh-CN": "语法支持范围取决于当前 Mermaid 版本；特别宽或节点很多的图表可能需要增大画布宽度。", "en": "Syntax support follows the bundled Mermaid version. Very wide diagrams or diagrams with many nodes may need a wider canvas." },
+    "sample": { "zh-CN": "flowchart LR\n  A[输入 Markdown] --> B[实时预览]\n  B --> C[导出图片]", "en": "flowchart LR\n  A[Enter source] --> B[Preview]\n  B --> C[Export image]" },
+    "defaults": { "exportFormat": "png", "canvasPreset": "auto", "inspectorTab": "canvas" },
+    "schemaFeatures": { "zh-CN": ["直接输入 Mermaid 源码", "实时图表预览与错误提示", "导出 PNG、WebP 或 SVG"], "en": ["Direct Mermaid source input", "Live diagram preview and syntax feedback", "PNG, WebP or SVG export"] }
+  },
+  {
+    "id": "formula-to-image",
+    "path": "/formula-to-image/",
+    "enPath": "/en/formula-to-image/",
+    "inputKind": "formula",
+    "title": { "zh-CN": "LaTeX 公式转图片：KaTeX 实时预览 · MD2IMG", "en": "LaTeX Formula to Image with KaTeX Preview · MD2IMG" },
+    "description": { "zh-CN": "直接输入 LaTeX 数学公式，通过 KaTeX 实时预览，再用透明或自定义背景导出 PNG、WebP 或 SVG。", "en": "Enter a LaTeX formula directly, preview it with KaTeX, then export PNG, WebP or SVG with a transparent or custom background." },
+    "h1": { "zh-CN": "LaTeX 公式转图片", "en": "LaTeX Formula to Image" },
+    "intro": { "zh-CN": "只需输入公式内容，不必手动添加美元符号。页面会将内容作为独立公式渲染，并保留常用 KaTeX 排版。", "en": "Enter only the formula—no dollar delimiters are needed. The page renders it as a display equation with standard KaTeX typesetting." },
+    "steps": { "zh-CN": ["输入 LaTeX 公式", "调整字号、留白和背景", "选择图片格式并导出"], "en": ["Enter a LaTeX formula", "Adjust type size, padding and background", "Choose an image format and export"] },
+    "limitations": { "zh-CN": "KaTeX 并不支持所有 LaTeX 宏和环境；无法识别的命令会在预览中显示错误。", "en": "KaTeX does not support every LaTeX macro or environment. Unsupported commands appear as an error in the preview." },
+    "sample": { "zh-CN": "E = mc^2 \\quad \\text{以及} \\quad \\int_0^1 x^2 \\, dx = \\frac{1}{3}", "en": "E = mc^2 \\quad \\text{and} \\quad \\int_0^1 x^2 \\, dx = \\frac{1}{3}" },
+    "defaults": { "exportFormat": "png", "canvasPreset": "auto", "inspectorTab": "canvas" },
+    "schemaFeatures": { "zh-CN": ["直接输入 LaTeX 公式", "KaTeX 实时预览", "透明背景与多格式导出"], "en": ["Direct LaTeX formula input", "Live KaTeX preview", "Transparent backgrounds and multiple export formats"] }
+  },
+  {
+    "id": "code-to-image",
+    "path": "/code-to-image/",
+    "enPath": "/en/code-to-image/",
+    "inputKind": "code",
+    "title": { "zh-CN": "代码转图片：语法高亮与主题 · MD2IMG", "en": "Code to Image with Syntax Highlighting and Themes · MD2IMG" },
+    "description": { "zh-CN": "粘贴代码、选择语言并生成带语法高亮的图片。支持主题、画布、背景和 PNG、WebP、SVG 导出。", "en": "Paste code, choose its language and create a syntax-highlighted image with configurable themes, canvas, background and PNG, WebP or SVG export." },
+    "h1": { "zh-CN": "代码转图片", "en": "Code to Image" },
+    "intro": { "zh-CN": "代码模式直接接收源码，并自动包装为高亮代码块。选择正确的语言后，再调整主题、字号和画布。", "en": "Code mode accepts source directly and wraps it as a highlighted block. Choose the correct language, then adjust the theme, type size and canvas." },
+    "steps": { "zh-CN": ["粘贴代码并选择语言", "调整主题、字号和背景", "检查高亮后导出图片"], "en": ["Paste code and select its language", "Adjust the theme, type size and background", "Check highlighting and export the image"] },
+    "limitations": { "zh-CN": "语法高亮依赖语言标识；未支持的语言会自动检测，选择错误的已支持语言则可能得到不准确的高亮，但不会改动源码。", "en": "Highlighting uses the selected language. Unsupported identifiers are auto-detected; choosing the wrong supported language may produce inaccurate highlighting but never changes the source." },
+    "sample": { "zh-CN": "type ExportFormat = 'png' | 'webp' | 'svg'\n\nfunction exportImage(format: ExportFormat) {\n  return `Exporting ${format}`\n}", "en": "type ExportFormat = 'png' | 'webp' | 'svg'\n\nfunction exportImage(format: ExportFormat) {\n  return `Exporting ${format}`\n}" },
+    "defaults": { "exportFormat": "png", "canvasPreset": "auto", "inspectorTab": "canvas", "codeLanguage": "typescript" },
+    "schemaFeatures": { "zh-CN": ["直接输入源码并选择语言", "语法高亮与多种主题", "可调画布和多格式图片导出"], "en": ["Direct source input with language selection", "Syntax highlighting and multiple themes", "Adjustable canvas and multiple image formats"] }
+  },
+  {
+    "id": "github-readme-to-image",
+    "path": "/github-readme-to-image/",
+    "enPath": "/en/github-readme-to-image/",
+    "inputKind": "github-readme",
+    "title": { "zh-CN": "GitHub README 转图片：从公开仓库导入 · MD2IMG", "en": "GitHub README to Image from a Public Repository · MD2IMG" },
+    "description": { "zh-CN": "输入公开 GitHub 仓库、README 或 raw 文件地址，加载内容并修正相对资源路径，再导出为图片或 PDF。", "en": "Load a public GitHub repository, README or raw file URL, resolve relative asset paths, then export the document as an image or PDF." },
+    "h1": { "zh-CN": "GitHub README 转图片", "en": "GitHub README to Image" },
+    "intro": { "zh-CN": "粘贴公开仓库或 README 地址即可载入内容。相对图片和链接会按文件所在目录解析，原始 Markdown 仍可继续编辑。", "en": "Paste a public repository or README URL to load it. Relative images and links resolve from the file location, and the imported Markdown remains editable." },
+    "steps": { "zh-CN": ["输入公开 GitHub 地址", "加载并检查 README 资源", "调整样式后导出"], "en": ["Enter a public GitHub URL", "Load the README and check its assets", "Adjust styling and export"] },
+    "limitations": { "zh-CN": "只支持无需登录即可访问的公开内容，不读取私有仓库或 Token。分支名含 / 时请使用仓库地址或 GitHub 复制的 Raw 地址；限流或资源 CORS 仍可能导致载入失败。", "en": "Only public content is supported, and no private repository or token is read. For branch names containing /, use the repository URL or GitHub's copied Raw URL; rate limits and asset CORS can still block loading." },
+    "sample": { "zh-CN": "https://github.com/owner/repository", "en": "https://github.com/owner/repository" },
+    "defaults": { "exportFormat": "png", "canvasPreset": "auto", "inspectorTab": "canvas" },
+    "schemaFeatures": { "zh-CN": ["公开 GitHub 仓库和 README URL 导入", "相对图片与链接解析", "导入后可编辑并导出图片或 PDF"], "en": ["Public GitHub repository and README URL import", "Relative image and link resolution", "Editable import with image or PDF export"] }
+  },
+  {
+    "id": "batch-markdown-to-image",
+    "path": "/batch-markdown-to-image/",
+    "enPath": "/en/batch-markdown-to-image/",
+    "inputKind": "batch",
+    "title": { "zh-CN": "批量 Markdown 转图片与 ZIP 下载 · MD2IMG", "en": "Batch Markdown to Images and ZIP Download · MD2IMG" },
+    "description": { "zh-CN": "一次导入多个 Markdown 文件，使用相同主题逐个生成 PNG，并将成功结果打包为 ZIP；单个失败不会中断队列。", "en": "Import multiple Markdown files, render each as PNG with shared styling and download successful results as a ZIP without one failure stopping the queue." },
+    "h1": { "zh-CN": "批量 Markdown 转图片", "en": "Batch Markdown to Images" },
+    "intro": { "zh-CN": "批量模式为所有文件应用同一套主题和画布设置。队列会逐个渲染，完成后统一下载 PNG ZIP。", "en": "Batch mode applies one theme and canvas configuration to every file. The queue renders files one at a time and packages the PNG results in a ZIP." },
+    "steps": { "zh-CN": ["选择多个 Markdown 文件", "设置统一主题和画布", "运行队列并下载 ZIP"], "en": ["Select multiple Markdown files", "Set a shared theme and canvas", "Run the queue and download the ZIP"] },
+    "limitations": { "zh-CN": "批量处理在当前浏览器中完成，文件很多或内容很长时会占用较多内存；失败项会保留文件名和错误原因。", "en": "Batch processing runs in this browser and can use substantial memory for many or very long files. Failed items keep their filename and error reason." },
+    "sample": { "zh-CN": "拖入多个 .md 或 .markdown 文件开始批量处理。", "en": "Drop multiple .md or .markdown files to start a batch." },
+    "defaults": { "exportFormat": "png", "canvasPreset": "auto", "inspectorTab": "export" },
+    "schemaFeatures": { "zh-CN": ["多 Markdown 文件导入", "逐文件 PNG 渲染队列", "成功结果打包为 ZIP"], "en": ["Multiple Markdown file import", "Per-file PNG rendering queue", "Successful results packaged as a ZIP"] }
+  }
+]

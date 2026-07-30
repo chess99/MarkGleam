@@ -16,13 +16,25 @@ const canvasPresets: {
   id: CanvasPreset
   width: number
   minHeight: number
-  label: 'auto' | 'square' | 'ratio34' | 'xiaohongshu' | 'social' | 'custom'
+  label:
+    | 'auto'
+    | 'square'
+    | 'ratio34'
+    | 'xiaohongshu'
+    | 'social'
+    | 'xCard'
+    | 'linkedin'
+    | 'wechatHeader'
+    | 'custom'
 }[] = [
   { id: 'auto', width: 1080, minHeight: 720, label: 'auto' },
   { id: 'square', width: 1080, minHeight: 1080, label: 'square' },
   { id: 'portrait', width: 1080, minHeight: 1440, label: 'ratio34' },
   { id: 'xiaohongshu', width: 1080, minHeight: 1440, label: 'xiaohongshu' },
   { id: 'social', width: 1200, minHeight: 630, label: 'social' },
+  { id: 'x', width: 1600, minHeight: 900, label: 'xCard' },
+  { id: 'linkedin', width: 1200, minHeight: 627, label: 'linkedin' },
+  { id: 'wechat', width: 900, minHeight: 383, label: 'wechatHeader' },
   { id: 'custom', width: 1080, minHeight: 720, label: 'custom' },
 ]
 
@@ -202,6 +214,7 @@ export function Inspector({
                   </button>
                 ))}
               </div>
+              <p className="preset-hint">{t(locale, 'canvasPresetHint')}</p>
             </section>
 
             <section className="control-section control-stack">

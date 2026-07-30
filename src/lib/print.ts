@@ -9,6 +9,15 @@ export interface PrintOptions {
 
 const waitForPrintReady = async (surface: HTMLElement) => {
   await document.fonts?.ready
+  const timeoutAt = Date.now() + 8000
+  while (
+    surface.querySelector(
+      '[data-mermaid-state="loading"], [data-render-state="loading"]',
+    ) &&
+    Date.now() < timeoutAt
+  ) {
+    await new Promise((resolve) => window.setTimeout(resolve, 80))
+  }
   const images = [...surface.querySelectorAll<HTMLImageElement>('img')]
   await Promise.all(
     images.map(async (image) => {

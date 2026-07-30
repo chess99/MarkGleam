@@ -1,5 +1,20 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createSegment } from './export'
+import { createSegment, decoratePdfSegment } from './export'
+import type { ExportConfig } from '../types'
+
+const pdfConfig: ExportConfig = {
+  format: 'pdf',
+  scale: 2,
+  quality: 0.92,
+  filename: 'document',
+  pdfSize: 'a4',
+  pdfOrientation: 'portrait',
+  pdfMargin: 12,
+  pdfHeader: 'Project brief',
+  pdfFooter: 'Internal',
+  pdfPageNumbers: true,
+  splitHeight: 4096,
+}
 
 describe('createSegment', () => {
   afterEach(() => {
@@ -39,5 +54,40 @@ describe('createSegment', () => {
       'Fourth',
     )
     expect(segment.querySelector('[data-page-break]')).not.toBeInTheDocument()
+  })
+})
+
+describe('decoratePdfSegment', () => {
+  it('renders header, footer and page count inside the rasterized page', () => {
+    const segment = document.createElement('section')
+    segment.innerHTML = '<article>Body</article>'
+
+    decoratePdfSegment(segment, pdfConfig, 2, 5)
+
+    const header = segment.querySelector('[data-md2img-pdf-decoration="header"]')
+    const footer = segment.querySelector('[data-md2img-pdf-decoration="footer"]')
+    expect(header).toHaveTextContent('Project brief')
+    expect(footer).toHaveTextContent('Internal')
+    expect(footer).toHaveTextContent('2 / 5')
+    expect(segment.firstElementChild).toBe(header)
+    expect(segment.lastElementChild).toBe(footer)
+  })
+
+  it('does not add empty decoration rows', () => {
+    const segment = document.createElement('section')
+
+    decoratePdfSegment(
+      segment,
+      {
+        ...pdfConfig,
+        pdfHeader: ' ',
+        pdfFooter: '',
+        pdfPageNumbers: false,
+      },
+      1,
+      1,
+    )
+
+    expect(segment.children).toHaveLength(0)
   })
 })

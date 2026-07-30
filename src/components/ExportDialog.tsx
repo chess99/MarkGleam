@@ -277,6 +277,36 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
               </Field>
               {config.format === 'pdf' ? (
                 <>
+                  <Field label={t(locale, 'pdfHeader')}>
+                    <input
+                      type="text"
+                      value={config.pdfHeader}
+                      placeholder={locale === 'zh-CN' ? '可留空' : 'Optional'}
+                      onChange={(event) =>
+                        changeExport({ pdfHeader: event.target.value })
+                      }
+                    />
+                  </Field>
+                  <Field label={t(locale, 'pdfFooter')}>
+                    <input
+                      type="text"
+                      value={config.pdfFooter}
+                      placeholder={locale === 'zh-CN' ? '可留空' : 'Optional'}
+                      onChange={(event) =>
+                        changeExport({ pdfFooter: event.target.value })
+                      }
+                    />
+                  </Field>
+                  <label className="toggle-row pdf-optimization-toggle">
+                    <span>{t(locale, 'pdfPageNumbers')}</span>
+                    <input
+                      type="checkbox"
+                      checked={config.pdfPageNumbers}
+                      onChange={(event) =>
+                        changeExport({ pdfPageNumbers: event.target.checked })
+                      }
+                    />
+                  </label>
                   <label className="toggle-row pdf-optimization-toggle">
                     <span>{t(locale, 'optimizeLongPdf')}</span>
                     <input

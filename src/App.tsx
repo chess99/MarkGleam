@@ -23,9 +23,16 @@ import { Inspector } from './components/Inspector'
 import { LanguageSelect } from './components/LanguageSelect'
 import { MarkdownPreview } from './components/MarkdownPreview'
 import { Modal } from './components/Modal'
+import { ToolContext } from './components/ToolContext'
+import {
+  getLocalizedPageContent,
+  resolveToolPage,
+  toolPages,
+} from './data/toolPages'
+import { getToolSample } from './data/toolSamples'
 import { t } from './i18n'
 import { useAppStore } from './store'
-import type { MobilePane } from './types'
+import type { MobilePane, ToolId } from './types'
 
 type InfoModal = 'help' | 'privacy' | 'shortcuts' | null
 
@@ -41,20 +48,43 @@ const ExportDialog = lazy(() =>
   })),
 )
 
+const BatchPane = lazy(() =>
+  import('./components/BatchPane').then((module) => ({
+    default: module.BatchPane,
+  })),
+)
+
+const GitHubReadmeImporter = lazy(() =>
+  import('./components/GitHubReadmeImporter').then((module) => ({
+    default: module.GitHubReadmeImporter,
+  })),
+)
+
 function App() {
-  const locale = useAppStore((state) => state.locale)
+  const resolvedPage = useMemo(
+    () => resolveToolPage(window.location.pathname),
+    [],
+  )
+  const storedLocale = useAppStore((state) => state.locale)
+  const locale = resolvedPage?.locale ?? storedLocale
   const markdown = useAppStore((state) => state.markdown)
+  const inputKind = useAppStore((state) => state.inputKind)
   const appearance = useAppStore((state) => state.appearance)
   const canvas = useAppStore((state) => state.canvas)
   const editorCollapsed = useAppStore((state) => state.editorCollapsed)
   const inspectorCollapsed = useAppStore((state) => state.inspectorCollapsed)
   const mobilePane = useAppStore((state) => state.mobilePane)
   const setLocale = useAppStore((state) => state.setLocale)
+  const setToolId = useAppStore((state) => state.setToolId)
   const setMarkdown = useAppStore((state) => state.setMarkdown)
+  const setCodeLanguage = useAppStore((state) => state.setCodeLanguage)
   const setAppearance = useAppStore((state) => state.setAppearance)
   const toggleEditor = useAppStore((state) => state.toggleEditor)
   const toggleInspector = useAppStore((state) => state.toggleInspector)
   const setMobilePane = useAppStore((state) => state.setMobilePane)
+  const setInspectorTab = useAppStore((state) => state.setInspectorTab)
+  const updateCanvas = useAppStore((state) => state.updateCanvas)
+  const updateExport = useAppStore((state) => state.updateExport)
   const surfaceRef = useRef<HTMLDivElement>(null)
   const [exportSurface, setExportSurface] = useState<HTMLDivElement | null>(null)
   const [outputHeight, setOutputHeight] = useState(canvas.minHeight)
@@ -95,7 +125,67 @@ function App() {
 
   useEffect(() => {
     document.documentElement.lang = locale
-  }, [locale])
+    if (storedLocale !== locale) setLocale(locale)
+  }, [locale, setLocale, storedLocale])
+
+  useEffect(() => {
+    if (!resolvedPage) {
+      document.title = locale === 'zh-CN' ? '页面不存在 · MD2IMG' : 'Page not found · MD2IMG'
+      document.querySelector('meta[name="robots"]')?.setAttribute('content', 'noindex,follow')
+      return
+    }
+
+    const { page } = resolvedPage
+    const copy = getLocalizedPageContent(page, locale)
+    setToolId(page.id as ToolId)
+    const currentState = useAppStore.getState()
+    const knownSamples = new Set([
+      getToolSample(currentState.inputKind),
+      ...toolPages.flatMap((candidate) => [
+        candidate.sample['zh-CN'],
+        candidate.sample.en,
+      ]),
+    ])
+    if (knownSamples.has(currentState.markdown)) setMarkdown(copy.sample)
+    // The homepage is the general editor, so keep a returning user's export
+    // and canvas choices. Purpose-specific routes intentionally apply the
+    // settings needed to make their advertised workflow usable immediately.
+    if (page.id !== 'markdown-to-image') {
+      updateExport({
+        format: page.defaults.exportFormat,
+        ...(page.defaults.splitHeight
+          ? { splitHeight: page.defaults.splitHeight }
+          : {}),
+      })
+      if (page.defaults.inspectorTab) setInspectorTab(page.defaults.inspectorTab)
+      if (page.defaults.codeLanguage) setCodeLanguage(page.defaults.codeLanguage)
+      if (page.defaults.canvasPreset === 'a4') {
+        updateCanvas({ preset: 'a4', width: 794, minHeight: 1123 })
+      } else if (page.defaults.canvasPreset === 'auto') {
+        updateCanvas({ preset: 'auto', width: 1080, minHeight: 720 })
+      }
+    }
+
+    document.title = copy.title
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute('content', copy.description)
+    document
+      .querySelector('meta[name="robots"]')
+      ?.setAttribute('content', 'index,follow,max-image-preview:large')
+    document
+      .querySelector('link[rel="canonical"]')
+      ?.setAttribute('href', `https://md2img.cearl.cc${resolvedPage.canonicalPath}`)
+  }, [
+    locale,
+    resolvedPage,
+    setCodeLanguage,
+    setInspectorTab,
+    setMarkdown,
+    setToolId,
+    updateCanvas,
+    updateExport,
+  ])
 
   useEffect(() => {
     document.documentElement.dataset.appearance = appearance
@@ -162,12 +252,37 @@ function App() {
     setExportOpen(true)
   }
 
+  const changeLocale = (nextLocale: typeof locale) => {
+    setLocale(nextLocale)
+    if (!resolvedPage) return
+    const nextPath =
+      nextLocale === 'en' ? resolvedPage.page.enPath : resolvedPage.page.path
+    if (nextPath !== window.location.pathname) window.location.assign(nextPath)
+  }
+
+  const editorLabel =
+    inputKind === 'mermaid'
+      ? 'Mermaid'
+      : inputKind === 'formula'
+        ? locale === 'zh-CN'
+          ? '公式'
+          : 'Formula'
+        : inputKind === 'code'
+          ? locale === 'zh-CN'
+            ? '代码'
+            : 'Code'
+          : resolvedPage?.page.id === 'batch-markdown-to-image'
+            ? locale === 'zh-CN'
+              ? '文件'
+              : 'Files'
+            : t(locale, 'markdown')
+
   const mobileTabs: {
     id: MobilePane
     label: string
     icon: typeof FileText
   }[] = [
-    { id: 'editor', label: t(locale, 'markdown'), icon: FileText },
+    { id: 'editor', label: editorLabel, icon: FileText },
     { id: 'preview', label: t(locale, 'preview'), icon: Eye },
     { id: 'settings', label: t(locale, 'settings'), icon: Settings2 },
   ]
@@ -182,6 +297,23 @@ function App() {
     )
   }
 
+  if (!resolvedPage) {
+    return (
+      <main className="not-found-page">
+        <ImageIcon size={38} />
+        <h1>{locale === 'zh-CN' ? '这个页面不存在' : 'This page does not exist'}</h1>
+        <p>
+          {locale === 'zh-CN'
+            ? '地址可能已变更。返回 Markdown 转图片工具继续使用。'
+            : 'The address may have changed. Return to the Markdown to image tool.'}
+        </p>
+        <a href={locale === 'zh-CN' ? '/' : '/en/'}>
+          {locale === 'zh-CN' ? '返回首页' : 'Back to MD2IMG'}
+        </a>
+      </main>
+    )
+  }
+
   return (
     <div className="app-shell" data-appearance={appearance}>
       <header className="topbar">
@@ -189,14 +321,14 @@ function App() {
           <span className="brand-mark" aria-hidden="true">
             <ImageIcon size={20} strokeWidth={2.4} />
           </span>
-          <h1 className="brand-title">
+          <div className="brand-title">
             <span>MD2IMG</span>
             <span className="sr-only">
               {locale === 'zh-CN'
                 ? '免费 Markdown 转图片工具'
                 : 'Free Markdown to image converter'}
             </span>
-          </h1>
+          </div>
           <span className="brand-tagline">
             <ShieldCheck size={14} />
             {t(locale, 'tagline')}
@@ -222,7 +354,7 @@ function App() {
           >
             <PanelRightClose size={18} />
           </button>
-          <LanguageSelect locale={locale} onChange={setLocale} />
+          <LanguageSelect locale={locale} onChange={changeLocale} />
           <button
             className="icon-button"
             type="button"
@@ -304,12 +436,35 @@ function App() {
         </div>
       </header>
 
+      <ToolContext resolved={resolvedPage}>
+        {resolvedPage.page.id === 'github-readme-to-image' && (
+          <Suspense fallback={null}>
+            <GitHubReadmeImporter
+              locale={locale}
+              onImported={(source) => setMarkdown(source)}
+              onToast={showToast}
+            />
+          </Suspense>
+        )}
+      </ToolContext>
+
       <main
         className={`workspace ${editorCollapsed ? 'editor-collapsed' : ''} ${
           inspectorCollapsed ? 'inspector-collapsed' : ''
         } mobile-${mobilePane}`}
       >
-        {!editorCollapsed && <EditorPane onToast={showToast} />}
+        {!editorCollapsed &&
+          (resolvedPage.page.id === 'batch-markdown-to-image' ? (
+            <Suspense fallback={null}>
+              <BatchPane
+                locale={locale}
+                onPreview={setMarkdown}
+                onToast={showToast}
+              />
+            </Suspense>
+          ) : (
+            <EditorPane onToast={showToast} />
+          ))}
 
         {editorCollapsed && (
           <button
@@ -318,7 +473,7 @@ function App() {
             onClick={toggleEditor}
           >
             <ChevronRight size={16} />
-            <span>{t(locale, 'markdown')}</span>
+            <span>{editorLabel}</span>
           </button>
         )}
 

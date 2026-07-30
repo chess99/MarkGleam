@@ -7,6 +7,8 @@
 - GitHub Flavored Markdown、代码高亮、KaTeX 数学公式和 Mermaid 图表
 - 八套原创内容主题、独立界面明暗模式、自定义字体、背景、画布尺寸和作用域内自定义 CSS
 - PNG、JPEG、WebP、SVG、PDF、剪贴板和长图分片 ZIP
+- Markdown 长图、PDF、Mermaid、公式、代码、GitHub README 和批量转换专用页面
+- X、LinkedIn、微信公众号头图等画布预设；PDF 支持页眉、页脚和页码
 - Markdown 文件、图片拖放导入和浏览器本地自动保存
 - 中文与英文界面、桌面三栏工作台和移动端模式切换
 - 所有内容和导出均在浏览器本地处理
@@ -48,10 +50,11 @@ npx playwright install chromium firefox webkit
 
 仓库内置 GitHub Actions 工作流。创建公开仓库并推送 `main` 分支后，在 GitHub 仓库的 **Settings → Pages → Build and deployment** 中选择 **GitHub Actions**。
 
-Vite 使用相对资源路径，可同时运行在：
+Vite 使用根路径资源，生产站应部署在域名根目录。当前 canonical、静态工具页和 sitemap 都指向：
 
-- `https://chess99.github.io/markdown-to-image/`
-- `https://md2img.cearl.cc/`（当前 canonical 与 sitemap 地址）
+- `https://md2img.cearl.cc/`
+
+如果改用 `https://chess99.github.io/markdown-to-image/` 这类项目子路径，需要同时调整 Vite `base`、canonical、sitemap 和静态页生成逻辑，不能直接复用当前构建产物。
 
 仓库不包含 `CNAME` 文件。自定义域名由 GitHub Pages 与 DNS 后台配置。
 

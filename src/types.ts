@@ -1,5 +1,19 @@
 export type Locale = 'zh-CN' | 'en'
 
+export type ToolId =
+  | 'markdown-to-image'
+  | 'markdown-long-image'
+  | 'markdown-to-pdf'
+  | 'mermaid-to-image'
+  | 'formula-to-image'
+  | 'code-to-image'
+  | 'github-readme-to-image'
+  | 'batch-markdown-to-image'
+
+export type InputKind = 'markdown' | 'mermaid' | 'formula' | 'code'
+
+export type ToolDrafts = Record<InputKind, string>
+
 export type Appearance = 'light' | 'dark'
 
 export type MobilePane = 'editor' | 'preview' | 'settings'
@@ -22,6 +36,9 @@ export type CanvasPreset =
   | 'portrait'
   | 'xiaohongshu'
   | 'social'
+  | 'x'
+  | 'linkedin'
+  | 'wechat'
   | 'a4'
   | 'letter'
   | 'custom'
@@ -78,11 +95,18 @@ export interface ExportConfig {
   pdfSize: PdfSize
   pdfOrientation: PdfOrientation
   pdfMargin: number
+  pdfHeader: string
+  pdfFooter: string
+  pdfPageNumbers: boolean
   splitHeight: number
 }
 
 export interface DocumentState {
+  toolId: ToolId
+  inputKind: InputKind
+  drafts: ToolDrafts
   markdown: string
+  codeLanguage: string
   locale: Locale
   appearance: Appearance
   themeId: ThemeId
