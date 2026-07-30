@@ -320,6 +320,8 @@ function App() {
     )
   }
 
+  const currentPageCopy = getLocalizedPageContent(resolvedPage.page, locale)
+
   return (
     <div className="app-shell" data-appearance={appearance}>
       <header className="topbar">
@@ -599,7 +601,25 @@ function App() {
           compact
         >
           <div className="info-copy">
-            {infoModal === 'shortcuts' ? (
+            {infoModal === 'help' ? (
+              <>
+                <p>{t(locale, 'helpBody')}</p>
+                <section className="context-help-note">
+                  <span>
+                    {locale === 'zh-CN' ? '当前工具' : 'Current tool'}
+                  </span>
+                  <strong>{currentPageCopy.h1}</strong>
+                  <p>{currentPageCopy.limitations}</p>
+                </section>
+                <ul>
+                  <li>
+                    {locale === 'zh-CN'
+                      ? '需要强制分页时，请单独一行输入 <!-- pagebreak -->；--- 会保留为普通分隔线。'
+                      : 'Use <!-- pagebreak --> on its own line to force a page break; --- remains a thematic break.'}
+                  </li>
+                </ul>
+              </>
+            ) : infoModal === 'shortcuts' ? (
               <div className="shortcut-list" role="list">
                 {shortcutItems.map((item) => (
                   <div className="shortcut-row" role="listitem" key={item.key}>
@@ -614,20 +634,6 @@ function App() {
               </div>
             ) : (
               <p>{t(locale, `${infoModal}Body` as 'helpBody')}</p>
-            )}
-            {infoModal === 'help' && (
-              <ul>
-                <li>
-                  {locale === 'zh-CN'
-                    ? '需要强制分页时，请单独一行输入 <!-- pagebreak -->；--- 会保留为普通分隔线。'
-                    : 'Use <!-- pagebreak --> on its own line to force a page break; --- remains a thematic break.'}
-                </li>
-                <li>
-                  {locale === 'zh-CN'
-                    ? '远程图片受浏览器跨域规则约束，本地拖入最可靠。'
-                    : 'Remote images follow browser CORS rules; local drop is the reliable path.'}
-                </li>
-              </ul>
             )}
           </div>
         </Modal>

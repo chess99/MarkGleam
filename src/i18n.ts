@@ -98,7 +98,7 @@ const messages = {
     storageFailed: '本地存储不可用，本次内容仍可正常导出。',
     helpTitle: '使用帮助',
     helpBody:
-      '在左侧编写 Markdown，中间查看最终图片，右侧调整主题和画布。你也可以把 .md 文件或图片直接拖进编辑器。',
+      '在编辑、预览和设置之间切换即可完成创作；预览就是最终导出效果。.md 文件和图片可直接导入，内容只保存在当前浏览器。',
     privacyTitle: '隐私说明',
     privacyBody:
       'Markdown、图片、字体与导出过程都保留在当前浏览器中。远程图片可能由浏览器直接向原地址请求，MarkGleam 不设内容服务器，也不会接收你的文档。',
@@ -216,7 +216,7 @@ const messages = {
     storageFailed: 'Local storage is unavailable. You can still export in this session.',
     helpTitle: 'How to use',
     helpBody:
-      'Write Markdown on the left, inspect the final image in the center, and adjust the theme and canvas on the right. You can also drop .md files and images straight into the editor.',
+      'Move between Edit, Preview, and Settings to create your visual. Preview matches the final export. You can import .md files and images, and your content stays in this browser.',
     privacyTitle: 'Privacy',
     privacyBody:
       'Markdown, images, fonts and exports stay in this browser. Remote images may be requested directly by your browser; MarkGleam has no content server.',

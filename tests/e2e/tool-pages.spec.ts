@@ -185,21 +185,20 @@ test('keeps limits and GitHub privacy boundaries visible on mobile', async ({
   await expect(page.locator('.github-readme-importer > small')).toContainText(
     '不读取 Token',
   )
-  const summary = page.locator('.tool-context-details summary')
-  await expect(summary).toBeVisible()
-  const closedPosition = await summary.boundingBox()
-  await summary.click()
-  const openPosition = await summary.boundingBox()
-  expect(openPosition?.x).toBeCloseTo(closedPosition?.x ?? 0, 0)
-  expect(openPosition?.y).toBeCloseTo(closedPosition?.y ?? 0, 0)
-  await expect(page.locator('.tool-context-close-icon')).toBeVisible()
+  await expect(page.locator('.tool-context-details')).toHaveCount(0)
+
+  await page.getByRole('button', { name: '帮助' }).click()
+  await page
+    .getByRole('menu')
+    .getByRole('menuitem', { name: '帮助' })
+    .click()
   await expect(page.getByText(/只支持无需登录即可访问的公开内容/)).toBeVisible()
+  await page.getByRole('button', { name: '关闭' }).click()
 
   const toolSwitcher = page.locator('.mobile-tool-switcher > summary')
   await expect(toolSwitcher).toBeVisible()
   await toolSwitcher.click()
   await expect(page.locator('.mobile-tool-links')).toBeVisible()
-  await expect(page.locator('.tool-context-details')).not.toHaveAttribute('open')
 
   await page
     .locator('.mobile-nav')

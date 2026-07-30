@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
-import { ChevronDown, LayoutGrid, ListChecks, X } from 'lucide-react'
+import { ChevronDown, LayoutGrid } from 'lucide-react'
 import {
   getLocalizedPageContent,
   toolPages,
@@ -103,36 +103,7 @@ export function ToolContext({
       </div>
       {children}
       <div className="tool-context-actions">
-        <details className="tool-context-details" name="tool-context-popover">
-          <summary>
-            <ListChecks
-              className="tool-context-open-icon"
-              size={15}
-              aria-hidden="true"
-            />
-            <X
-              className="tool-context-close-icon"
-              size={16}
-              aria-hidden="true"
-            />
-            <span>{locale === 'zh-CN' ? '操作说明' : 'How it works'}</span>
-          </summary>
-          <div className="tool-context-details-content">
-            <div className="tool-context-details-heading">
-              {locale === 'zh-CN' ? '操作说明' : 'How it works'}
-            </div>
-            <ol>
-              {copy.steps.map((step) => (
-                <li key={step}>{step}</li>
-              ))}
-            </ol>
-            <p>{copy.limitations}</p>
-            <h2>{locale === 'zh-CN' ? '输入示例' : 'Input example'}</h2>
-            <pre><code>{copy.sample}</code></pre>
-          </div>
-        </details>
-
-        <details className="mobile-tool-switcher" name="tool-context-popover">
+        <details className="mobile-tool-switcher">
           <summary>
             <LayoutGrid size={15} aria-hidden="true" />
             <span>{locale === 'zh-CN' ? '切换工具' : 'Switch tool'}</span>

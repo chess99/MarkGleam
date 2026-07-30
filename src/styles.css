@@ -199,77 +199,8 @@ select:focus-visible {
   gap: 8px;
 }
 
-.tool-context-details {
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.tool-context-details summary {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--control-ink);
-  font-weight: 700;
-  cursor: pointer;
-  list-style: none;
-}
-
-.tool-context-details summary::-webkit-details-marker,
 .mobile-tool-switcher summary::-webkit-details-marker {
   display: none;
-}
-
-.tool-context-details[open] {
-  position: absolute;
-  top: 8px;
-  right: 20px;
-  width: min(420px, 72vw);
-  z-index: 45;
-  padding: 10px 14px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--panel);
-  box-shadow: var(--shadow-md);
-}
-
-.tool-context-details-content {
-  margin-top: 8px;
-}
-
-.tool-context-close-icon {
-  display: none;
-}
-
-.tool-context-details-heading {
-  color: var(--ink);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.tool-context-details[open] ol {
-  margin: 10px 0 8px;
-  padding-left: 30px;
-}
-
-.tool-context-details[open] p {
-  margin: 0;
-  line-height: 1.5;
-}
-
-.tool-context-details[open] h2 {
-  margin: 10px 0 5px;
-  font-size: 11px;
-}
-
-.tool-context-details[open] pre {
-  max-height: 150px;
-  margin: 0;
-  overflow: auto;
-  padding: 8px;
-  color: var(--control-ink);
-  white-space: pre-wrap;
-  border-radius: 7px;
-  background: var(--panel-soft);
 }
 
 .tool-links {
@@ -2220,6 +2151,33 @@ input[type="range"] {
   padding-left: 20px;
 }
 
+.context-help-note {
+  display: grid;
+  gap: 5px;
+  margin: 16px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel-soft);
+}
+
+.context-help-note > span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.context-help-note > strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.context-help-note > p {
+  margin: 2px 0 0;
+}
+
 .shortcut-list {
   display: grid;
   gap: 10px;
@@ -2380,7 +2338,6 @@ input[type="range"] {
     gap: 5px;
   }
 
-  .tool-context-details summary,
   .mobile-tool-switcher > summary {
     min-width: 36px;
     height: 36px;
@@ -2391,53 +2348,6 @@ input[type="range"] {
     border-radius: 10px;
     background: var(--panel-soft);
     cursor: pointer;
-  }
-
-  .tool-context-details summary span {
-    display: none;
-  }
-
-  .tool-context-details[open] {
-    position: static;
-    width: auto;
-    max-height: none;
-    overflow: visible;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-    z-index: 70;
-  }
-
-  .tool-context-details[open] summary {
-    color: var(--coral);
-    border-color: color-mix(in srgb, var(--coral) 35%, var(--line));
-    background: var(--coral-soft);
-  }
-
-  .tool-context-details[open] .tool-context-open-icon {
-    display: none;
-  }
-
-  .tool-context-details[open] .tool-context-close-icon {
-    display: block;
-  }
-
-  .tool-context-details-content {
-    position: fixed;
-    top: calc(var(--topbar-height) + 62px);
-    right: 12px;
-    left: 12px;
-    max-height: calc(100dvh - var(--topbar-height) - 150px);
-    margin-top: 0;
-    overflow: auto;
-    padding: 14px 16px;
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    background: var(--panel);
-    box-shadow: var(--modal-shadow);
-    z-index: 70;
   }
 
   .tool-links {
