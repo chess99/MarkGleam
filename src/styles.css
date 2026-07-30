@@ -996,6 +996,8 @@ select:focus-visible {
 
 .export-surface {
   position: relative;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   color: var(--theme-text);
   border-radius: var(--canvas-radius);
@@ -1019,6 +1021,8 @@ select:focus-visible {
   position: relative !important;
   z-index: 0 !important;
   isolation: isolate !important;
+  flex: 0 0 auto;
+  padding-bottom: var(--signature-safe-gap);
 }
 
 .export-signature {
@@ -1033,7 +1037,7 @@ select:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: calc(var(--signature-font-size) * 1.6);
-  margin-top: clamp(24px, 3.6vw, 52px);
+  margin-top: auto;
   padding-top: calc(var(--signature-font-size) * 1.05);
   color: var(--signature-muted, var(--theme-muted));
   font-family: var(--theme-body-font);
@@ -2774,6 +2778,7 @@ input[type="range"] {
 
   .md2img-print-surface .markdown-body {
     overflow: visible !important;
+    padding-bottom: 0 !important;
   }
 
   .md2img-print-surface .export-signature {

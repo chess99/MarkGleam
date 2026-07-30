@@ -230,6 +230,10 @@ export function MarkdownPreview({
       : theme.bodyFont,
     '--content-font-size': `${canvas.fontSize}px`,
     '--content-line-height': canvas.lineHeight,
+    '--signature-safe-gap': `${Math.min(
+      52,
+      Math.max(24, canvas.width * 0.036),
+    )}px`,
     '--canvas-radius': `${canvas.cornerRadius}px`,
     width: `${canvas.width}px`,
     minHeight: `${canvas.minHeight}px`,

@@ -73,7 +73,9 @@ describe('createSegment', () => {
 
     const segment = createSegment(surface, 0, 1, 0, false)
 
-    expect(segment.querySelector('[data-export-content]')).toHaveTextContent('First')
+    const content = segment.querySelector<HTMLElement>('[data-export-content]')
+    expect(content).toHaveTextContent('First')
+    expect(content?.style.paddingBottom).toBe('0px')
     expect(segment.querySelector('[data-export-signature]')).not.toBeInTheDocument()
   })
 })

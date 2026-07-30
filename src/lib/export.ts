@@ -270,6 +270,7 @@ export const createSegment = (
     }
 
     const content = sourceContent.cloneNode(false) as HTMLElement
+    if (!includeSignature) content.style.paddingBottom = '0'
     const children = [...sourceContent.children]
     children.slice(start, end).forEach((child) => {
       if (!child.hasAttribute('data-page-break')) {
@@ -331,10 +332,12 @@ const getSplitContentBudget = (
   const signature = surface.querySelector<HTMLElement>(
     '[data-export-signature]',
   )
+  const content = surface.querySelector<HTMLElement>('[data-export-content]')
   const signatureStyle = signature ? getComputedStyle(signature) : undefined
+  const contentStyle = content ? getComputedStyle(content) : undefined
   const signatureOuterHeight = signature
     ? signature.offsetHeight +
-      Number.parseFloat(signatureStyle?.marginTop || '0') +
+      Number.parseFloat(contentStyle?.paddingBottom || '0') +
       Number.parseFloat(signatureStyle?.marginBottom || '0')
     : 0
 

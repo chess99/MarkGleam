@@ -22,6 +22,73 @@ test('loads the complete editor workspace and preview', async ({ page }) => {
   ).toBeVisible()
 })
 
+test('anchors the signature to short canvases and follows long content', async ({
+  page,
+  browserName,
+}) => {
+  test.skip(browserName !== 'chromium', 'Covered once as a layout invariant')
+
+  await page.locator('.inspector-tabs').getByRole('tab').nth(1).click()
+  await page.locator('.inspector-pane input[type="number"]').nth(1).fill('1080')
+  const markdownInput = page.locator('input[accept*=".md"]').first()
+  await markdownInput.setInputFiles({
+    name: 'short.md',
+    mimeType: 'text/markdown',
+    buffer: Buffer.from('# Short note\n\nOne compact paragraph.'),
+  })
+
+  const surface = page.getByTestId('export-surface')
+  const shortLayout = await surface.evaluate((element) => {
+    const content = element.querySelector<HTMLElement>('[data-export-content]')!
+    const signature = element.querySelector<HTMLElement>(
+      '[data-export-signature]',
+    )!
+    const surfaceStyle = getComputedStyle(element)
+    return {
+      surfaceHeight: element.clientHeight,
+      signatureBottom: signature.offsetTop + signature.offsetHeight,
+      expectedBottom:
+        element.clientHeight - Number.parseFloat(surfaceStyle.paddingBottom),
+      safeGap: Number.parseFloat(getComputedStyle(content).paddingBottom),
+    }
+  })
+
+  expect(shortLayout.surfaceHeight).toBe(1080)
+  expect(
+    Math.abs(shortLayout.signatureBottom - shortLayout.expectedBottom),
+  ).toBeLessThanOrEqual(1)
+  expect(shortLayout.safeGap).toBeGreaterThanOrEqual(24)
+  expect(shortLayout.safeGap).toBeLessThanOrEqual(52)
+
+  await markdownInput.setInputFiles({
+    name: 'long.md',
+    mimeType: 'text/markdown',
+    buffer: Buffer.from(
+      Array.from(
+        { length: 60 },
+        (_, index) => `## Section ${index + 1}\n\nA paragraph that makes the canvas grow naturally.`,
+      ).join('\n\n'),
+    ),
+  })
+
+  await expect
+    .poll(() => surface.evaluate((element) => element.clientHeight))
+    .toBeGreaterThan(1080)
+  const longLayout = await surface.evaluate((element) => {
+    const content = element.querySelector<HTMLElement>('[data-export-content]')!
+    const signature = element.querySelector<HTMLElement>(
+      '[data-export-signature]',
+    )!
+    return {
+      contentBottom: content.offsetTop + content.offsetHeight,
+      signatureTop: signature.offsetTop,
+    }
+  })
+  expect(
+    Math.abs(longLayout.signatureTop - longLayout.contentBottom),
+  ).toBeLessThanOrEqual(1)
+})
+
 test('exposes indexable product metadata without loading analytics locally', async ({
   page,
 }) => {
@@ -347,6 +414,7 @@ test('lets free users style the required brand signature without hiding it', asy
     `)
   await expect(signature).toBeVisible()
   await expect(signature).not.toHaveCSS('opacity', '0')
+  await signature.scrollIntoViewIfNeeded()
   const signatureCenterOwner = await signature.evaluate((element) => {
     const box = element.getBoundingClientRect()
     const owner = document.elementFromPoint(
