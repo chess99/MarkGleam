@@ -17,6 +17,7 @@ import {
   Sun,
 } from 'lucide-react'
 import { EditorPane } from './components/EditorPane'
+import { BrandMark } from './components/BrandMark'
 import { ChangelogPage } from './components/ChangelogPage'
 import { Inspector } from './components/Inspector'
 import { LanguageSelect } from './components/LanguageSelect'
@@ -320,9 +321,7 @@ function App() {
           className="brand"
           href={locale === 'zh-CN' ? '/' : '/en/'}
         >
-          <span className="brand-mark" aria-hidden="true">
-            <ImageIcon size={20} strokeWidth={2.4} />
-          </span>
+          <BrandMark />
           <div className="brand-title">
             <span>MD2IMG</span>
             <span className="sr-only">

@@ -1,8 +1,9 @@
 import { Fragment } from 'react'
-import { ArrowLeft, History, Image as ImageIcon } from 'lucide-react'
+import { ArrowLeft, History } from 'lucide-react'
 import { changelogEntries } from '../data/changelog'
 import { t } from '../i18n'
 import { useAppStore } from '../store'
+import { BrandMark } from './BrandMark'
 import { LanguageSelect } from './LanguageSelect'
 
 export function ChangelogPage({ onBack }: { onBack: () => void }) {
@@ -14,9 +15,7 @@ export function ChangelogPage({ onBack }: { onBack: () => void }) {
     <div className="changelog-page" data-appearance={appearance}>
       <header className="changelog-topbar">
         <div className="brand">
-          <span className="brand-mark" aria-hidden="true">
-            <ImageIcon size={20} strokeWidth={2.4} />
-          </span>
+          <BrandMark />
           <span className="brand-title">MD2IMG</span>
         </div>
         <div className="changelog-actions">

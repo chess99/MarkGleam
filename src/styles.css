@@ -344,14 +344,26 @@ select:focus-visible {
 }
 
 .brand-mark {
-  display: grid;
-  place-items: center;
+  display: block;
+  flex: 0 0 auto;
   width: 36px;
   height: 36px;
-  color: white;
   border-radius: 10px;
-  background: var(--coral);
-  box-shadow: 0 6px 14px rgba(242, 95, 58, 0.24);
+  background: #292722;
+  box-shadow: 0 6px 14px rgba(41, 39, 34, 0.18);
+}
+
+.brand-mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.app-shell[data-appearance="dark"] .brand-mark,
+.changelog-page[data-appearance="dark"] .brand-mark {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 6px 14px rgba(0, 0, 0, 0.28);
 }
 
 .brand-title {
