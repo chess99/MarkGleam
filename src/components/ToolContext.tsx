@@ -103,7 +103,18 @@ export function ToolContext({
       </div>
       {children}
       <div className="tool-context-actions">
-        <details className="mobile-tool-switcher">
+        <details
+          className="mobile-tool-switcher"
+          onToggle={(event) => {
+            if (!event.currentTarget.open) return
+            requestAnimationFrame(() => {
+              mobileActiveLinkRef.current?.scrollIntoView({
+                block: 'nearest',
+                inline: 'nearest',
+              })
+            })
+          }}
+        >
           <summary>
             <LayoutGrid size={15} aria-hidden="true" />
             <span>{locale === 'zh-CN' ? '切换工具' : 'Switch tool'}</span>

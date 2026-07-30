@@ -28,14 +28,17 @@ test('presents the homepage as the default Markdown converter', async ({
   ).toHaveAttribute('aria-current', 'page')
 })
 
-test('keeps the active converter visible in the mobile tool scroller', async ({
+test('keeps the active converter visible in the mobile tool menu', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 320, height: 720 })
   await page.goto('/batch-markdown-to-image/')
 
+  await page.locator('.mobile-tool-switcher > summary').click()
+
   const active = page
     .getByRole('navigation', { name: '转换类型' })
     .getByRole('link', { name: '批量 Markdown 转图片' })
+  await expect(active).toHaveAttribute('aria-current', 'page')
   await expect(active).toBeInViewport()
 })
