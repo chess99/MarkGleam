@@ -187,7 +187,12 @@ test('keeps limits and GitHub privacy boundaries visible on mobile', async ({
   )
   const summary = page.locator('.tool-context-details summary')
   await expect(summary).toBeVisible()
+  const closedPosition = await summary.boundingBox()
   await summary.click()
+  const openPosition = await summary.boundingBox()
+  expect(openPosition?.x).toBeCloseTo(closedPosition?.x ?? 0, 0)
+  expect(openPosition?.y).toBeCloseTo(closedPosition?.y ?? 0, 0)
+  await expect(page.locator('.tool-context-close-icon')).toBeVisible()
   await expect(page.getByText(/只支持无需登录即可访问的公开内容/)).toBeVisible()
 
   const toolSwitcher = page.locator('.mobile-tool-switcher > summary')
@@ -195,6 +200,12 @@ test('keeps limits and GitHub privacy boundaries visible on mobile', async ({
   await toolSwitcher.click()
   await expect(page.locator('.mobile-tool-links')).toBeVisible()
   await expect(page.locator('.tool-context-details')).not.toHaveAttribute('open')
+
+  await page
+    .locator('.mobile-nav')
+    .getByRole('button', { name: '预览', exact: true })
+    .click()
+  await expect(page.locator('.mobile-tool-switcher')).not.toHaveAttribute('open')
 })
 
 test('preserves homepage choices while purpose-specific routes apply defaults', async ({

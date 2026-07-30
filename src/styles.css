@@ -236,6 +236,16 @@ select:focus-visible {
   margin-top: 8px;
 }
 
+.tool-context-close-icon {
+  display: none;
+}
+
+.tool-context-details-heading {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .tool-context-details[open] ol {
   margin: 10px 0 8px;
   padding-left: 30px;
@@ -2388,30 +2398,46 @@ input[type="range"] {
   }
 
   .tool-context-details[open] {
-    position: fixed;
-    top: calc(var(--topbar-height) + 62px);
-    right: 12px;
-    left: 12px;
+    position: static;
     width: auto;
-    max-height: calc(100dvh - var(--topbar-height) - 150px);
-    overflow: auto;
-    padding: 14px 16px;
-    border-radius: 16px;
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
     z-index: 70;
   }
 
   .tool-context-details[open] summary {
-    width: max-content;
-    min-width: 0;
-    height: 28px;
-    padding: 0 9px;
     color: var(--coral);
     border-color: color-mix(in srgb, var(--coral) 35%, var(--line));
     background: var(--coral-soft);
   }
 
-  .tool-context-details[open] summary span {
-    display: inline;
+  .tool-context-details[open] .tool-context-open-icon {
+    display: none;
+  }
+
+  .tool-context-details[open] .tool-context-close-icon {
+    display: block;
+  }
+
+  .tool-context-details-content {
+    position: fixed;
+    top: calc(var(--topbar-height) + 62px);
+    right: 12px;
+    left: 12px;
+    max-height: calc(100dvh - var(--topbar-height) - 150px);
+    margin-top: 0;
+    overflow: auto;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--panel);
+    box-shadow: var(--modal-shadow);
+    z-index: 70;
   }
 
   .tool-links {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
-import { ChevronDown, LayoutGrid, ListChecks } from 'lucide-react'
+import { ChevronDown, LayoutGrid, ListChecks, X } from 'lucide-react'
 import {
   getLocalizedPageContent,
   toolPages,
@@ -15,6 +15,7 @@ export function ToolContext({
 }) {
   const { page, locale } = resolved
   const copy = getLocalizedPageContent(page, locale)
+  const contextRef = useRef<HTMLElement>(null)
   const desktopActiveLinkRef = useRef<HTMLAnchorElement>(null)
   const mobileActiveLinkRef = useRef<HTMLAnchorElement>(null)
   const visibleToolPages = toolPages.filter(
@@ -27,6 +28,33 @@ export function ToolContext({
       inline: 'center',
     })
   }, [page.id])
+
+  useEffect(() => {
+    const closePopovers = (restoreFocus = false) => {
+      const openPopover = contextRef.current?.querySelector<HTMLDetailsElement>(
+        'details[open]',
+      )
+      if (!openPopover) return
+      openPopover.open = false
+      if (restoreFocus) {
+        openPopover.querySelector<HTMLElement>('summary')?.focus()
+      }
+    }
+
+    const dismissOutside = (event: PointerEvent) => {
+      if (!contextRef.current?.contains(event.target as Node)) closePopovers()
+    }
+    const dismissWithEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closePopovers(true)
+    }
+
+    document.addEventListener('pointerdown', dismissOutside)
+    window.addEventListener('keydown', dismissWithEscape)
+    return () => {
+      document.removeEventListener('pointerdown', dismissOutside)
+      window.removeEventListener('keydown', dismissWithEscape)
+    }
+  }, [])
 
   const renderToolLinks = (
     className: string,
@@ -64,7 +92,11 @@ export function ToolContext({
   )
 
   return (
-    <section className="tool-context" aria-labelledby="tool-page-title">
+    <section
+      ref={contextRef}
+      className="tool-context"
+      aria-labelledby="tool-page-title"
+    >
       <div className="tool-context-copy">
         <h1 id="tool-page-title">{copy.h1}</h1>
         <p>{copy.intro}</p>
@@ -73,10 +105,22 @@ export function ToolContext({
       <div className="tool-context-actions">
         <details className="tool-context-details" name="tool-context-popover">
           <summary>
-            <ListChecks size={15} aria-hidden="true" />
+            <ListChecks
+              className="tool-context-open-icon"
+              size={15}
+              aria-hidden="true"
+            />
+            <X
+              className="tool-context-close-icon"
+              size={16}
+              aria-hidden="true"
+            />
             <span>{locale === 'zh-CN' ? '操作说明' : 'How it works'}</span>
           </summary>
           <div className="tool-context-details-content">
+            <div className="tool-context-details-heading">
+              {locale === 'zh-CN' ? '操作说明' : 'How it works'}
+            </div>
             <ol>
               {copy.steps.map((step) => (
                 <li key={step}>{step}</li>
