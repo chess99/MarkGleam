@@ -829,6 +829,45 @@ select:focus-visible {
   overflow: hidden;
 }
 
+.desktop-editor-loading {
+  display: grid;
+  height: 100%;
+  min-height: 0;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  color: var(--muted);
+  background: var(--panel);
+  font-size: 13px;
+}
+
+.desktop-editor-loading-bar {
+  width: 88px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, transparent, var(--coral), transparent)
+    0 0 / 50% 100% no-repeat,
+    var(--line-soft);
+  animation: editor-loading-slide 900ms ease-in-out infinite alternate;
+}
+
+@keyframes editor-loading-slide {
+  to {
+    background-position:
+      100% 0,
+      0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .desktop-editor-loading-bar {
+    animation: none;
+    background: var(--coral);
+  }
+}
+
 .editor-shell .cm-editor {
   font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
   font-size: 13px;

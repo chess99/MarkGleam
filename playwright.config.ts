@@ -3,6 +3,10 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
+  // Canvas, PDF and multi-browser export cases are memory intensive. Letting
+  // Playwright use every logical CPU can crash Firefox instead of exercising
+  // the product, especially while Chromium and WebKit render in parallel.
+  workers: process.env.CI ? 2 : 4,
   timeout: 45_000,
   expect: { timeout: 10_000 },
   reporter: [['list'], ['html', { open: 'never' }]],

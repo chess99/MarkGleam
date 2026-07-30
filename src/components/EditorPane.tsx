@@ -263,19 +263,19 @@ export function EditorPane({
         ) : (
           <Suspense
             fallback={
-              <textarea
-                className="mobile-markdown-editor"
-                aria-label={inputLabel}
-                value={markdown}
-                onChange={(event) => setMarkdown(event.target.value)}
-                spellCheck={false}
-              />
+              <div className="desktop-editor-loading" role="status">
+                <span className="desktop-editor-loading-bar" aria-hidden="true" />
+                <span>
+                  {locale === 'zh-CN' ? '正在加载编辑器…' : 'Loading editor…'}
+                </span>
+              </div>
             }
           >
             <DesktopMarkdownEditor
               value={markdown}
               onChange={setMarkdown}
               dark={appearance === 'dark'}
+              ariaLabel={inputLabel}
             />
           </Suspense>
         )}
