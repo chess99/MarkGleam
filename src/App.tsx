@@ -7,7 +7,6 @@ import {
   CircleHelp,
   Eye,
   FileText,
-  History,
   Image as ImageIcon,
   LockKeyhole,
   Moon,
@@ -317,7 +316,10 @@ function App() {
   return (
     <div className="app-shell" data-appearance={appearance}>
       <header className="topbar">
-        <div className="brand">
+        <a
+          className="brand"
+          href={locale === 'zh-CN' ? '/' : '/en/'}
+        >
           <span className="brand-mark" aria-hidden="true">
             <ImageIcon size={20} strokeWidth={2.4} />
           </span>
@@ -333,7 +335,7 @@ function App() {
             <ShieldCheck size={14} />
             {t(locale, 'tagline')}
           </span>
-        </div>
+        </a>
 
         <div className="topbar-actions">
           <button
@@ -404,16 +406,6 @@ function App() {
                   }}
                 >
                   <LockKeyhole size={15} /> {t(locale, 'privacy')}
-                </button>
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    window.location.hash = '/changelog'
-                    setHelpMenuOpen(false)
-                  }}
-                >
-                  <History size={15} /> {t(locale, 'changelog')}
                 </button>
                 <button
                   type="button"
