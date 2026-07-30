@@ -295,15 +295,17 @@ test('lets free users style the required brand signature without hiding it', asy
 
   await page.getByRole('tab', { name: '画布' }).click()
   await expect(page.getByText(/免费导出会保留这条 MarkGleam 署名/)).toBeVisible()
-  await expect(page.getByRole('button', { name: '摄影参数' })).toHaveAttribute(
+  await expect(page.getByRole('button', { name: '简洁' })).toHaveAttribute(
     'aria-pressed',
     'true',
   )
-  await expect(signature).toHaveClass(/signature-camera/)
-
-  await page.getByRole('button', { name: '极简' }).click()
   await expect(signature).toHaveClass(/signature-minimal/)
+  await expect(signature).toContainText('使用 MarkGleam 制作')
   await expect(signature).toContainText('markgleam.com')
+
+  await page.getByRole('button', { name: '作品信息' }).click()
+  await expect(signature).toHaveClass(/signature-camera/)
+  await expect(page.getByRole('button', { name: '徽章' })).toBeVisible()
 
   await page.getByRole('button', { name: '清晰' }).click()
   await expect(signature).toHaveClass(/signature-solid/)

@@ -458,7 +458,10 @@ function App() {
               />
             </Suspense>
           ) : (
-            <EditorPane onToast={showToast} />
+            <EditorPane
+              sample={getLocalizedPageContent(resolvedPage.page, locale).sample}
+              onToast={showToast}
+            />
           ))}
 
         {editorCollapsed && (

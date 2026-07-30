@@ -54,6 +54,32 @@ test('separates the brand homepage from the Markdown search landing page', async
   )
 })
 
+test('restores the sample for the current tool page', async ({ page }) => {
+  await page.goto('/')
+  const editor = page.locator('.editor-pane')
+  await editor.getByRole('textbox', { name: 'Markdown' }).fill('# 已修改')
+  await editor.getByRole('button', { name: '更多' }).click()
+  await editor.getByRole('menuitem', { name: '示例' }).click()
+
+  await expect(editor.locator('.cm-content')).toContainText('MarkGleam')
+  await expect(editor.locator('.cm-content')).not.toContainText(
+    '把 Markdown 排成一张图',
+  )
+
+  await page.goto('/en/markdown-to-image/')
+  const englishEditor = page.locator('.editor-pane')
+  await englishEditor.getByRole('textbox', { name: 'Markdown' }).fill('# Changed')
+  await englishEditor.getByRole('button', { name: 'More' }).click()
+  await englishEditor.getByRole('menuitem', { name: 'Sample' }).click()
+
+  await expect(englishEditor.locator('.cm-content')).toContainText(
+    'Markdown to Image',
+  )
+  await expect(englishEditor.locator('.cm-content')).not.toContainText(
+    'Turn Markdown into an image',
+  )
+})
+
 test('uses raw Mermaid and formula input without showing wrapper syntax', async ({
   page,
 }) => {

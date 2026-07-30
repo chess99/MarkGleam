@@ -81,8 +81,9 @@ export function ExportSignature({
           <span className="signature-minimal-copy">
             <Sparkles size={fontSize * 1.15} strokeWidth={1.7} />
             <span>
-              {locale === 'zh-CN' ? '由' : 'Made with'}{' '}
+              {locale === 'zh-CN' ? '使用' : 'Made with'}{' '}
               <strong>{PRODUCT.name}</strong>
+              {locale === 'zh-CN' && ' 制作'}
             </span>
           </span>
           <span className="signature-domain">{PRODUCT.domain}</span>

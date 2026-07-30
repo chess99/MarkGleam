@@ -45,8 +45,10 @@ const useMobileEditor = () => {
 }
 
 export function EditorPane({
+  sample,
   onToast,
 }: {
+  sample: string
   onToast: (message: string, kind?: 'success' | 'error') => void
 }) {
   const markdown = useAppStore((state) => state.markdown)
@@ -56,7 +58,6 @@ export function EditorPane({
   const codeLanguage = useAppStore((state) => state.codeLanguage)
   const setMarkdown = useAppStore((state) => state.setMarkdown)
   const setCodeLanguage = useAppStore((state) => state.setCodeLanguage)
-  const resetDocument = useAppStore((state) => state.resetDocument)
   const inputRef = useRef<HTMLInputElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -226,7 +227,7 @@ export function EditorPane({
                   type="button"
                   role="menuitem"
                   onClick={() => {
-                    resetDocument()
+                    setMarkdown(sample)
                     setMenuOpen(false)
                   }}
                 >

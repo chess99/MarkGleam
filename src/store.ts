@@ -68,7 +68,7 @@ export const defaultExport: ExportConfig = {
 }
 
 export const defaultSignature: SignatureConfig = {
-  style: 'camera',
+  style: 'minimal',
   tone: 'subtle',
 }
 
@@ -107,7 +107,6 @@ interface AppStore extends DocumentState {
   toggleInspector: () => void
   setMobilePane: (mobilePane: MobilePane) => void
   setInspectorTab: (inspectorTab: InspectorTab) => void
-  resetDocument: () => void
   resetSettings: () => void
 }
 
@@ -165,18 +164,6 @@ export const useAppStore = create<AppStore>()(
         set((state) => ({ inspectorCollapsed: !state.inspectorCollapsed })),
       setMobilePane: (mobilePane) => set({ mobilePane }),
       setInspectorTab: (inspectorTab) => set({ inspectorTab }),
-      resetDocument: () =>
-        set((state) => ({
-          markdown: createToolDrafts()[state.inputKind],
-          drafts: {
-            ...state.drafts,
-            [state.inputKind]: createToolDrafts()[state.inputKind],
-          },
-          export: {
-            ...state.export,
-            filename: suggestFilename(createToolDrafts()[state.inputKind]),
-          },
-        })),
       resetSettings: () =>
         set((state) => ({
           ...state,
