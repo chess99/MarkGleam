@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import {
   getLocalizedPageContent,
   toolPages,
@@ -14,6 +14,17 @@ export function ToolContext({
 }) {
   const { page, locale } = resolved
   const copy = getLocalizedPageContent(page, locale)
+  const activeLinkRef = useRef<HTMLAnchorElement>(null)
+  const visibleToolPages = toolPages.filter(
+    (candidate) => candidate.id !== 'visual-workspace',
+  )
+
+  useEffect(() => {
+    activeLinkRef.current?.scrollIntoView({
+      block: 'nearest',
+      inline: 'center',
+    })
+  }, [page.id])
 
   return (
     <section className="tool-context" aria-labelledby="tool-page-title">
@@ -35,15 +46,27 @@ export function ToolContext({
       </details>
       <nav
         className="tool-links"
-        aria-label={locale === 'zh-CN' ? '其他转换工具' : 'Other converters'}
+        aria-label={locale === 'zh-CN' ? '转换类型' : 'Converter type'}
       >
-        {toolPages.map((candidate) => {
-          const href = locale === 'zh-CN' ? candidate.path : candidate.enPath
+        {visibleToolPages.map((candidate) => {
+          const isHomepageMarkdown =
+            page.id === 'visual-workspace' &&
+            candidate.id === 'markdown-to-image'
+          const active = candidate.id === page.id || isHomepageMarkdown
+          const href = isHomepageMarkdown
+            ? locale === 'zh-CN'
+              ? page.path
+              : page.enPath
+            : locale === 'zh-CN'
+              ? candidate.path
+              : candidate.enPath
+
           return (
             <a
               key={candidate.id}
               href={href}
-              aria-current={candidate.id === page.id ? 'page' : undefined}
+              ref={active ? activeLinkRef : undefined}
+              aria-current={active ? 'page' : undefined}
             >
               {candidate.h1[locale]}
             </a>
