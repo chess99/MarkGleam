@@ -104,3 +104,16 @@ export const getLocalizedPageContent = (
   sample: page.sample[locale],
   schemaFeatures: page.schemaFeatures[locale],
 })
+
+export const getLocalizedEditorSample = (
+  page: ToolPage,
+  locale: ToolPageLocale,
+) => {
+  if (page.inputKind !== 'github-readme') return page.sample[locale]
+
+  const markdownPage = toolPages.find(
+    (candidate) => candidate.id === 'markdown-to-image',
+  )
+  if (!markdownPage) throw new Error('Missing markdown-to-image sample')
+  return markdownPage.sample[locale]
+}

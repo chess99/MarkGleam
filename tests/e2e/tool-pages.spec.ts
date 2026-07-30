@@ -24,7 +24,9 @@ test('opens English tool URLs directly even when Chinese was saved', async ({
   await expect(page.locator('pre[data-render-state="ready"]')).toBeVisible()
 
   await page.goto('/en/mermaid-to-image/')
-  await expect(page.locator('.cm-content')).toContainText('Enter source')
+  await expect(page.locator('.cm-content')).toContainText(
+    'Paste Mermaid source',
+  )
   await expect(page.locator('.cm-content')).not.toContainText('粘贴 Mermaid')
 })
 
@@ -54,17 +56,20 @@ test('separates the brand homepage from the Markdown search landing page', async
   )
 })
 
-test('restores the sample for the current tool page', async ({ page }) => {
+test('keeps the representative Markdown sample aligned across both entry points', async ({
+  page,
+}) => {
   await page.goto('/')
   const editor = page.locator('.editor-pane')
   await editor.getByRole('textbox', { name: 'Markdown' }).fill('# 已修改')
   await editor.getByRole('button', { name: '更多' }).click()
   await editor.getByRole('menuitem', { name: '示例' }).click()
 
-  await expect(editor.locator('.cm-content')).toContainText('MarkGleam')
-  await expect(editor.locator('.cm-content')).not.toContainText(
+  await expect(editor.locator('.cm-content')).toContainText(
     '把 Markdown 排成一张图',
   )
+  await expect(page.locator('[data-render-state="ready"] .katex')).toHaveCount(2)
+  await expect(page.locator('[data-mermaid-state]')).toHaveCount(0)
 
   await page.goto('/en/markdown-to-image/')
   const englishEditor = page.locator('.editor-pane')
@@ -73,11 +78,10 @@ test('restores the sample for the current tool page', async ({ page }) => {
   await englishEditor.getByRole('menuitem', { name: 'Sample' }).click()
 
   await expect(englishEditor.locator('.cm-content')).toContainText(
-    'Markdown to Image',
-  )
-  await expect(englishEditor.locator('.cm-content')).not.toContainText(
     'Turn Markdown into an image',
   )
+  await expect(page.locator('[data-render-state="ready"] .katex')).toHaveCount(2)
+  await expect(page.locator('[data-mermaid-state]')).toHaveCount(0)
 })
 
 test('uses raw Mermaid and formula input without showing wrapper syntax', async ({
@@ -117,6 +121,12 @@ test('imports a public GitHub README and rewrites relative assets', async ({
   )
   await page.goto('/github-readme-to-image/')
 
+  await expect(page.getByLabel('GitHub README 地址')).toHaveValue(
+    'https://github.com/chess99/markdown-to-image',
+  )
+  await expect(page.locator('.cm-content')).toContainText(
+    '把 Markdown 排成一张图',
+  )
   await page.getByLabel('GitHub README 地址').fill('https://github.com/acme/demo')
   await page.getByRole('button', { name: '导入 README' }).click()
 

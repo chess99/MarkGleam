@@ -29,8 +29,8 @@
       "en": "Remote image export depends on the source site's CORS policy. Free exports keep the MarkGleam signature shown in the preview."
     },
     "sample": {
-      "zh-CN": "# MarkGleam\n\n把结构清楚的内容，做成可以直接分享的图片。\n\n- Markdown\n- 代码\n- Mermaid 与公式",
-      "en": "# MarkGleam\n\nTurn structured content into visuals you can share directly.\n\n- Markdown\n- Code\n- Mermaid and formulas"
+      "zh-CN": "# 把 Markdown 排成一张图\n\n在左侧修改内容，中间预览会立即更新。导出前可以调整主题、画布和留白。\n\n## 内容重点\n\n- **结构清楚**：用标题、列表和表格组织信息\n- **技术友好**：支持代码高亮与 KaTeX 公式\n- **本地处理**：正文和本地素材保留在当前浏览器\n\n> 好的排版让读者先看到重点，再理解细节。\n\n```ts\nconst document = { title: '季度复盘', status: 'ready' }\nconsole.log(`${document.title}: ${document.status}`)\n```\n\n行内公式 $E = mc^2$ 也可以自然地放进正文。\n\n$$\n\\int_{-\\infty}^{\\infty} e^{-x^2}\\,dx = \\sqrt{\\pi}\n$$\n\n| 格式 | 适合场景 |\n| --- | --- |\n| PNG / WebP | 网页与社交平台 |\n| SVG | 需要继续缩放的内容 |\n| PDF | 分享或打印 |",
+      "en": "# Turn Markdown into an image\n\nEdit on the left and the preview updates immediately. Adjust the theme, canvas and spacing before export.\n\n## What matters\n\n- **Clear structure**: organize ideas with headings, lists and tables\n- **Technical content**: render highlighted code and KaTeX formulas\n- **Local processing**: keep your document and local assets in this browser\n\n> Good typesetting helps readers see the point before the details.\n\n```ts\nconst document = { title: 'Quarterly review', status: 'ready' }\nconsole.log(`${document.title}: ${document.status}`)\n```\n\nInline math such as $E = mc^2$ fits naturally into the document.\n\n$$\n\\int_{-\\infty}^{\\infty} e^{-x^2}\\,dx = \\sqrt{\\pi}\n$$\n\n| Format | Best for |\n| --- | --- |\n| PNG / WebP | Web pages and social posts |\n| SVG | Content that must stay scalable |\n| PDF | Sharing or printing |"
     },
     "defaults": { "exportFormat": "png", "canvasPreset": "auto", "inspectorTab": "canvas" },
     "schemaFeatures": {
@@ -68,8 +68,8 @@
       "en": "Remote image export depends on the image host's CORS policy. If it is blocked, download the image and drop the local file into the editor."
     },
     "sample": {
-      "zh-CN": "# Markdown 转图片\n\n直接编辑内容，并在右侧调整画布。\n\n```js\nconsole.log('MarkGleam')\n```",
-      "en": "# Markdown to Image\n\nEdit this document and adjust the canvas on the right.\n\n```js\nconsole.log('MarkGleam')\n```"
+      "zh-CN": "# 把 Markdown 排成一张图\n\n在左侧修改内容，中间预览会立即更新。导出前可以调整主题、画布和留白。\n\n## 内容重点\n\n- **结构清楚**：用标题、列表和表格组织信息\n- **技术友好**：支持代码高亮与 KaTeX 公式\n- **本地处理**：正文和本地素材保留在当前浏览器\n\n> 好的排版让读者先看到重点，再理解细节。\n\n```ts\nconst document = { title: '季度复盘', status: 'ready' }\nconsole.log(`${document.title}: ${document.status}`)\n```\n\n行内公式 $E = mc^2$ 也可以自然地放进正文。\n\n$$\n\\int_{-\\infty}^{\\infty} e^{-x^2}\\,dx = \\sqrt{\\pi}\n$$\n\n| 格式 | 适合场景 |\n| --- | --- |\n| PNG / WebP | 网页与社交平台 |\n| SVG | 需要继续缩放的内容 |\n| PDF | 分享或打印 |",
+      "en": "# Turn Markdown into an image\n\nEdit on the left and the preview updates immediately. Adjust the theme, canvas and spacing before export.\n\n## What matters\n\n- **Clear structure**: organize ideas with headings, lists and tables\n- **Technical content**: render highlighted code and KaTeX formulas\n- **Local processing**: keep your document and local assets in this browser\n\n> Good typesetting helps readers see the point before the details.\n\n```ts\nconst document = { title: 'Quarterly review', status: 'ready' }\nconsole.log(`${document.title}: ${document.status}`)\n```\n\nInline math such as $E = mc^2$ fits naturally into the document.\n\n$$\n\\int_{-\\infty}^{\\infty} e^{-x^2}\\,dx = \\sqrt{\\pi}\n$$\n\n| Format | Best for |\n| --- | --- |\n| PNG / WebP | Web pages and social posts |\n| SVG | Content that must stay scalable |\n| PDF | Sharing or printing |"
     },
     "defaults": { "exportFormat": "png", "canvasPreset": "auto", "inspectorTab": "theme" },
     "schemaFeatures": {
@@ -88,7 +88,7 @@
     "intro": { "zh-CN": "这个模式使用自适应高度画布，并把导出预设为分片 ZIP。分片宽度、主题和排版与完整预览保持一致。", "en": "This mode uses an auto-height canvas and presets export to a split ZIP. Every part keeps the width, theme and typography of the full preview." },
     "steps": { "zh-CN": ["粘贴长篇 Markdown", "设置画布宽度和分片高度", "导出分片 ZIP"], "en": ["Paste a long Markdown document", "Set the canvas width and split height", "Export the image parts as a ZIP"] },
     "limitations": { "zh-CN": "工具会尽量在段落、标题等内容块之间分片；如果单张大图或复杂表格本身就超过分片高度，该图片仍可能高于设定值。", "en": "The tool splits between content blocks where possible. A single image or complex table that is taller than the chosen part height can still produce an oversized part." },
-    "sample": { "zh-CN": "# 长图示例\n\n## 第一节\n\n长篇笔记可以保留统一排版。\n\n## 第二节\n\n超过画布上限时可分片下载。", "en": "# Long image example\n\n## Part one\n\nKeep consistent styling across a long document.\n\n## Part two\n\nSplit output when it exceeds browser canvas limits." },
+    "sample": { "zh-CN": "# 产品上线复盘\n\n> 把背景、进展、风险和下一步整理成一张连续长图。\n\n## 一、目标\n\n- 让首次使用者快速完成一次导出\n- 保持桌面端与移动端体验一致\n- 为长内容提供稳定的分片下载\n\n## 二、本轮进展\n\n1. 统一编辑、预览和设置区域的交互\n2. 补充 PNG、SVG 与 PDF 导出检查\n3. 优化长文档的分片边界\n\n## 三、验收记录\n\n| 项目 | 状态 | 说明 |\n| --- | --- | --- |\n| 标题与列表 | 已检查 | 层级清楚 |\n| 表格与代码 | 已检查 | 不超出画布 |\n| 分片 ZIP | 待复核 | 检查文件命名 |\n\n## 四、风险与处理\n\n- [x] 超长段落优先在内容块之间分片\n- [x] 单个失败不影响其他导出项\n- [ ] 用真实长文档再做一次回归\n\n## 五、下一步\n\n继续验证图片、表格和不同主题下的长图效果，并把结论沉淀到发布检查清单中。", "en": "# Product launch retrospective\n\n> Put the context, progress, risks and next steps into one continuous image.\n\n## 1. Goals\n\n- Help first-time users complete an export quickly\n- Keep desktop and mobile behavior consistent\n- Provide reliable split downloads for long content\n\n## 2. Progress\n\n1. Aligned interactions across the editor, preview and settings\n2. Added checks for PNG, SVG and PDF exports\n3. Improved split boundaries for long documents\n\n## 3. Acceptance notes\n\n| Item | Status | Note |\n| --- | --- | --- |\n| Headings and lists | Checked | Hierarchy is clear |\n| Tables and code | Checked | Fits the canvas |\n| Split ZIP | Review | Verify filenames |\n\n## 4. Risks and responses\n\n- [x] Prefer splitting between content blocks\n- [x] Keep other exports running after one failure\n- [ ] Run another regression with a real long document\n\n## 5. Next step\n\nContinue checking images, tables and themes, then add the findings to the release checklist." },
     "defaults": { "exportFormat": "split-zip", "canvasPreset": "auto", "inspectorTab": "export", "splitHeight": 4096 },
     "schemaFeatures": { "zh-CN": ["自适应高度 Markdown 长图", "可调分片高度", "多张 PNG 打包为 ZIP"], "en": ["Auto-height Markdown images", "Adjustable split height", "PNG parts packaged as a ZIP"] }
   },
@@ -103,7 +103,7 @@
     "intro": { "zh-CN": "保留样式 PDF 适合分享视觉稿；打印模式保留可搜索、可复制的文字。两种方式都可调整纸张、方向和页边距。", "en": "Styled PDF keeps the visual theme for sharing. Print mode keeps text searchable and selectable. Both support paper size, orientation and margins." },
     "steps": { "zh-CN": ["输入 Markdown 并检查分页", "选择纸张、方向和边距", "导出样式 PDF 或打开打印模式"], "en": ["Enter Markdown and check page breaks", "Choose paper size, orientation and margins", "Export a styled PDF or open print mode"] },
     "limitations": { "zh-CN": "保留样式 PDF 会把页面内容转为图片；需要搜索或复制文字时，请选择“打印 / 可搜索 PDF”。", "en": "Styled PDF turns page content into images. Choose Print / Searchable PDF when readers need to search or copy the text." },
-    "sample": { "zh-CN": "# 项目说明\n\n这份文档用于检查 PDF 分页。\n\n## 要点\n\n- A4 或 Letter\n- 纵向或横向\n- 自定义页边距", "en": "# Project brief\n\nUse this document to check PDF pagination.\n\n## Options\n\n- A4 or Letter\n- Portrait or landscape\n- Custom margins" },
+    "sample": { "zh-CN": "# 项目周报\n\n**周期：** 本周  ·  **状态：** 进行中\n\n## 本周摘要\n\n本周完成了核心流程的联调，并检查了不同纸张、方向和页边距下的排版。\n\n## 完成事项\n\n- 编辑内容并实时预览\n- 导出保留主题的图片型 PDF\n- 使用打印模式生成可搜索 PDF\n\n| 模块 | 状态 |\n| --- | --- |\n| 内容排版 | 已完成 |\n| 导出检查 | 进行中 |\n| 发布说明 | 待更新 |\n\n<!-- pagebreak -->\n\n# 下周计划\n\n## 优先事项\n\n1. 用 A4 与 Letter 各验证一次分页\n2. 检查页眉、页脚和页码\n3. 确认表格不会在行内被截断\n\n> 独立一行的 `<!-- pagebreak -->` 可以在需要的位置强制分页。", "en": "# Project weekly report\n\n**Period:** This week  ·  **Status:** In progress\n\n## Summary\n\nThe core workflow is connected, and the layout has been checked with different paper sizes, orientations and margins.\n\n## Completed\n\n- Edit content with a live preview\n- Export a styled image-based PDF\n- Use print mode for a searchable PDF\n\n| Area | Status |\n| --- | --- |\n| Content layout | Complete |\n| Export checks | In progress |\n| Release notes | To update |\n\n<!-- pagebreak -->\n\n# Next-week plan\n\n## Priorities\n\n1. Check pagination on both A4 and Letter\n2. Review headers, footers and page numbers\n3. Confirm tables do not split through a row\n\n> Put `<!-- pagebreak -->` on its own line to force a page break where needed." },
     "defaults": { "exportFormat": "pdf", "canvasPreset": "a4", "inspectorTab": "export" },
     "schemaFeatures": { "zh-CN": ["保留主题的图片型 PDF", "可搜索的浏览器打印 PDF", "A4/Letter、方向与页边距"], "en": ["Theme-preserving image PDF", "Searchable browser print PDF", "A4/Letter, orientation and margin controls"] }
   },
@@ -118,7 +118,7 @@
     "intro": { "zh-CN": "编辑器接收原始 Mermaid 语法，页面会自动包装并渲染图表。导出前可以调整画布宽度、留白和背景。", "en": "The editor accepts raw Mermaid syntax and wraps it for rendering automatically. Adjust canvas width, padding and background before export." },
     "steps": { "zh-CN": ["粘贴 Mermaid 源码", "修正预览中的语法错误", "设置画布并导出图片"], "en": ["Paste Mermaid source", "Fix any syntax error shown in the preview", "Set the canvas and export an image"] },
     "limitations": { "zh-CN": "语法支持范围取决于当前 Mermaid 版本；特别宽或节点很多的图表可能需要增大画布宽度。", "en": "Syntax support follows the bundled Mermaid version. Very wide diagrams or diagrams with many nodes may need a wider canvas." },
-    "sample": { "zh-CN": "flowchart LR\n  A[输入 Markdown] --> B[实时预览]\n  B --> C[导出图片]", "en": "flowchart LR\n  A[Enter source] --> B[Preview]\n  B --> C[Export image]" },
+    "sample": { "zh-CN": "flowchart LR\n  A[粘贴 Mermaid 源码] --> B{预览正常?}\n  B -->|是| C[调整画布]\n  B -->|否| A\n  C --> D[导出 PNG / SVG]", "en": "flowchart LR\n  A[Paste Mermaid source] --> B{Preview ready?}\n  B -->|Yes| C[Adjust canvas]\n  B -->|No| A\n  C --> D[Export PNG / SVG]" },
     "defaults": { "exportFormat": "png", "canvasPreset": "auto", "inspectorTab": "canvas" },
     "schemaFeatures": { "zh-CN": ["直接输入 Mermaid 源码", "实时图表预览与错误提示", "导出 PNG、WebP 或 SVG"], "en": ["Direct Mermaid source input", "Live diagram preview and syntax feedback", "PNG, WebP or SVG export"] }
   },
@@ -133,7 +133,7 @@
     "intro": { "zh-CN": "只需输入公式内容，不必手动添加美元符号。页面会将内容作为独立公式渲染，并保留常用 KaTeX 排版。", "en": "Enter only the formula—no dollar delimiters are needed. The page renders it as a display equation with standard KaTeX typesetting." },
     "steps": { "zh-CN": ["输入 LaTeX 公式", "调整字号、留白和背景", "选择图片格式并导出"], "en": ["Enter a LaTeX formula", "Adjust type size, padding and background", "Choose an image format and export"] },
     "limitations": { "zh-CN": "KaTeX 并不支持所有 LaTeX 宏和环境；无法识别的命令会在预览中显示错误。", "en": "KaTeX does not support every LaTeX macro or environment. Unsupported commands appear as an error in the preview." },
-    "sample": { "zh-CN": "E = mc^2 \\quad \\text{以及} \\quad \\int_0^1 x^2 \\, dx = \\frac{1}{3}", "en": "E = mc^2 \\quad \\text{and} \\quad \\int_0^1 x^2 \\, dx = \\frac{1}{3}" },
+    "sample": { "zh-CN": "\\begin{aligned}\nf(x) &= ax^2 + bx + c \\\\\nx &= \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}\n\\end{aligned}", "en": "\\begin{aligned}\nf(x) &= ax^2 + bx + c \\\\\nx &= \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}\n\\end{aligned}" },
     "defaults": { "exportFormat": "png", "canvasPreset": "auto", "inspectorTab": "canvas" },
     "schemaFeatures": { "zh-CN": ["直接输入 LaTeX 公式", "KaTeX 实时预览", "透明背景与多格式导出"], "en": ["Direct LaTeX formula input", "Live KaTeX preview", "Transparent backgrounds and multiple export formats"] }
   },
@@ -148,7 +148,7 @@
     "intro": { "zh-CN": "代码模式直接接收源码，并自动包装为高亮代码块。选择正确的语言后，再调整主题、字号和画布。", "en": "Code mode accepts source directly and wraps it as a highlighted block. Choose the correct language, then adjust the theme, type size and canvas." },
     "steps": { "zh-CN": ["粘贴代码并选择语言", "调整主题、字号和背景", "检查高亮后导出图片"], "en": ["Paste code and select its language", "Adjust the theme, type size and background", "Check highlighting and export the image"] },
     "limitations": { "zh-CN": "语法高亮依赖语言标识；未支持的语言会自动检测，选择错误的已支持语言则可能得到不准确的高亮，但不会改动源码。", "en": "Highlighting uses the selected language. Unsupported identifiers are auto-detected; choosing the wrong supported language may produce inaccurate highlighting but never changes the source." },
-    "sample": { "zh-CN": "type ExportFormat = 'png' | 'webp' | 'svg'\n\nfunction exportImage(format: ExportFormat) {\n  return `Exporting ${format}`\n}", "en": "type ExportFormat = 'png' | 'webp' | 'svg'\n\nfunction exportImage(format: ExportFormat) {\n  return `Exporting ${format}`\n}" },
+    "sample": { "zh-CN": "type ExportFormat = 'png' | 'webp' | 'svg'\n\ninterface ExportOptions {\n  format: ExportFormat\n  scale: 1 | 2 | 3\n}\n\nconst describeExport = ({ format, scale }: ExportOptions) =>\n  `Export ${format.toUpperCase()} at ${scale}x`", "en": "type ExportFormat = 'png' | 'webp' | 'svg'\n\ninterface ExportOptions {\n  format: ExportFormat\n  scale: 1 | 2 | 3\n}\n\nconst describeExport = ({ format, scale }: ExportOptions) =>\n  `Export ${format.toUpperCase()} at ${scale}x`" },
     "defaults": { "exportFormat": "png", "canvasPreset": "auto", "inspectorTab": "canvas", "codeLanguage": "typescript" },
     "schemaFeatures": { "zh-CN": ["直接输入源码并选择语言", "语法高亮与多种主题", "可调画布和多格式图片导出"], "en": ["Direct source input with language selection", "Syntax highlighting and multiple themes", "Adjustable canvas and multiple image formats"] }
   },
@@ -163,7 +163,7 @@
     "intro": { "zh-CN": "粘贴公开仓库或 README 地址即可载入内容。相对图片和链接会按文件所在目录解析，原始 Markdown 仍可继续编辑。", "en": "Paste a public repository or README URL to load it. Relative images and links resolve from the file location, and the imported Markdown remains editable." },
     "steps": { "zh-CN": ["输入公开 GitHub 地址", "加载并检查 README 资源", "调整样式后导出"], "en": ["Enter a public GitHub URL", "Load the README and check its assets", "Adjust styling and export"] },
     "limitations": { "zh-CN": "只支持无需登录即可访问的公开内容，不读取私有仓库或 Token。分支名含 / 时请使用仓库地址或 GitHub 复制的 Raw 地址；限流或资源 CORS 仍可能导致载入失败。", "en": "Only public content is supported, and no private repository or token is read. For branch names containing /, use the repository URL or GitHub's copied Raw URL; rate limits and asset CORS can still block loading." },
-    "sample": { "zh-CN": "https://github.com/owner/repository", "en": "https://github.com/owner/repository" },
+    "sample": { "zh-CN": "https://github.com/chess99/markdown-to-image", "en": "https://github.com/chess99/markdown-to-image" },
     "defaults": { "exportFormat": "png", "canvasPreset": "auto", "inspectorTab": "canvas" },
     "schemaFeatures": { "zh-CN": ["公开 GitHub 仓库和 README URL 导入", "相对图片与链接解析", "导入后可编辑并导出图片或 PDF"], "en": ["Public GitHub repository and README URL import", "Relative image and link resolution", "Editable import with image or PDF export"] }
   },
@@ -178,7 +178,7 @@
     "intro": { "zh-CN": "批量模式为所有文件应用同一套主题和画布设置。队列会逐个渲染，完成后统一下载 PNG ZIP。", "en": "Batch mode applies one theme and canvas configuration to every file. The queue renders files one at a time and packages the PNG results in a ZIP." },
     "steps": { "zh-CN": ["选择多个 Markdown 文件", "设置统一主题和画布", "运行队列并下载 ZIP"], "en": ["Select multiple Markdown files", "Set a shared theme and canvas", "Run the queue and download the ZIP"] },
     "limitations": { "zh-CN": "批量处理在当前浏览器中完成，文件很多或内容很长时会占用较多内存；失败项会保留文件名和错误原因。", "en": "Batch processing runs in this browser and can use substantial memory for many or very long files. Failed items keep their filename and error reason." },
-    "sample": { "zh-CN": "拖入多个 .md 或 .markdown 文件开始批量处理。", "en": "Drop multiple .md or .markdown files to start a batch." },
+    "sample": { "zh-CN": "# 批量导出预览\n\n选择或拖入多个 `.md` 或 `.markdown` 文件。\n\n- 统一使用当前主题和画布\n- 逐个生成 PNG\n- 完成后打包下载 ZIP", "en": "# Batch export preview\n\nChoose or drop multiple `.md` or `.markdown` files.\n\n- Reuse the current theme and canvas\n- Render PNG files one at a time\n- Download the completed files as one ZIP" },
     "defaults": { "exportFormat": "png", "canvasPreset": "auto", "inspectorTab": "export" },
     "schemaFeatures": { "zh-CN": ["多 Markdown 文件导入", "逐文件 PNG 渲染队列", "成功结果打包为 ZIP"], "en": ["Multiple Markdown file import", "Per-file PNG rendering queue", "Successful results packaged as a ZIP"] }
   }

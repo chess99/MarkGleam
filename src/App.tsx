@@ -25,6 +25,7 @@ import { MarkdownPreview } from './components/MarkdownPreview'
 import { Modal } from './components/Modal'
 import { ToolContext } from './components/ToolContext'
 import {
+  getLocalizedEditorSample,
   getLocalizedPageContent,
   resolveToolPage,
   toolPages,
@@ -141,6 +142,7 @@ function App() {
 
     const { page } = resolvedPage
     const copy = getLocalizedPageContent(page, locale)
+    const editorSample = getLocalizedEditorSample(page, locale)
     setToolId(page.id as ToolId)
     const currentState = useAppStore.getState()
     const knownSamples = new Set([
@@ -150,7 +152,7 @@ function App() {
         candidate.sample.en,
       ]),
     ])
-    if (knownSamples.has(currentState.markdown)) setMarkdown(copy.sample)
+    if (knownSamples.has(currentState.markdown)) setMarkdown(editorSample)
     // The homepage is the general editor, so keep a returning user's export
     // and canvas choices. Purpose-specific routes intentionally apply the
     // settings needed to make their advertised workflow usable immediately.
@@ -436,6 +438,7 @@ function App() {
           <Suspense fallback={null}>
             <GitHubReadmeImporter
               locale={locale}
+              initialUrl={getLocalizedPageContent(resolvedPage.page, locale).sample}
               onImported={(source) => setMarkdown(source)}
               onToast={showToast}
             />
@@ -459,7 +462,7 @@ function App() {
             </Suspense>
           ) : (
             <EditorPane
-              sample={getLocalizedPageContent(resolvedPage.page, locale).sample}
+              sample={getLocalizedEditorSample(resolvedPage.page, locale)}
               onToast={showToast}
             />
           ))}
