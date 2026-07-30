@@ -536,19 +536,27 @@ function App() {
       </footer>
 
       <nav className="mobile-nav" aria-label={t(locale, 'settings')}>
-        {mobileTabs.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            type="button"
-            className={mobilePane === id ? 'active' : ''}
-            onClick={() => setMobilePane(id)}
-          >
-            <Icon size={18} />
-            <span>{label}</span>
-          </button>
-        ))}
-        <button type="button" className="mobile-export" onClick={openExport}>
-          <ImageIcon size={18} />
+        <div className="mobile-pane-switcher">
+          {mobileTabs.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              className={mobilePane === id ? 'active' : ''}
+              aria-pressed={mobilePane === id}
+              onClick={() => setMobilePane(id)}
+            >
+              <Icon size={19} />
+              <span>{label}</span>
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          className="mobile-export"
+          aria-label={t(locale, 'export')}
+          onClick={openExport}
+        >
+          <ImageIcon size={21} />
           <span>{t(locale, 'export')}</span>
         </button>
       </nav>

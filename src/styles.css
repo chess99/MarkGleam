@@ -192,16 +192,31 @@ select:focus-visible {
   line-height: 1.45;
 }
 
-.tool-context-details {
+.tool-context-actions {
   justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tool-context-details {
   color: var(--muted);
   font-size: 11px;
 }
 
 .tool-context-details summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--control-ink);
   font-weight: 700;
   cursor: pointer;
+  list-style: none;
+}
+
+.tool-context-details summary::-webkit-details-marker,
+.mobile-tool-switcher summary::-webkit-details-marker {
+  display: none;
 }
 
 .tool-context-details[open] {
@@ -215,6 +230,10 @@ select:focus-visible {
   border-radius: 10px;
   background: var(--panel);
   box-shadow: var(--shadow-md);
+}
+
+.tool-context-details-content {
+  margin-top: 8px;
 }
 
 .tool-context-details[open] ol {
@@ -268,6 +287,10 @@ select:focus-visible {
   color: var(--coral);
   border-color: #ee9c82;
   background: var(--coral-soft);
+}
+
+.mobile-tool-switcher {
+  display: none;
 }
 
 .github-readme-importer {
@@ -2307,23 +2330,31 @@ input[type="range"] {
 
 @media (max-width: 820px) {
   :root {
-    --topbar-height: 56px;
+    --topbar-height: 52px;
     --status-height: 0px;
   }
 
   .app-shell {
-    grid-template-rows: var(--topbar-height) auto minmax(0, 1fr) 62px;
+    grid-template-rows:
+      var(--topbar-height)
+      auto
+      minmax(0, 1fr)
+      calc(76px + env(safe-area-inset-bottom));
   }
 
   .tool-context {
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 5px 10px;
-    padding: 6px 12px;
+    gap: 2px 10px;
+    padding: 9px 12px 10px;
     overflow: visible;
+    background: var(--panel);
+    box-shadow: var(--shadow-sm);
+    z-index: 25;
   }
 
   .tool-context-copy h1 {
-    font-size: 14px;
+    margin-bottom: 2px;
+    font-size: 15px;
   }
 
   .tool-context-copy p {
@@ -2332,24 +2363,133 @@ input[type="range"] {
     white-space: nowrap;
   }
 
-  .tool-context-details {
-    display: block;
+  .tool-context-actions {
     grid-row: 1;
     grid-column: 2;
+    align-self: center;
+    gap: 5px;
+  }
+
+  .tool-context-details summary,
+  .mobile-tool-switcher > summary {
+    min-width: 36px;
+    height: 36px;
+    justify-content: center;
+    padding: 0 9px;
+    color: var(--button-ink);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--panel-soft);
+    cursor: pointer;
+  }
+
+  .tool-context-details summary span {
+    display: none;
   }
 
   .tool-context-details[open] {
     position: fixed;
-    top: calc(var(--topbar-height) + 8px);
+    top: calc(var(--topbar-height) + 62px);
     right: 12px;
     left: 12px;
     width: auto;
-    max-height: 72dvh;
+    max-height: calc(100dvh - var(--topbar-height) - 150px);
     overflow: auto;
+    padding: 14px 16px;
+    border-radius: 16px;
+    z-index: 70;
+  }
+
+  .tool-context-details[open] summary {
+    width: max-content;
+    min-width: 0;
+    height: 28px;
+    padding: 0 9px;
+    color: var(--coral);
+    border-color: color-mix(in srgb, var(--coral) 35%, var(--line));
+    background: var(--coral-soft);
+  }
+
+  .tool-context-details[open] summary span {
+    display: inline;
   }
 
   .tool-links {
-    grid-column: 1 / -1;
+    display: none;
+  }
+
+  .mobile-tool-switcher {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .mobile-tool-switcher > summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    list-style: none;
+  }
+
+  .mobile-tool-switcher > summary span,
+  .mobile-tool-switcher > summary svg:last-child {
+    display: none;
+  }
+
+  .mobile-tool-switcher[open] > summary {
+    color: var(--coral);
+    border-color: color-mix(in srgb, var(--coral) 35%, var(--line));
+    background: var(--coral-soft);
+  }
+
+  .mobile-tool-menu {
+    position: fixed;
+    top: calc(var(--topbar-height) + 62px);
+    right: 12px;
+    left: 12px;
+    max-height: calc(100dvh - var(--topbar-height) - 150px);
+    overflow: auto;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--panel);
+    box-shadow: var(--modal-shadow);
+    z-index: 70;
+  }
+
+  .mobile-tool-menu-heading {
+    margin-bottom: 10px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+  }
+
+  .mobile-tool-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .mobile-tool-links a {
+    min-width: 0;
+    padding: 11px 12px;
+    overflow: hidden;
+    color: var(--control-ink);
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    background: var(--panel-soft);
+  }
+
+  .mobile-tool-links a[aria-current='page'] {
+    color: var(--coral);
+    border-color: color-mix(in srgb, var(--coral) 35%, var(--line));
+    background: var(--coral-soft);
   }
 
   .github-readme-importer {
@@ -2361,7 +2501,8 @@ input[type="range"] {
   }
 
   .topbar {
-    padding: 0 12px;
+    padding: 0 10px 0 12px;
+    backdrop-filter: blur(16px);
   }
 
   .brand-mark {
@@ -2375,19 +2516,21 @@ input[type="range"] {
   }
 
   .desktop-panel-toggle,
-  .language-select-leading {
+  .language-select-value,
+  .language-select-chevron {
     display: none;
   }
 
   .language-select {
-    width: 96px;
-    min-width: 96px;
-    gap: 4px;
-    padding: 0 7px 0 9px;
+    width: 36px;
+    min-width: 36px;
+    justify-content: center;
+    padding: 0;
+    box-shadow: none;
   }
 
-  .language-select-value {
-    font-size: 12px;
+  .language-select-leading {
+    display: block;
   }
 
   .top-export {
@@ -2400,6 +2543,7 @@ input[type="range"] {
   .workspace.editor-collapsed.inspector-collapsed {
     display: block;
     overflow: hidden;
+    background: var(--panel);
   }
 
   .workspace > .pane {
@@ -2419,7 +2563,7 @@ input[type="range"] {
   }
 
   .preview-container {
-    padding: 22px 14px 52px;
+    padding: 20px 12px 36px;
   }
 
   .statusbar {
@@ -2428,31 +2572,67 @@ input[type="range"] {
 
   .mobile-nav {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    border-top: 1px solid var(--line);
-    background: var(--panel);
-    z-index: 40;
+    grid-template-columns: minmax(0, 1fr) 58px;
+    gap: 8px;
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+    background: var(--app-bg);
+    z-index: 45;
   }
 
-  .mobile-nav button {
+  .mobile-pane-switcher {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 4px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--panel) 96%, transparent);
+    box-shadow: 0 8px 24px rgba(39, 33, 25, 0.1);
+  }
+
+  .mobile-pane-switcher button {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3px;
+    min-width: 0;
+    gap: 2px;
+    padding: 4px 2px;
     color: var(--muted);
-    font-size: 9px;
+    font-size: 10px;
+    font-weight: 650;
     border: 0;
+    border-radius: 13px;
     background: transparent;
+    cursor: pointer;
   }
 
-  .mobile-nav button.active {
+  .mobile-pane-switcher button span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-pane-switcher button.active {
     color: var(--coral);
+    background: var(--coral-soft);
   }
 
   .mobile-nav .mobile-export {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
     color: white;
+    font-size: 10px;
+    font-weight: 750;
+    border: 0;
+    border-radius: 18px;
     background: var(--coral);
+    box-shadow: 0 8px 18px rgba(242, 95, 58, 0.28);
+    cursor: pointer;
   }
 
   .inspector-scroll {
@@ -2482,7 +2662,7 @@ input[type="range"] {
 
 @media (max-width: 520px) {
   .topbar-actions {
-    gap: 4px;
+    gap: 1px;
   }
 
   .topbar-actions > .icon-button,
@@ -2540,6 +2720,11 @@ input[type="range"] {
 
   .preview-meta > span:first-child {
     display: none;
+  }
+
+  .pane-header,
+  .inspector-tabs {
+    height: 48px;
   }
 }
 
@@ -2836,6 +3021,10 @@ input[type="range"] {
 @media (max-width: 360px) {
   .brand-title {
     display: none;
+  }
+
+  .mobile-tool-links {
+    grid-template-columns: 1fr;
   }
 }
 
