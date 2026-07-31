@@ -469,6 +469,62 @@ export function Inspector({
                   onChange={(event) => updateExport({ filename: event.target.value })}
                 />
               </Field>
+              {exportConfig.format === 'split-zip' && (
+                <>
+                  <Field label={t(locale, 'splitMode')}>
+                    <div className="segmented">
+                      {(['compact', 'fixed'] as const).map((mode) => (
+                        <button
+                          key={mode}
+                          type="button"
+                          className={exportConfig.splitMode === mode ? 'active' : ''}
+                          aria-pressed={exportConfig.splitMode === mode}
+                          onClick={() => updateExport({ splitMode: mode })}
+                        >
+                          {t(
+                            locale,
+                            mode === 'fixed' ? 'splitFixed' : 'splitCompact',
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </Field>
+                  <Field
+                    label={t(
+                      locale,
+                      exportConfig.splitMode === 'fixed'
+                        ? 'pageHeight'
+                        : 'splitHeight',
+                    )}
+                    value={`${exportConfig.splitHeight}px`}
+                  >
+                    <input
+                      type="number"
+                      min="640"
+                      max="7000"
+                      step="16"
+                      value={exportConfig.splitHeight}
+                      onChange={(event) => {
+                        const splitHeight = event.currentTarget.valueAsNumber
+                        if (Number.isFinite(splitHeight)) {
+                          updateExport({ splitHeight })
+                        }
+                      }}
+                    />
+                  </Field>
+                  <p className="export-optimization-hint">
+                    {t(
+                      locale,
+                      exportConfig.splitMode === 'fixed'
+                        ? 'splitFixedHint'
+                        : 'splitCompactHint',
+                    )}
+                  </p>
+                  <p className="export-optimization-hint">
+                    {t(locale, 'manualPageBreakHint')}
+                  </p>
+                </>
+              )}
             </section>
             <button className="primary-button full-width" type="button" onClick={onOpenExport}>
               {t(locale, 'export')}

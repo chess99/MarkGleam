@@ -12,7 +12,11 @@ import {
 } from 'lucide-react'
 import { t } from '../i18n'
 import { trackEvent } from '../lib/analytics'
-import { runExport, type ExportProgress } from '../lib/export'
+import {
+  FixedPageOverflowError,
+  runExport,
+  type ExportProgress,
+} from '../lib/export'
 import { suggestFilename } from '../lib/filename'
 import { runPrint } from '../lib/print'
 import { useAppStore } from '../store'
@@ -125,7 +129,15 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
     } catch (error) {
       if (controller.signal.aborted) return
       console.error(error)
-      onToast(t(locale, 'exportFailed'), 'error')
+      onToast(
+        t(
+          locale,
+          error instanceof FixedPageOverflowError
+            ? 'oversizedContent'
+            : 'exportFailed',
+        ),
+        'error',
+      )
     } finally {
       if (abortControllerRef.current === controller) {
         abortControllerRef.current = null
@@ -357,21 +369,58 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
             </>
           )}
           {config.format === 'split-zip' && (
-            <Field
-              label={t(locale, 'splitHeight')}
-              value={`${config.splitHeight}px`}
-            >
-              <input
-                type="range"
-                min="1600"
-                max="7000"
-                step="100"
-                value={config.splitHeight}
-                onChange={(event) =>
-                  changeExport({ splitHeight: Number(event.target.value) })
-                }
-              />
-            </Field>
+            <>
+              <Field label={t(locale, 'splitMode')}>
+                <div className="segmented">
+                  {(['compact', 'fixed'] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      className={config.splitMode === mode ? 'active' : ''}
+                      aria-pressed={config.splitMode === mode}
+                      onClick={() => changeExport({ splitMode: mode })}
+                    >
+                      {t(
+                        locale,
+                        mode === 'fixed' ? 'splitFixed' : 'splitCompact',
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+              <Field
+                label={t(
+                  locale,
+                  config.splitMode === 'fixed' ? 'pageHeight' : 'splitHeight',
+                )}
+                value={`${config.splitHeight}px`}
+              >
+                <input
+                  type="number"
+                  min="640"
+                  max="7000"
+                  step="16"
+                  value={config.splitHeight}
+                  onChange={(event) => {
+                    const splitHeight = event.currentTarget.valueAsNumber
+                    if (Number.isFinite(splitHeight)) {
+                      changeExport({ splitHeight })
+                    }
+                  }}
+                />
+              </Field>
+              <p className="export-optimization-hint">
+                {t(
+                  locale,
+                  config.splitMode === 'fixed'
+                    ? 'splitFixedHint'
+                    : 'splitCompactHint',
+                )}
+              </p>
+              <p className="export-optimization-hint">
+                {t(locale, 'manualPageBreakHint')}
+              </p>
+            </>
           )}
 
           <div className="export-summary">

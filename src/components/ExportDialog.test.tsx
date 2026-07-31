@@ -1,12 +1,25 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { FixedPageOverflowError } from '../lib/export'
 import { defaultExport, useAppStore } from '../store'
 import { ExportDialog } from './ExportDialog'
 
 const exportMock = vi.hoisted(() => vi.fn())
 const printMock = vi.hoisted(() => vi.fn())
+const FixedPageOverflowErrorMock = vi.hoisted(
+  () =>
+    class FixedPageOverflowError extends Error {
+      constructor() {
+        super('A content block is taller than the fixed page content area')
+        this.name = 'FixedPageOverflowError'
+      }
+    },
+)
 
-vi.mock('../lib/export', () => ({ runExport: exportMock }))
+vi.mock('../lib/export', () => ({
+  FixedPageOverflowError: FixedPageOverflowErrorMock,
+  runExport: exportMock,
+}))
 vi.mock('../lib/print', () => ({ runPrint: printMock }))
 vi.mock('../lib/analytics', () => ({ trackEvent: vi.fn() }))
 
@@ -93,6 +106,92 @@ describe('ExportDialog', () => {
       expect(screen.getByRole('button', { name: 'Download' })).toBeEnabled(),
     )
     expect(onToast).not.toHaveBeenCalled()
+  })
+
+  it('switches ZIP slicing modes and accepts a 1440px fixed page height', () => {
+    useAppStore.setState({
+      export: {
+        ...defaultExport,
+        format: 'split-zip',
+        splitMode: 'compact',
+        splitHeight: 4096,
+      },
+    })
+
+    render(
+      <ExportDialog
+        surface={document.createElement('div')}
+        onClose={vi.fn()}
+        onToast={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: 'Adaptive slices' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByLabelText('Slice height')).toHaveValue(4096)
+    expect(
+      screen.getByText(
+        'Avoids oversized browser canvases; each image follows its content height.',
+      ),
+    ).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Fixed pages' }))
+
+    expect(screen.getByRole('button', { name: 'Fixed pages' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByLabelText('Page height')).toHaveAttribute('min', '640')
+    fireEvent.change(screen.getByLabelText('Page height'), {
+      target: { value: '1440' },
+    })
+
+    expect(useAppStore.getState().export).toMatchObject({
+      splitMode: 'fixed',
+      splitHeight: 1440,
+    })
+    expect(
+      screen.getByText(
+        'Keeps every image the same height and breaks between headings, paragraphs, and tables.',
+      ),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'Put <!-- pagebreak --> on its own line to start a new page here.',
+      ),
+    ).toBeInTheDocument()
+  })
+
+  it('explains oversized content when a fixed page cannot contain one block', async () => {
+    useAppStore.setState({
+      export: {
+        ...defaultExport,
+        format: 'split-zip',
+        splitMode: 'fixed',
+        splitHeight: 1440,
+      },
+    })
+    exportMock.mockRejectedValueOnce(new FixedPageOverflowError())
+    const onToast = vi.fn()
+
+    render(
+      <ExportDialog
+        surface={document.createElement('div')}
+        onClose={vi.fn()}
+        onToast={onToast}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Download' }))
+
+    await waitFor(() =>
+      expect(onToast).toHaveBeenCalledWith(
+        'A content block is taller than the usable page area. Reduce type or padding, or split the content manually.',
+        'error',
+      ),
+    )
   })
 
   it('opens the native print workflow with print-specific settings', async () => {
