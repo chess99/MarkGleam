@@ -4,6 +4,7 @@ import { sampleMarkdown } from './data/sample'
 import { createToolDrafts } from './data/toolSamples'
 import { getTheme } from './data/themes'
 import { suggestFilename } from './lib/filename'
+import { detectSystemLocale } from './lib/locale'
 import {
   getToolInputKind,
   switchToolInput,
@@ -28,7 +29,6 @@ type PersistedDocumentState = Pick<
   | 'inputKind'
   | 'drafts'
   | 'codeLanguage'
-  | 'locale'
   | 'appearance'
   | 'themeId'
   | 'canvas'
@@ -38,6 +38,10 @@ type PersistedDocumentState = Pick<
   | 'editorCollapsed'
   | 'inspectorCollapsed'
 >
+
+type PersistedAppState = PersistedDocumentState & {
+  localePreference: Locale | null
+}
 
 export const defaultCanvas: CanvasConfig = {
   preset: 'auto',
@@ -78,7 +82,7 @@ export const defaultDocumentState: DocumentState = {
   drafts: createToolDrafts(),
   markdown: sampleMarkdown,
   codeLanguage: 'typescript',
-  locale: 'zh-CN',
+  locale: detectSystemLocale(),
   appearance: 'light',
   themeId: 'paper',
   canvas: defaultCanvas,
@@ -92,11 +96,13 @@ export const defaultDocumentState: DocumentState = {
 }
 
 interface AppStore extends DocumentState {
+  localePreference: Locale | null
   setToolId: (toolId: ToolId) => void
   setInputKind: (inputKind: InputKind) => void
   setMarkdown: (markdown: string) => void
   setCodeLanguage: (codeLanguage: string) => void
   setLocale: (locale: Locale) => void
+  syncLocale: (locale: Locale) => void
   setAppearance: (appearance: Appearance) => void
   setThemeId: (themeId: ThemeId) => void
   updateCanvas: (patch: Partial<CanvasConfig>) => void
@@ -114,6 +120,7 @@ export const useAppStore = create<AppStore>()(
   persist(
     (set) => ({
       ...defaultDocumentState,
+      localePreference: null,
       setToolId: (toolId) =>
         set((state) => ({
           toolId,
@@ -141,7 +148,8 @@ export const useAppStore = create<AppStore>()(
           }
         }),
       setCodeLanguage: (codeLanguage) => set({ codeLanguage }),
-      setLocale: (locale) => set({ locale }),
+      setLocale: (locale) => set({ locale, localePreference: locale }),
+      syncLocale: (locale) => set({ locale }),
       setAppearance: (appearance) => set({ appearance }),
       setThemeId: (themeId) =>
         set((state) => ({
@@ -179,10 +187,13 @@ export const useAppStore = create<AppStore>()(
     }),
     {
       name: 'md2img-state-v1',
-      version: 4,
+      version: 5,
       migrate: (persisted, version) => {
-        const saved = persisted as PersistedDocumentState
-        let migrated: PersistedDocumentState = saved
+        const saved = persisted as PersistedAppState & { locale?: Locale }
+        let migrated: PersistedAppState = {
+          ...saved,
+          localePreference: saved.localePreference ?? null,
+        }
         if (
           version < 2 &&
           saved.canvas?.backgroundColor === '#f2eee6'
@@ -218,6 +229,13 @@ export const useAppStore = create<AppStore>()(
             },
           }
         }
+        if (version < 5) {
+          migrated = {
+            ...migrated,
+            localePreference: null,
+          }
+          delete (migrated as PersistedAppState & { locale?: Locale }).locale
+        }
         return migrated
       },
       partialize: (state) => ({
@@ -225,7 +243,7 @@ export const useAppStore = create<AppStore>()(
         inputKind: state.inputKind,
         drafts: state.drafts,
         codeLanguage: state.codeLanguage,
-        locale: state.locale,
+        localePreference: state.localePreference,
         appearance: state.appearance,
         themeId: state.themeId,
         canvas: state.canvas,
@@ -236,10 +254,11 @@ export const useAppStore = create<AppStore>()(
         inspectorCollapsed: state.inspectorCollapsed,
       }),
       merge: (persisted, current) => {
-        const saved = persisted as Partial<DocumentState>
+        const saved = persisted as Partial<PersistedAppState>
         return {
           ...current,
           ...saved,
+          locale: saved.localePreference ?? current.locale,
           drafts: { ...current.drafts, ...saved.drafts },
           canvas: { ...current.canvas, ...saved.canvas },
           signature: { ...current.signature, ...saved.signature },

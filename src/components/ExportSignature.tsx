@@ -10,10 +10,10 @@ import type {
 } from '../types'
 
 const inputLabels: Record<InputKind, Record<Locale, string>> = {
-  markdown: { 'zh-CN': 'MARKDOWN', en: 'MARKDOWN' },
-  mermaid: { 'zh-CN': 'MERMAID', en: 'MERMAID' },
-  formula: { 'zh-CN': 'LATEX', en: 'LATEX' },
-  code: { 'zh-CN': 'CODE', en: 'CODE' },
+  markdown: { 'zh-CN': 'MARKDOWN', en: 'MARKDOWN', ja: 'MARKDOWN' },
+  mermaid: { 'zh-CN': 'MERMAID', en: 'MERMAID', ja: 'MERMAID' },
+  formula: { 'zh-CN': 'LATEX', en: 'LATEX', ja: 'LATEX' },
+  code: { 'zh-CN': 'CODE', en: 'CODE', ja: 'CODE' },
 }
 
 interface ExportSignatureProps {
@@ -60,7 +60,9 @@ export function ExportSignature({
       aria-label={
         locale === 'zh-CN'
           ? `${PRODUCT.name} 导出署名`
-          : `${PRODUCT.name} export signature`
+          : locale === 'ja'
+            ? `${PRODUCT.name} 書き出し署名`
+            : `${PRODUCT.name} export signature`
       }
       style={
         {
@@ -78,9 +80,9 @@ export function ExportSignature({
           <span className="signature-minimal-copy">
             <Sparkles size={fontSize * 1.15} strokeWidth={1.7} />
             <span>
-              {locale === 'zh-CN' ? '使用' : 'Made with'}{' '}
+              {locale === 'zh-CN' ? '使用' : locale === 'ja' ? '' : 'Made with'}{' '}
               <strong>{PRODUCT.name}</strong>
-              {locale === 'zh-CN' && ' 制作'}
+              {locale === 'zh-CN' ? ' 制作' : locale === 'ja' ? ' で作成' : ''}
             </span>
           </span>
           <span className="signature-domain">{PRODUCT.domain}</span>

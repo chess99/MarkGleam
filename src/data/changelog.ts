@@ -14,6 +14,7 @@ export const changelogEntries: ChangelogEntry[] = [
     title: {
       'zh-CN': '更快、更适合打印的 PDF 工作流',
       en: 'Faster PDFs and a print-ready workflow',
+      ja: 'より高速で印刷しやすい PDF ワークフロー',
     },
     items: {
       'zh-CN': [
@@ -31,6 +32,14 @@ export const changelogEntries: ChangelogEntry[] = [
         'The desktop export dialog now stays in place while switching formats, while mobile PDF choices use clearer full-width cards.',
         'Pagination now uses the browser’s actual collapsed block spacing to reduce avoidable whitespace.',
         '`---` remains a standard thematic break; only `<!-- pagebreak -->` forces a new page.',
+      ],
+      ja: [
+        'ブラウザ標準の改ページ、検索可能な文字、鮮明な印刷に対応した「印刷 / 検索可能 PDF」を追加しました。',
+        '長いスタイル保持 PDF は現在のページだけを複製し、ページ進捗、中止、自動圧縮に対応しました。',
+        'PDF の選択肢を結果が分かる名称に変更し、長文書における速度、サイズ、鮮明さの違いを説明しました。',
+        'デスクトップでは形式を切り替えてもダイアログの位置と大きさを維持し、モバイルでは PDF の選択肢を読みやすい全幅カードにしました。',
+        'ブラウザが計算した実際のブロック間隔を改ページに使い、不要なページ下部の空白を減らしました。',
+        '`---` は通常の区切り線として維持し、`<!-- pagebreak -->` だけが改ページを行います。',
       ],
     },
   },

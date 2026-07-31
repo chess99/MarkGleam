@@ -1,4 +1,4 @@
-export type Locale = 'zh-CN' | 'en'
+export type Locale = 'zh-CN' | 'en' | 'ja'
 
 export type ToolId =
   | 'visual-workspace'

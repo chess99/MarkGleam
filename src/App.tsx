@@ -27,6 +27,7 @@ import { ToolContext } from './components/ToolContext'
 import {
   getLocalizedEditorSample,
   getLocalizedPageContent,
+  getToolPagePath,
   resolveToolPage,
   toolPages,
 } from './data/toolPages'
@@ -39,9 +40,9 @@ import type { MobilePane, ToolId } from './types'
 type InfoModal = 'help' | 'privacy' | 'shortcuts' | null
 
 const shortcutItems = [
-  { key: 'S', action: { 'zh-CN': '打开导出', en: 'Open export' } },
-  { key: 'O', action: { 'zh-CN': '导入文件', en: 'Import a file' } },
-  { key: '/', action: { 'zh-CN': '打开帮助', en: 'Open help' } },
+  { key: 'S', action: { 'zh-CN': '打开导出', en: 'Open export', ja: '書き出しを開く' } },
+  { key: 'O', action: { 'zh-CN': '导入文件', en: 'Import a file', ja: 'ファイルを読み込む' } },
+  { key: '/', action: { 'zh-CN': '打开帮助', en: 'Open help', ja: 'ヘルプを開く' } },
 ] as const
 
 const ExportDialog = lazy(() =>
@@ -68,7 +69,10 @@ function App() {
     [],
   )
   const storedLocale = useAppStore((state) => state.locale)
-  const locale = resolvedPage?.locale ?? storedLocale
+  const locale =
+    resolvedPage && window.location.pathname !== '/'
+      ? resolvedPage.locale
+      : storedLocale
   const markdown = useAppStore((state) => state.markdown)
   const inputKind = useAppStore((state) => state.inputKind)
   const appearance = useAppStore((state) => state.appearance)
@@ -77,6 +81,7 @@ function App() {
   const inspectorCollapsed = useAppStore((state) => state.inspectorCollapsed)
   const mobilePane = useAppStore((state) => state.mobilePane)
   const setLocale = useAppStore((state) => state.setLocale)
+  const syncLocale = useAppStore((state) => state.syncLocale)
   const setToolId = useAppStore((state) => state.setToolId)
   const setMarkdown = useAppStore((state) => state.setMarkdown)
   const setCodeLanguage = useAppStore((state) => state.setCodeLanguage)
@@ -127,15 +132,25 @@ function App() {
 
   useEffect(() => {
     document.documentElement.lang = locale
-    if (storedLocale !== locale) setLocale(locale)
-  }, [locale, setLocale, storedLocale])
+    if (storedLocale !== locale) syncLocale(locale)
+  }, [locale, storedLocale, syncLocale])
+
+  useEffect(() => {
+    if (!resolvedPage || window.location.pathname !== '/') return
+    const expectedPath = getToolPagePath(resolvedPage.page, locale)
+    if (expectedPath !== '/') {
+      window.location.replace(`${expectedPath}${window.location.hash}`)
+    }
+  }, [locale, resolvedPage])
 
   useEffect(() => {
     if (!resolvedPage) {
       document.title =
         locale === 'zh-CN'
           ? `页面不存在 · ${PRODUCT.name}`
-          : `Page not found · ${PRODUCT.name}`
+          : locale === 'ja'
+            ? `ページが見つかりません · ${PRODUCT.name}`
+            : `Page not found · ${PRODUCT.name}`
       document.querySelector('meta[name="robots"]')?.setAttribute('content', 'noindex,follow')
       return
     }
@@ -150,6 +165,7 @@ function App() {
       ...toolPages.flatMap((candidate) => [
         candidate.sample['zh-CN'],
         candidate.sample.en,
+        candidate.sample.ja,
       ]),
     ])
     if (knownSamples.has(currentState.markdown)) setMarkdown(editorSample)
@@ -181,7 +197,10 @@ function App() {
       ?.setAttribute('content', 'index,follow,max-image-preview:large')
     document
       .querySelector('link[rel="canonical"]')
-      ?.setAttribute('href', `${PRODUCT.origin}${resolvedPage.canonicalPath}`)
+      ?.setAttribute(
+        'href',
+        `${PRODUCT.origin}${getToolPagePath(resolvedPage.page, locale)}`,
+      )
   }, [
     locale,
     resolvedPage,
@@ -261,9 +280,10 @@ function App() {
   const changeLocale = (nextLocale: typeof locale) => {
     setLocale(nextLocale)
     if (!resolvedPage) return
-    const nextPath =
-      nextLocale === 'en' ? resolvedPage.page.enPath : resolvedPage.page.path
-    if (nextPath !== window.location.pathname) window.location.assign(nextPath)
+    const nextPath = getToolPagePath(resolvedPage.page, nextLocale)
+    if (nextPath !== window.location.pathname) {
+      window.location.assign(`${nextPath}${window.location.hash}`)
+    }
   }
 
   const editorLabel =
@@ -272,15 +292,21 @@ function App() {
       : inputKind === 'formula'
         ? locale === 'zh-CN'
           ? '公式'
-          : 'Formula'
+          : locale === 'ja'
+            ? '数式'
+            : 'Formula'
         : inputKind === 'code'
           ? locale === 'zh-CN'
             ? '代码'
-            : 'Code'
+            : locale === 'ja'
+              ? 'コード'
+              : 'Code'
           : resolvedPage?.page.id === 'batch-markdown-to-image'
             ? locale === 'zh-CN'
               ? '文件'
-              : 'Files'
+              : locale === 'ja'
+                ? 'ファイル'
+                : 'Files'
             : t(locale, 'markdown')
 
   const mobileTabs: {
@@ -296,6 +322,8 @@ function App() {
   if (changelogOpen) {
     return (
       <ChangelogPage
+        locale={locale}
+        onLocaleChange={changeLocale}
         onBack={() => {
           window.location.hash = ''
         }}
@@ -307,14 +335,26 @@ function App() {
     return (
       <main className="not-found-page">
         <ImageIcon size={38} />
-        <h1>{locale === 'zh-CN' ? '这个页面不存在' : 'This page does not exist'}</h1>
+        <h1>
+          {locale === 'zh-CN'
+            ? '这个页面不存在'
+            : locale === 'ja'
+              ? 'このページは存在しません'
+              : 'This page does not exist'}
+        </h1>
         <p>
           {locale === 'zh-CN'
             ? '地址可能已变更。返回 Markdown 转图片工具继续使用。'
-            : 'The address may have changed. Return to the Markdown to image tool.'}
+            : locale === 'ja'
+              ? 'アドレスが変更された可能性があります。Markdown 画像変換ツールへ戻ってください。'
+              : 'The address may have changed. Return to the Markdown to image tool.'}
         </p>
-        <a href={locale === 'zh-CN' ? '/' : '/en/'}>
-          {locale === 'zh-CN' ? '返回首页' : `Back to ${PRODUCT.name}`}
+        <a href={getToolPagePath(toolPages[0], locale)}>
+          {locale === 'zh-CN'
+            ? '返回首页'
+            : locale === 'ja'
+              ? 'ホームへ戻る'
+              : `Back to ${PRODUCT.name}`}
         </a>
       </main>
     )
@@ -327,7 +367,7 @@ function App() {
       <header className="topbar">
         <a
           className="brand"
-          href={locale === 'zh-CN' ? '/' : '/en/'}
+          href={getToolPagePath(toolPages[0], locale)}
         >
           <BrandMark />
           <div className="brand-title">
@@ -335,7 +375,9 @@ function App() {
             <span className="sr-only">
               {locale === 'zh-CN'
                 ? '结构化内容视觉工作台'
-                : 'Structured content visual workspace'}
+                : locale === 'ja'
+                  ? '構造化コンテンツのビジュアルワークスペース'
+                  : 'Structured content visual workspace'}
             </span>
           </div>
           <span className="brand-tagline">
@@ -435,7 +477,7 @@ function App() {
         </div>
       </header>
 
-      <ToolContext resolved={resolvedPage}>
+      <ToolContext resolved={{ ...resolvedPage, locale }}>
         {resolvedPage.page.id === 'github-readme-to-image' && (
           <Suspense fallback={null}>
             <GitHubReadmeImporter
@@ -606,7 +648,11 @@ function App() {
                 <p>{t(locale, 'helpBody')}</p>
                 <section className="context-help-note">
                   <span>
-                    {locale === 'zh-CN' ? '当前工具' : 'Current tool'}
+                    {locale === 'zh-CN'
+                      ? '当前工具'
+                      : locale === 'ja'
+                        ? '現在のツール'
+                        : 'Current tool'}
                   </span>
                   <strong>{currentPageCopy.h1}</strong>
                   <p>{currentPageCopy.limitations}</p>
@@ -615,7 +661,9 @@ function App() {
                   <li>
                     {locale === 'zh-CN'
                       ? '需要强制分页时，请单独一行输入 <!-- pagebreak -->；--- 会保留为普通分隔线。'
-                      : 'Use <!-- pagebreak --> on its own line to force a page break; --- remains a thematic break.'}
+                      : locale === 'ja'
+                        ? '強制改ページには <!-- pagebreak --> を単独の行に置いてください。--- は通常の区切り線として残ります。'
+                        : 'Use <!-- pagebreak --> on its own line to force a page break; --- remains a thematic break.'}
                   </li>
                 </ul>
               </>

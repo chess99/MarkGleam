@@ -8,7 +8,7 @@ describe('LanguageSelect', () => {
     render(<LanguageSelect locale="zh-CN" onChange={onChange} />)
 
     fireEvent.click(screen.getByRole('combobox', { name: '界面语言' }))
-    expect(screen.getAllByRole('option')).toHaveLength(2)
+    expect(screen.getAllByRole('option')).toHaveLength(3)
     fireEvent.click(screen.getByRole('option', { name: 'English' }))
 
     expect(onChange).toHaveBeenCalledWith('en')
@@ -22,6 +22,7 @@ describe('LanguageSelect', () => {
     fireEvent.keyDown(trigger, { key: 'ArrowDown' })
     const chinese = screen.getByRole('option', { name: '简体中文' })
     const english = screen.getByRole('option', { name: 'English' })
+    expect(screen.getByRole('option', { name: '日本語' })).toBeInTheDocument()
     await waitFor(() => expect(chinese).toHaveFocus())
 
     fireEvent.keyDown(chinese, { key: 'ArrowDown' })

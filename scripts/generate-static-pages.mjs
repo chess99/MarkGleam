@@ -5,10 +5,72 @@ import { fileURLToPath } from 'node:url'
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..')
 const distRoot = join(projectRoot, 'dist')
 const siteOrigin = 'https://markgleam.com'
-const manifest = JSON.parse(
+const baseManifest = JSON.parse(
   await readFile(join(projectRoot, 'src/data/toolPages.json'), 'utf8'),
 )
+const japanesePages = JSON.parse(
+  await readFile(join(projectRoot, 'src/data/toolPages.ja.json'), 'utf8'),
+)
+const manifest = baseManifest.map((page) => {
+  const japanese = japanesePages[page.id]
+  if (!japanese) throw new Error(`Missing Japanese content for ${page.id}`)
+  return {
+    ...page,
+    jaPath: page.enPath.replace(/^\/en\//, '/ja/'),
+    title: { ...page.title, ja: japanese.title },
+    description: { ...page.description, ja: japanese.description },
+    h1: { ...page.h1, ja: japanese.h1 },
+    intro: { ...page.intro, ja: japanese.intro },
+    steps: { ...page.steps, ja: japanese.steps },
+    limitations: { ...page.limitations, ja: japanese.limitations },
+    sample: { ...page.sample, ja: japanese.sample },
+    schemaFeatures: { ...page.schemaFeatures, ja: japanese.schemaFeatures },
+  }
+})
 const template = await readFile(join(distRoot, 'index.html'), 'utf8')
+
+const locales = ['zh-CN', 'en', 'ja']
+const localeConfig = {
+  'zh-CN': {
+    language: 'zh-CN',
+    ogLocale: 'zh_CN',
+    label: '简体中文',
+    stepsTitle: '使用步骤',
+    limitsTitle: '使用限制',
+    sampleTitle: '输入示例',
+    tagline: '本地处理 · 免费使用',
+    toolsLabel: '工具页面',
+    noScript: 'MarkGleam 需要启用 JavaScript；文档、图片与导出处理均在你的浏览器本地完成。',
+    interfaceSuffix: '工具界面',
+  },
+  en: {
+    language: 'en',
+    ogLocale: 'en_US',
+    label: 'English',
+    stepsTitle: 'How to use it',
+    limitsTitle: 'Limitations',
+    sampleTitle: 'Input example',
+    tagline: 'Local processing · Free to use',
+    toolsLabel: 'Tools',
+    noScript: 'MarkGleam requires JavaScript. Documents, images and exports are processed locally in your browser.',
+    interfaceSuffix: 'interface',
+  },
+  ja: {
+    language: 'ja',
+    ogLocale: 'ja_JP',
+    label: '日本語',
+    stepsTitle: '使い方',
+    limitsTitle: '制限事項',
+    sampleTitle: '入力例',
+    tagline: 'ローカル処理 · 無料で利用',
+    toolsLabel: 'ツール',
+    noScript: 'MarkGleam を利用するには JavaScript が必要です。文書、画像、書き出し処理はブラウザ内で完結します。',
+    interfaceSuffix: 'ツール画面',
+  },
+}
+
+const localizedPath = (page, locale) =>
+  locale === 'zh-CN' ? page.path : locale === 'en' ? page.enPath : page.jaPath
 
 const escapeHtml = (value) =>
   value
@@ -40,7 +102,7 @@ const replaceRequired = (html, pattern, replacement, label) => {
 }
 
 const renderStructuredData = (page, locale, canonical, content) => {
-  const language = locale === 'zh-CN' ? 'zh-CN' : 'en'
+  const language = localeConfig[locale].language
   const app = {
     '@type': 'WebApplication',
     '@id': `${canonical}#app`,
@@ -74,7 +136,7 @@ const renderStructuredData = (page, locale, canonical, content) => {
           '@type': 'ListItem',
           position: 1,
           name: 'MarkGleam',
-          item: absoluteUrl(locale === 'zh-CN' ? '/' : '/en/'),
+          item: absoluteUrl(localizedPath(manifest[0], locale)),
         },
         {
           '@type': 'ListItem',
@@ -93,65 +155,67 @@ const renderStructuredData = (page, locale, canonical, content) => {
 const renderStaticBody = (page, locale, content) => {
   const pages = manifest
     .map((item) => {
-      const path = locale === 'zh-CN' ? item.path : item.enPath
+      const path = localizedPath(item, locale)
       return `<a href="${escapeHtml(path)}">${escapeHtml(item.h1[locale])}</a>`
     })
     .join(' · ')
-  const alternatePath = locale === 'zh-CN' ? page.enPath : page.path
-  const alternateLabel = locale === 'zh-CN' ? 'English' : '中文'
-  const stepsTitle = locale === 'zh-CN' ? '使用步骤' : 'How to use it'
-  const limitsTitle = locale === 'zh-CN' ? '使用限制' : 'Limitations'
-  const sampleTitle = locale === 'zh-CN' ? '输入示例' : 'Input example'
-  const tagline =
-    locale === 'zh-CN' ? '本地处理 · 免费使用' : 'Local processing · Free to use'
-  const noScript =
-    locale === 'zh-CN'
-      ? 'MarkGleam 需要启用 JavaScript；文档、图片与导出处理均在你的浏览器本地完成。'
-      : 'MarkGleam requires JavaScript. Documents, images and exports are processed locally in your browser.'
+  const config = localeConfig[locale]
+  const languageLinks = locales
+    .filter((candidate) => candidate !== locale)
+    .map(
+      (candidate) =>
+        `<a href="${escapeHtml(localizedPath(page, candidate))}" lang="${localeConfig[candidate].language}">${localeConfig[candidate].label}</a>`,
+    )
+    .join(' · ')
 
   return {
     root: `<div id="root">
       <div class="app-bootstrap">
         <header class="app-bootstrap__bar">
-          <p class="app-bootstrap__brand">MarkGleam <span>${escapeHtml(tagline)}</span></p>
+          <p class="app-bootstrap__brand">MarkGleam <span>${escapeHtml(config.tagline)}</span></p>
         </header>
         <main class="app-bootstrap__main">
           <article class="app-bootstrap__copy">
             <h1>${escapeHtml(content.h1)}</h1>
             <p>${escapeHtml(content.intro)}</p>
             <section aria-labelledby="static-steps">
-              <h2 id="static-steps">${escapeHtml(stepsTitle)}</h2>
+              <h2 id="static-steps">${escapeHtml(config.stepsTitle)}</h2>
               <ol>${content.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join('')}</ol>
             </section>
             <section aria-labelledby="static-limitations">
-              <h2 id="static-limitations">${escapeHtml(limitsTitle)}</h2>
+              <h2 id="static-limitations">${escapeHtml(config.limitsTitle)}</h2>
               <p>${escapeHtml(content.limitations)}</p>
             </section>
             <section aria-labelledby="static-sample">
-              <h2 id="static-sample">${escapeHtml(sampleTitle)}</h2>
+              <h2 id="static-sample">${escapeHtml(config.sampleTitle)}</h2>
               <pre><code>${escapeHtml(content.sample)}</code></pre>
             </section>
-            <nav aria-label="${locale === 'zh-CN' ? '工具页面' : 'Tools'}">${pages}</nav>
-            <p><a href="${escapeHtml(alternatePath)}" lang="${locale === 'zh-CN' ? 'en' : 'zh-CN'}">${alternateLabel}</a></p>
+            <nav aria-label="${config.toolsLabel}">${pages}</nav>
+            <p>${languageLinks}</p>
           </article>
         </main>
       </div>
     </div>`,
-    noScript: `<noscript>${escapeHtml(noScript)}</noscript>`,
+    noScript: `<noscript>${escapeHtml(config.noScript)}</noscript>`,
   }
 }
 
 const renderPage = (page, locale) => {
   const content = localized(page, locale)
-  const path = locale === 'zh-CN' ? page.path : page.enPath
-  const alternatePath = locale === 'zh-CN' ? page.enPath : page.path
+  const path = localizedPath(page, locale)
   const canonical = absoluteUrl(path)
-  const alternate = absoluteUrl(alternatePath)
   const zhUrl = absoluteUrl(page.path)
   const enUrl = absoluteUrl(page.enPath)
-  const language = locale === 'zh-CN' ? 'zh-CN' : 'en'
-  const ogLocale = locale === 'zh-CN' ? 'zh_CN' : 'en_US'
-  const alternateOgLocale = locale === 'zh-CN' ? 'en_US' : 'zh_CN'
+  const jaUrl = absoluteUrl(page.jaPath)
+  const language = localeConfig[locale].language
+  const ogLocale = localeConfig[locale].ogLocale
+  const alternateOgLocales = locales
+    .filter((candidate) => candidate !== locale)
+    .map(
+      (candidate) =>
+        `    <meta property="og:locale:alternate" content="${localeConfig[candidate].ogLocale}" />`,
+    )
+    .join('\n')
   const structuredData = renderStructuredData(page, locale, canonical, content)
   const body = renderStaticBody(page, locale, content)
 
@@ -170,6 +234,7 @@ const renderPage = (page, locale) => {
     `<link rel="canonical" href="${canonical}" />
     <link rel="alternate" hreflang="zh-CN" href="${zhUrl}" />
     <link rel="alternate" hreflang="en" href="${enUrl}" />
+    <link rel="alternate" hreflang="ja" href="${jaUrl}" />
     <link rel="alternate" hreflang="x-default" href="${zhUrl}" />`,
     'canonical',
   )
@@ -185,9 +250,7 @@ const renderPage = (page, locale) => {
     html,
     /<meta property="og:image:alt" content="[^"]*"\s*\/>/,
     `<meta property="og:image:alt" content="${escapeHtml(
-      locale === 'zh-CN'
-        ? `${content.h1} 工具界面`
-        : `${content.h1} interface`,
+      `${content.h1} ${localeConfig[locale].interfaceSuffix}`,
     )}" />`,
     'og:image:alt',
   )
@@ -195,7 +258,7 @@ const renderPage = (page, locale) => {
     html,
     /<meta property="og:locale" content="[^"]*"\s*\/>/,
     `<meta property="og:locale" content="${ogLocale}" />
-    <meta property="og:locale:alternate" content="${alternateOgLocale}" />`,
+${alternateOgLocales}`,
     'og:locale',
   )
   html = replaceRequired(html, /<meta name="twitter:title" content="[^"]*"\s*\/>/, `<meta name="twitter:title" content="${escapeHtml(content.title)}" />`, 'twitter:title')
@@ -226,8 +289,8 @@ const renderPage = (page, locale) => {
 const sitemapEntries = []
 
 for (const page of manifest) {
-  for (const locale of ['zh-CN', 'en']) {
-    const path = locale === 'zh-CN' ? page.path : page.enPath
+  for (const locale of locales) {
+    const path = localizedPath(page, locale)
     const file = outputFile(path)
     await mkdir(dirname(file), { recursive: true })
     await writeFile(file, renderPage(page, locale), 'utf8')
@@ -235,6 +298,7 @@ for (const page of manifest) {
     <loc>${absoluteUrl(path)}</loc>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="${absoluteUrl(page.path)}" />
     <xhtml:link rel="alternate" hreflang="en" href="${absoluteUrl(page.enPath)}" />
+    <xhtml:link rel="alternate" hreflang="ja" href="${absoluteUrl(page.jaPath)}" />
     <xhtml:link rel="alternate" hreflang="x-default" href="${absoluteUrl(page.path)}" />
     <lastmod>2026-07-30</lastmod>
   </url>`)

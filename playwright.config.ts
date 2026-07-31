@@ -12,6 +12,7 @@ export default defineConfig({
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: 'http://127.0.0.1:4327',
+    locale: 'zh-CN',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },

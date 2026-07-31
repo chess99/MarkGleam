@@ -16,6 +16,7 @@ describe('tool page samples', () => {
     expect(homepage.sample).toEqual(markdown.sample)
     expect(markdown.sample['zh-CN']).toBe(sampleMarkdown)
     expect(markdown.sample.en).toBe(sampleMarkdownEn)
+    expect(markdown.sample.ja).toContain('# Markdown を画像にする')
     expect(sampleMarkdown).toContain('```ts')
     expect(sampleMarkdown).toContain('$$')
     expect(sampleMarkdown).not.toContain('```mermaid')
@@ -49,5 +50,8 @@ describe('tool page samples', () => {
     expect(github.sample['zh-CN']).toMatch(/^https:\/\/github\.com\//)
     expect(getLocalizedEditorSample(github, 'zh-CN')).toBe(sampleMarkdown)
     expect(getLocalizedEditorSample(github, 'en')).toBe(sampleMarkdownEn)
+    expect(getLocalizedEditorSample(github, 'ja')).toBe(
+      page('markdown-to-image').sample.ja,
+    )
   })
 })

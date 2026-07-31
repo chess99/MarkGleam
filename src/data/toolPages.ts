@@ -1,6 +1,8 @@
 import pageData from './toolPages.json'
+import japanesePageData from './toolPages.ja.json'
+import type { Locale } from '../types'
 
-export type ToolPageLocale = 'zh-CN' | 'en'
+export type ToolPageLocale = Locale
 
 export type ToolInputKind =
   | 'markdown'
@@ -13,6 +15,7 @@ export type ToolInputKind =
 export interface LocalizedText {
   'zh-CN': string
   en: string
+  ja: string
 }
 
 export interface ToolPageDefaults {
@@ -27,6 +30,7 @@ export interface ToolPage {
   id: string
   path: string
   enPath: string
+  jaPath: string
   inputKind: ToolInputKind
   title: LocalizedText
   description: LocalizedText
@@ -43,7 +47,7 @@ export interface ResolvedToolPage {
   page: ToolPage
   locale: ToolPageLocale
   canonicalPath: string
-  alternatePath: string
+  alternatePaths: Record<ToolPageLocale, string>
 }
 
 export interface LocalizedToolPageContent {
@@ -57,7 +61,42 @@ export interface LocalizedToolPageContent {
   schemaFeatures: string[]
 }
 
-export const toolPages = pageData as ToolPage[]
+type JapanesePageContent = Omit<
+  LocalizedToolPageContent,
+  'steps' | 'schemaFeatures'
+> & {
+  steps: string[]
+  schemaFeatures: string[]
+}
+
+const japanesePages = japanesePageData as Record<string, JapanesePageContent>
+
+export const toolPages = pageData.map((page) => {
+  const japanese = japanesePages[page.id]
+  if (!japanese) throw new Error(`Missing Japanese content for ${page.id}`)
+
+  return {
+    ...page,
+    jaPath: page.enPath.replace(/^\/en\//, '/ja/'),
+    title: { ...page.title, ja: japanese.title },
+    description: { ...page.description, ja: japanese.description },
+    h1: { ...page.h1, ja: japanese.h1 },
+    intro: { ...page.intro, ja: japanese.intro },
+    steps: { ...page.steps, ja: japanese.steps },
+    limitations: { ...page.limitations, ja: japanese.limitations },
+    sample: { ...page.sample, ja: japanese.sample },
+    schemaFeatures: { ...page.schemaFeatures, ja: japanese.schemaFeatures },
+  }
+}) as ToolPage[]
+
+export const getToolPagePath = (
+  page: Pick<ToolPage, 'path' | 'enPath' | 'jaPath'>,
+  locale: ToolPageLocale,
+) => {
+  if (locale === 'en') return page.enPath
+  if (locale === 'ja') return page.jaPath
+  return page.path
+}
 
 const normalizePathname = (pathname: string) => {
   const withoutQuery = pathname.split(/[?#]/, 1)[0] || '/'
@@ -70,20 +109,19 @@ export const resolveToolPage = (
   const normalized = normalizePathname(pathname)
 
   for (const page of toolPages) {
-    if (normalized === page.path) {
-      return {
-        page,
-        locale: 'zh-CN',
-        canonicalPath: page.path,
-        alternatePath: page.enPath,
-      }
-    }
-    if (normalized === page.enPath) {
-      return {
-        page,
-        locale: 'en',
-        canonicalPath: page.enPath,
-        alternatePath: page.path,
+    for (const locale of ['zh-CN', 'en', 'ja'] as const) {
+      const path = getToolPagePath(page, locale)
+      if (normalized === path) {
+        return {
+          page,
+          locale,
+          canonicalPath: path,
+          alternatePaths: {
+            'zh-CN': page.path,
+            en: page.enPath,
+            ja: page.jaPath,
+          },
+        }
       }
     }
   }

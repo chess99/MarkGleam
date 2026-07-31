@@ -11,6 +11,7 @@ describe('app store product state', () => {
   beforeEach(() => {
     useAppStore.setState({
       ...defaultDocumentState,
+      localePreference: null,
       markdown: '# Current title',
       appearance: 'light',
       themeId: 'paper',
@@ -59,6 +60,13 @@ describe('app store product state', () => {
     expect(useAppStore.getState().canvas.backgroundColor).toBe(
       getTheme('paper').surface,
     )
+  })
+
+  it('persists a locale only after an explicit selection', () => {
+    expect(useAppStore.getState().localePreference).toBeNull()
+    useAppStore.getState().setLocale('ja')
+    expect(useAppStore.getState().locale).toBe('ja')
+    expect(useAppStore.getState().localePreference).toBe('ja')
   })
 
   it('regenerates the filename when settings are reset', () => {

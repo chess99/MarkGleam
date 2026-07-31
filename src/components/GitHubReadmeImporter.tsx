@@ -63,6 +63,28 @@ const copy = {
     },
     unknownError: 'The README could not be imported. Try again or upload the Markdown file.',
   },
+  ja: {
+    label: 'GitHub README URL',
+    placeholder: 'https://github.com/owner/repository',
+    import: 'README を読み込む',
+    importing: 'GitHub から読み込み中…',
+    cancel: '読み込みを中止',
+    success: 'README を読み込みました。続けて編集できます。',
+    publicOnly: '公開リポジトリだけに対応し、Token は読みません。/ を含むブランチ名では、リポジトリ URL または GitHub でコピーした Raw URL を使ってください。',
+    errors: {
+      'invalid-url': '有効な GitHub URL を入力してください。',
+      'unsupported-url': '公開リポジトリ URL、または README の blob/raw URL を使ってください。',
+      'not-found': '公開リポジトリまたは README が見つかりません。非公開リポジトリは読み込めません。',
+      'rate-limited': 'GitHub のリクエスト上限に達しました。時間を置くか、Markdown ファイルをアップロードしてください。',
+      forbidden: 'GitHub がリクエストを拒否しました。ログインせずに閲覧できる公開リポジトリだけに対応しています。',
+      'too-large': 'この README は大きすぎるため、ブラウザで読み込めません。',
+      timeout: 'GitHub の応答がタイムアウトしました。再試行するか、Markdown ファイルをアップロードしてください。',
+      network: 'GitHub に接続できません。ネットワークを確認して再試行してください。',
+      'invalid-response': 'GitHub から返された README データを読み取れません。',
+      'http-error': 'GitHub がリクエストを完了できませんでした。時間を置いて再試行してください。',
+    },
+    unknownError: 'README を読み込めませんでした。再試行するか、Markdown ファイルをアップロードしてください。',
+  },
 } as const
 
 export function GitHubReadmeImporter({

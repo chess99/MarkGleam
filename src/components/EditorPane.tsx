@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { t } from '../i18n'
 import { saveAsset } from '../lib/assets'
+import { localeText } from '../lib/locale'
 import { useAppStore } from '../store'
 
 const codeLanguages = [
@@ -69,13 +70,17 @@ export function EditorPane({
     inputKind === 'mermaid'
       ? 'Mermaid'
       : inputKind === 'formula'
-        ? locale === 'zh-CN'
-          ? 'LaTeX 公式'
-          : 'LaTeX formula'
+        ? localeText(locale, {
+            'zh-CN': 'LaTeX 公式',
+            en: 'LaTeX formula',
+            ja: 'LaTeX 数式',
+          })
         : inputKind === 'code'
-          ? locale === 'zh-CN'
-            ? '代码'
-            : 'Code'
+          ? localeText(locale, {
+              'zh-CN': '代码',
+              en: 'Code',
+              ja: 'コード',
+            })
           : t(locale, 'markdown')
   const acceptsMarkdownFiles = inputKind === 'markdown'
 
@@ -141,10 +146,11 @@ export function EditorPane({
   }
 
   const clearDocument = () => {
-    const message =
-      locale === 'zh-CN'
-        ? '确定清空当前 Markdown？本地自动保存的内容也会更新。'
-        : 'Clear the current Markdown? The locally saved copy will also update.'
+    const message = localeText(locale, {
+      'zh-CN': '确定清空当前 Markdown？本地自动保存的内容也会更新。',
+      en: 'Clear the current Markdown? The locally saved copy will also update.',
+      ja: '現在の Markdown を消去しますか？ローカルに自動保存された内容も更新されます。',
+    })
     if (window.confirm(message)) setMarkdown('')
   }
 
@@ -177,7 +183,11 @@ export function EditorPane({
           {inputKind === 'code' && (
             <select
               className="code-language-select"
-              aria-label={locale === 'zh-CN' ? '代码语言' : 'Code language'}
+              aria-label={localeText(locale, {
+                'zh-CN': '代码语言',
+                en: 'Code language',
+                ja: 'コード言語',
+              })}
               value={codeLanguage}
               onChange={(event) => setCodeLanguage(event.target.value)}
             >
@@ -266,7 +276,11 @@ export function EditorPane({
               <div className="desktop-editor-loading" role="status">
                 <span className="desktop-editor-loading-bar" aria-hidden="true" />
                 <span>
-                  {locale === 'zh-CN' ? '正在加载编辑器…' : 'Loading editor…'}
+                  {localeText(locale, {
+                    'zh-CN': '正在加载编辑器…',
+                    en: 'Loading editor…',
+                    ja: 'エディターを読み込み中…',
+                  })}
                 </span>
               </div>
             }
@@ -285,9 +299,11 @@ export function EditorPane({
         <span>
           {acceptsMarkdownFiles
             ? t(locale, 'dropHint')
-            : locale === 'zh-CN'
-              ? `直接输入${inputLabel}`
-              : `Enter ${inputLabel} directly`}
+            : localeText(locale, {
+                'zh-CN': `直接输入${inputLabel}`,
+                en: `Enter ${inputLabel} directly`,
+                ja: `${inputLabel}を直接入力`,
+              })}
         </span>
         <span className="markdown-badge">
           {inputKind === 'markdown' ? 'M↓' : inputKind.slice(0, 2).toUpperCase()}

@@ -2,6 +2,7 @@ import { useEffect, useRef, type ReactNode } from 'react'
 import { ChevronDown, LayoutGrid } from 'lucide-react'
 import {
   getLocalizedPageContent,
+  getToolPagePath,
   toolPages,
   type ResolvedToolPage,
 } from '../data/toolPages'
@@ -62,20 +63,23 @@ export function ToolContext({
   ) => (
     <nav
       className={className}
-      aria-label={locale === 'zh-CN' ? '转换类型' : 'Converter type'}
+      aria-label={
+        locale === 'zh-CN'
+          ? '转换类型'
+          : locale === 'ja'
+            ? '変換の種類'
+            : 'Converter type'
+      }
     >
       {visibleToolPages.map((candidate) => {
         const isHomepageMarkdown =
           page.id === 'visual-workspace' &&
           candidate.id === 'markdown-to-image'
         const active = candidate.id === page.id || isHomepageMarkdown
-        const href = isHomepageMarkdown
-          ? locale === 'zh-CN'
-            ? page.path
-            : page.enPath
-          : locale === 'zh-CN'
-            ? candidate.path
-            : candidate.enPath
+        const href = getToolPagePath(
+          isHomepageMarkdown ? page : candidate,
+          locale,
+        )
 
         return (
           <a
@@ -117,12 +121,22 @@ export function ToolContext({
         >
           <summary>
             <LayoutGrid size={15} aria-hidden="true" />
-            <span>{locale === 'zh-CN' ? '切换工具' : 'Switch tool'}</span>
+            <span>
+              {locale === 'zh-CN'
+                ? '切换工具'
+                : locale === 'ja'
+                  ? 'ツールを切り替え'
+                  : 'Switch tool'}
+            </span>
             <ChevronDown size={14} aria-hidden="true" />
           </summary>
           <div className="mobile-tool-menu">
             <div className="mobile-tool-menu-heading">
-              {locale === 'zh-CN' ? '选择转换方式' : 'Choose a converter'}
+              {locale === 'zh-CN'
+                ? '选择转换方式'
+                : locale === 'ja'
+                  ? '変換方法を選択'
+                  : 'Choose a converter'}
             </div>
             {renderToolLinks('mobile-tool-links', mobileActiveLinkRef)}
           </div>

@@ -20,6 +20,66 @@ const MAX_FILES = 30
 const MAX_FILE_BYTES = 2 * 1024 * 1024
 const MAX_TOTAL_BYTES = 15 * 1024 * 1024
 
+const batchCopy: Record<
+  Locale,
+  {
+    limits: string
+    files: string
+    chooseFiles: string
+    dropFiles: string
+    dropHint: string
+    choose: string
+    rendering: string
+    done: string
+    exportZip: string
+    stop: (completed: number, total: number) => string
+    complete: (succeeded: number, failed: number) => string
+  }
+> = {
+  'zh-CN': {
+    limits: '最多 30 个 Markdown 文件；单个不超过 2 MB，总计不超过 15 MB。',
+    files: '批量文件',
+    chooseFiles: '选择 Markdown 文件',
+    dropFiles: '选择或拖入多个 Markdown 文件',
+    dropHint: '最多 30 个，统一导出为 PNG ZIP',
+    choose: '选择文件',
+    rendering: '渲染中',
+    done: '完成',
+    exportZip: '导出 PNG ZIP',
+    stop: (completed, total) => `停止（${completed}/${total}）`,
+    complete: (succeeded, failed) =>
+      `批量导出完成：成功 ${succeeded} 个，失败 ${failed} 个。`,
+  },
+  en: {
+    limits: 'Use up to 30 Markdown files, 2 MB each and 15 MB in total.',
+    files: 'Batch files',
+    chooseFiles: 'Choose Markdown files',
+    dropFiles: 'Choose or drop Markdown files',
+    dropHint: 'Up to 30 files, exported as one PNG ZIP',
+    choose: 'Choose files',
+    rendering: 'Rendering',
+    done: 'Done',
+    exportZip: 'Export PNG ZIP',
+    stop: (completed, total) => `Stop (${completed}/${total})`,
+    complete: (succeeded, failed) =>
+      `Batch complete: ${succeeded} succeeded, ${failed} failed.`,
+  },
+  ja: {
+    limits: 'Markdown は最大 30 ファイル、1件 2 MB、合計 15 MB までです。',
+    files: '一括ファイル',
+    chooseFiles: 'Markdown ファイルを選択',
+    dropFiles: '複数の Markdown ファイルを選択またはドロップ',
+    dropHint: '最大 30 ファイルを一つの PNG ZIP に書き出します',
+    choose: 'ファイルを選択',
+    rendering: '描画中',
+    done: '完了',
+    exportZip: 'PNG ZIP を書き出し',
+    stop: (completed, total) => `停止（${completed}/${total}）`,
+    complete: (succeeded, failed) =>
+      `一括書き出し完了：成功 ${succeeded} 件、失敗 ${failed} 件。`,
+  },
+}
+
 const nextFrame = () =>
   new Promise<void>((resolve) =>
     requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
@@ -48,6 +108,7 @@ export function BatchPane({
   onPreview: (source: string) => void
   onToast: (message: string, kind?: 'success' | 'error') => void
 }) {
+  const labels = batchCopy[locale]
   const exportConfig = useAppStore((state) => state.export)
   const [items, setItems] = useState<BatchItem[]>([])
   const [renderSource, setRenderSource] = useState('')
@@ -83,9 +144,7 @@ export function BatchPane({
       accepted.length !== candidates.length
     ) {
       onToast(
-        locale === 'zh-CN'
-          ? '最多 30 个 Markdown 文件；单个不超过 2 MB，总计不超过 15 MB。'
-          : 'Use up to 30 Markdown files, 2 MB each and 15 MB in total.',
+        labels.limits,
         'error',
       )
     }
@@ -148,9 +207,7 @@ export function BatchPane({
         const blob = await zip.generateAsync({ type: 'blob' })
         downloadBlob(blob, 'markgleam-batch.zip')
         onToast(
-          locale === 'zh-CN'
-            ? `批量导出完成：成功 ${items.length - errors.length} 个，失败 ${errors.length} 个。`
-            : `Batch complete: ${items.length - errors.length} succeeded, ${errors.length} failed.`,
+          labels.complete(items.length - errors.length, errors.length),
           errors.length ? 'error' : 'success',
         )
       }
@@ -160,18 +217,18 @@ export function BatchPane({
   }
 
   return (
-    <section className="pane editor-pane batch-pane" aria-label={locale === 'zh-CN' ? '批量文件' : 'Batch files'}>
+    <section className="pane editor-pane batch-pane" aria-label={labels.files}>
       <header className="pane-header">
         <div className="pane-title">
           <span className="pane-icon pane-icon-coral" aria-hidden="true">
             <FileArchive size={17} />
           </span>
-          <span>{locale === 'zh-CN' ? '批量文件' : 'Batch files'}</span>
+          <span>{labels.files}</span>
         </div>
         <button
           className="icon-button"
           type="button"
-          aria-label={locale === 'zh-CN' ? '选择 Markdown 文件' : 'Choose Markdown files'}
+          aria-label={labels.chooseFiles}
           onClick={() => inputRef.current?.click()}
         >
           <FilePlus2 size={17} />
@@ -187,10 +244,10 @@ export function BatchPane({
         }}
       >
         <FilePlus2 size={24} />
-        <b>{locale === 'zh-CN' ? '选择或拖入多个 Markdown 文件' : 'Choose or drop Markdown files'}</b>
-        <span>{locale === 'zh-CN' ? '最多 30 个，统一导出为 PNG ZIP' : 'Up to 30 files, exported as one PNG ZIP'}</span>
+        <b>{labels.dropFiles}</b>
+        <span>{labels.dropHint}</span>
         <button type="button" onClick={() => inputRef.current?.click()}>
-          {locale === 'zh-CN' ? '选择文件' : 'Choose files'}
+          {labels.choose}
         </button>
       </div>
 
@@ -206,13 +263,9 @@ export function BatchPane({
             <span>{item.file.name}</span>
             <small>
               {item.status === 'rendering'
-                ? locale === 'zh-CN'
-                  ? '渲染中'
-                  : 'Rendering'
+                ? labels.rendering
                 : item.status === 'done'
-                  ? locale === 'zh-CN'
-                    ? '完成'
-                    : 'Done'
+                  ? labels.done
                   : item.status === 'error'
                     ? item.error
                     : `${Math.max(1, Math.ceil(item.file.size / 1024))} KB`}
@@ -233,12 +286,8 @@ export function BatchPane({
         >
           {running ? <X size={17} /> : items.length ? <Play size={17} /> : <LoaderCircle size={17} />}
           {running
-            ? locale === 'zh-CN'
-              ? `停止（${completed}/${items.length}）`
-              : `Stop (${completed}/${items.length})`
-            : locale === 'zh-CN'
-              ? '导出 PNG ZIP'
-              : 'Export PNG ZIP'}
+            ? labels.stop(completed, items.length)
+            : labels.exportZip}
         </button>
       </div>
 

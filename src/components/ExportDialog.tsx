@@ -162,7 +162,9 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
                   : id === 'split-zip'
                     ? locale === 'zh-CN'
                       ? '长图分片 ZIP'
-                      : 'Sliced ZIP'
+                      : locale === 'ja'
+                        ? '縦長画像の分割 ZIP'
+                        : 'Sliced ZIP'
                     : id === 'pdf'
                       ? t(locale, 'visualPdf')
                       : id === 'print'
@@ -285,7 +287,13 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
                     <input
                       type="text"
                       value={config.pdfHeader}
-                      placeholder={locale === 'zh-CN' ? '可留空' : 'Optional'}
+                      placeholder={
+                        locale === 'zh-CN'
+                          ? '可留空'
+                          : locale === 'ja'
+                            ? '任意'
+                            : 'Optional'
+                      }
                       onChange={(event) =>
                         changeExport({ pdfHeader: event.target.value })
                       }
@@ -295,7 +303,13 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
                     <input
                       type="text"
                       value={config.pdfFooter}
-                      placeholder={locale === 'zh-CN' ? '可留空' : 'Optional'}
+                      placeholder={
+                        locale === 'zh-CN'
+                          ? '可留空'
+                          : locale === 'ja'
+                            ? '任意'
+                            : 'Optional'
+                      }
                       onChange={(event) =>
                         changeExport({ pdfFooter: event.target.value })
                       }
@@ -373,7 +387,11 @@ export function ExportDialog({ surface, onClose, onToast }: ExportDialogProps) {
                 aria-valuenow={progress.completed}
               >
                 <span>
-                  {locale === 'zh-CN' ? '页面进度' : 'Page progress'}
+                  {locale === 'zh-CN'
+                    ? '页面进度'
+                    : locale === 'ja'
+                      ? 'ページ進捗'
+                      : 'Page progress'}
                   <b>
                     {progress.completed} / {progress.total}
                   </b>

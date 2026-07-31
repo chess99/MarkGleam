@@ -3,13 +3,20 @@ import { ArrowLeft, History } from 'lucide-react'
 import { changelogEntries } from '../data/changelog'
 import { t } from '../i18n'
 import { useAppStore } from '../store'
+import type { Locale } from '../types'
 import { BrandMark } from './BrandMark'
 import { LanguageSelect } from './LanguageSelect'
 
-export function ChangelogPage({ onBack }: { onBack: () => void }) {
-  const locale = useAppStore((state) => state.locale)
+export function ChangelogPage({
+  locale,
+  onLocaleChange,
+  onBack,
+}: {
+  locale: Locale
+  onLocaleChange: (locale: Locale) => void
+  onBack: () => void
+}) {
   const appearance = useAppStore((state) => state.appearance)
-  const setLocale = useAppStore((state) => state.setLocale)
 
   return (
     <div className="changelog-page" data-appearance={appearance}>
@@ -19,7 +26,7 @@ export function ChangelogPage({ onBack }: { onBack: () => void }) {
           <span className="brand-title">MarkGleam</span>
         </div>
         <div className="changelog-actions">
-          <LanguageSelect locale={locale} onChange={setLocale} />
+          <LanguageSelect locale={locale} onChange={onLocaleChange} />
           <button className="changelog-back" type="button" onClick={onBack}>
             <ArrowLeft size={17} />
             {t(locale, 'backToEditor')}

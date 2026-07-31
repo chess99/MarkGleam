@@ -5,10 +5,12 @@ export const PRODUCT = {
   tagline: {
     'zh-CN': '把结构化内容做成可分享的视觉作品。',
     en: 'Structured content to share-ready visuals.',
+    ja: '構造化コンテンツを共有しやすいビジュアルに。',
   },
   signatureTagline: {
     'zh-CN': '把内容做成作品',
     en: 'Content, made visible.',
+    ja: 'コンテンツを作品に',
   },
 } as const
 

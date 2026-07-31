@@ -11,18 +11,25 @@ interface LanguageSelectProps {
 const localeLabels: Record<Locale, string> = {
   'zh-CN': '简体中文',
   en: 'English',
+  ja: '日本語',
 }
 
 const locales = Object.keys(localeLabels) as Locale[]
 
 export function LanguageSelect({ locale, onChange }: LanguageSelectProps) {
-  const label = locale === 'zh-CN' ? '界面语言' : 'Interface language'
+  const label =
+    locale === 'zh-CN'
+      ? '界面语言'
+      : locale === 'ja'
+        ? '表示言語'
+        : 'Interface language'
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const optionRefs = useRef<Record<Locale, HTMLButtonElement | null>>({
     'zh-CN': null,
     en: null,
+    ja: null,
   })
 
   useEffect(() => {

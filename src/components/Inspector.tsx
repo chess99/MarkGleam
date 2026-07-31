@@ -416,11 +416,15 @@ export function Inspector({
                       : format === 'print'
                         ? locale === 'zh-CN'
                           ? '打印'
-                          : 'Print'
+                          : locale === 'ja'
+                            ? '印刷'
+                            : 'Print'
                       : format === 'clipboard'
                         ? locale === 'zh-CN'
                           ? '复制'
-                          : 'Copy'
+                          : locale === 'ja'
+                            ? 'コピー'
+                            : 'Copy'
                         : format.toUpperCase()}
                   </button>
                 ))}

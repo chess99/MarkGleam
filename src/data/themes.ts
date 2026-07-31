@@ -3,7 +3,7 @@ import type { ThemeConfig, ThemeId } from '../types'
 export const themes: ThemeConfig[] = [
   {
     id: 'paper',
-    name: { 'zh-CN': '暖纸', en: 'Warm paper' },
+    name: { 'zh-CN': '暖纸', en: 'Warm paper', ja: '温かな紙' },
     surface: '#fffaf0',
     text: '#30251f',
     muted: '#7c6d62',
@@ -17,7 +17,7 @@ export const themes: ThemeConfig[] = [
   },
   {
     id: 'sunrise',
-    name: { 'zh-CN': '朝霞', en: 'Sunrise' },
+    name: { 'zh-CN': '朝霞', en: 'Sunrise', ja: '朝焼け' },
     surface: '#fff6ed',
     text: '#3c2521',
     muted: '#916b60',
@@ -31,7 +31,7 @@ export const themes: ThemeConfig[] = [
   },
   {
     id: 'forest',
-    name: { 'zh-CN': '林间', en: 'Forest' },
+    name: { 'zh-CN': '林间', en: 'Forest', ja: '森' },
     surface: '#f4f7ee',
     text: '#233329',
     muted: '#647469',
@@ -45,7 +45,7 @@ export const themes: ThemeConfig[] = [
   },
   {
     id: 'ocean',
-    name: { 'zh-CN': '晴海', en: 'Clear sea' },
+    name: { 'zh-CN': '晴海', en: 'Clear sea', ja: '晴れた海' },
     surface: '#f1f8f8',
     text: '#1f3439',
     muted: '#61777b',
@@ -59,7 +59,7 @@ export const themes: ThemeConfig[] = [
   },
   {
     id: 'night',
-    name: { 'zh-CN': '夜航', en: 'Night voyage' },
+    name: { 'zh-CN': '夜航', en: 'Night voyage', ja: '夜航' },
     surface: '#1d232a',
     text: '#eef1ed',
     muted: '#a8b0ae',
@@ -73,7 +73,7 @@ export const themes: ThemeConfig[] = [
   },
   {
     id: 'mono',
-    name: { 'zh-CN': '铅字', en: 'Letterpress' },
+    name: { 'zh-CN': '铅字', en: 'Letterpress', ja: '活版印刷' },
     surface: '#f7f6f2',
     text: '#242424',
     muted: '#686868',
@@ -87,7 +87,7 @@ export const themes: ThemeConfig[] = [
   },
   {
     id: 'berry',
-    name: { 'zh-CN': '莓果', en: 'Berry' },
+    name: { 'zh-CN': '莓果', en: 'Berry', ja: 'ベリー' },
     surface: '#fff5f6',
     text: '#40262f',
     muted: '#8a6973',
@@ -101,7 +101,7 @@ export const themes: ThemeConfig[] = [
   },
   {
     id: 'terminal',
-    name: { 'zh-CN': '终端', en: 'Terminal' },
+    name: { 'zh-CN': '终端', en: 'Terminal', ja: 'ターミナル' },
     surface: '#101713',
     text: '#d8f3df',
     muted: '#8fb49a',

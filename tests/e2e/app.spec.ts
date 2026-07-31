@@ -180,6 +180,25 @@ test('switches language, theme and persists preferences', async ({ page }) => {
   )
 })
 
+test('uses the browser language before the user chooses one', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    baseURL: 'http://127.0.0.1:4327',
+    locale: 'ja-JP',
+  })
+  const page = await context.newPage()
+  await page.goto('/')
+
+  await expect(page).toHaveURL(/\/ja\/$/)
+  await expect(
+    page.getByRole('combobox', { name: '表示言語' }),
+  ).toContainText('日本語')
+  await expect(page.getByRole('button', { name: '書き出し' })).toBeVisible()
+
+  await context.close()
+})
+
 test('keeps interface appearance independent from the export theme', async ({
   page,
 }) => {
@@ -713,7 +732,7 @@ test('keeps mobile language switching and native editor scrolling available', as
   )
   await language.click()
   const languageOptions = page.getByRole('option')
-  await expect(languageOptions).toHaveCount(2)
+  await expect(languageOptions).toHaveCount(3)
   for (const option of await languageOptions.all()) {
     await expect(option).toHaveCSS('white-space', 'nowrap')
     expect(await option.evaluate((element) => element.scrollHeight)).toBe(

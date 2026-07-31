@@ -45,7 +45,9 @@ export function FormulaPreview({ formula }: { formula: string }) {
       <div className="mermaid-error" data-render-state="error">
         {locale === 'zh-CN'
           ? '公式无法渲染，请检查 LaTeX 语法。'
-          : 'The formula could not be rendered. Check the LaTeX syntax.'}
+          : locale === 'ja'
+            ? '数式を描画できません。LaTeX の構文を確認してください。'
+            : 'The formula could not be rendered. Check the LaTeX syntax.'}
       </div>
     )
   }
