@@ -114,6 +114,19 @@ export interface ExportConfig {
   splitMode: SplitMode
 }
 
+export interface RouteDefaults {
+  canvas?: Partial<CanvasConfig>
+  export?: Partial<ExportConfig>
+  codeLanguage?: string
+  inspectorTab?: InspectorTab
+}
+
+export interface ToastAction {
+  label: string
+  onClick: () => void
+  resetToken?: number
+}
+
 export interface DocumentState {
   toolId: ToolId
   inputKind: InputKind

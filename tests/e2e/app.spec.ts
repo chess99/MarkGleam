@@ -164,7 +164,9 @@ test('keeps Mermaid rendered when the workspace layout changes', async ({
 test('switches language, theme and persists preferences', async ({ page }) => {
   await page.getByRole('combobox', { name: '界面语言' }).click()
   await page.getByRole('option', { name: 'English' }).click()
-  await expect(page.getByRole('button', { name: 'Export' })).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Export', exact: true }),
+  ).toBeVisible()
 
   await page.getByRole('button', { name: 'Forest' }).click()
   await expect(page.getByTestId('export-surface')).toHaveCSS(
@@ -173,7 +175,9 @@ test('switches language, theme and persists preferences', async ({ page }) => {
   )
 
   await page.reload()
-  await expect(page.getByRole('button', { name: 'Export' })).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Export', exact: true }),
+  ).toBeVisible()
   await expect(page.getByRole('button', { name: 'Forest' })).toHaveAttribute(
     'aria-pressed',
     'true',
@@ -194,7 +198,9 @@ test('uses the browser language before the user chooses one', async ({
   await expect(
     page.getByRole('combobox', { name: '表示言語' }),
   ).toContainText('日本語')
-  await expect(page.getByRole('button', { name: '書き出し' })).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: '書き出し', exact: true }),
+  ).toBeVisible()
 
   await context.close()
 })

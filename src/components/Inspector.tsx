@@ -1,5 +1,12 @@
 import { useRef, useState } from 'react'
-import { Check, ImagePlus, RotateCcw, Type, X } from 'lucide-react'
+import {
+  Check,
+  ImagePlus,
+  RotateCcw,
+  Sparkles,
+  Type,
+  X,
+} from 'lucide-react'
 import { themes } from '../data/themes'
 import { t } from '../i18n'
 import { deleteAsset, saveAsset } from '../lib/assets'
@@ -8,9 +15,12 @@ import type {
   CanvasPreset,
   ExportFormat,
   InspectorTab,
+  Locale,
+  RouteDefaults,
   SignatureStyle,
   SignatureTone,
   ThemeId,
+  ToastAction,
 } from '../types'
 import { Field } from './Field'
 
@@ -51,12 +61,76 @@ const formats: ExportFormat[] = [
   'split-zip',
 ]
 
+const patchDiffers = <Value extends object>(
+  current: Value,
+  patch?: Partial<Value>,
+) =>
+  patch
+    ? Object.entries(patch).some(
+        ([key, value]) =>
+          (current as Record<string, unknown>)[key] !== value,
+      )
+    : false
+
+const formatToolMessage = (
+  locale: Locale,
+  key: 'restoreRecommendedSettings' | 'recommendedSettingsRestored',
+  toolName: string,
+) => t(locale, key).replace('{tool}', toolName)
+
+const getRecommendationSummary = (
+  locale: Locale,
+  recommendation: RouteDefaults,
+) => {
+  const parts: string[] = []
+  const canvas = recommendation.canvas
+  const exportDefaults = recommendation.export
+
+  if (canvas?.preset === 'a4') {
+    parts.push('A4')
+  } else if (canvas?.preset === 'auto') {
+    parts.push(t(locale, 'auto'))
+  } else if (canvas?.width && canvas.minHeight) {
+    parts.push(`${canvas.width} × ${canvas.minHeight}px`)
+  }
+
+  if (exportDefaults?.format) {
+    parts.push(
+      exportDefaults.format === 'split-zip'
+        ? 'ZIP'
+        : exportDefaults.format.toUpperCase(),
+    )
+  }
+  if (exportDefaults?.scale) parts.push(`${exportDefaults.scale}×`)
+  if (exportDefaults?.splitMode) {
+    parts.push(
+      t(
+        locale,
+        exportDefaults.splitMode === 'fixed'
+          ? 'splitFixed'
+          : 'splitCompact',
+      ),
+    )
+  }
+  if (exportDefaults?.splitHeight) {
+    parts.push(`${exportDefaults.splitHeight}px`)
+  }
+
+  return parts.join(' · ')
+}
+
 export function Inspector({
   onOpenExport,
   onToast,
+  toolName,
 }: {
   onOpenExport: () => void
-  onToast: (message: string, kind?: 'success' | 'error') => void
+  onToast: (
+    message: string,
+    kind?: 'success' | 'error',
+    action?: ToastAction,
+  ) => void
+  toolName?: string
 }) {
   const locale = useAppStore((state) => state.locale)
   const themeId = useAppStore((state) => state.themeId)
@@ -65,16 +139,64 @@ export function Inspector({
   const exportConfig = useAppStore((state) => state.export)
   const customCss = useAppStore((state) => state.customCss)
   const activeTab = useAppStore((state) => state.inspectorTab)
+  const toolRecommendation = useAppStore((state) =>
+    state.routeDefaultsSnapshot?.toolId === state.toolId
+      ? state.routeDefaultsSnapshot.defaults
+      : undefined,
+  )
   const setThemeId = useAppStore((state) => state.setThemeId)
   const updateCanvas = useAppStore((state) => state.updateCanvas)
   const updateSignature = useAppStore((state) => state.updateSignature)
   const updateExport = useAppStore((state) => state.updateExport)
   const setCustomCss = useAppStore((state) => state.setCustomCss)
   const setInspectorTab = useAppStore((state) => state.setInspectorTab)
-  const resetSettings = useAppStore((state) => state.resetSettings)
+  const restoreToolRecommendations = useAppStore(
+    (state) => state.restoreToolRecommendations,
+  )
+  const resetAllSettings = useAppStore((state) => state.resetAllSettings)
+  const undoSettingsReset = useAppStore((state) => state.undoSettingsReset)
   const backgroundInputRef = useRef<HTMLInputElement>(null)
   const fontInputRef = useRef<HTMLInputElement>(null)
   const [advancedOpen, setAdvancedOpen] = useState(Boolean(customCss))
+  const recommendationDirty = Boolean(
+    toolRecommendation &&
+      (patchDiffers(canvas, toolRecommendation.canvas) ||
+        patchDiffers(exportConfig, toolRecommendation.export)),
+  )
+
+  const undoAction = (token: number): ToastAction => ({
+    label: t(locale, 'undo'),
+    resetToken: token,
+    onClick: () => {
+      if (undoSettingsReset(token)) {
+        onToast(t(locale, 'resetUndone'))
+      }
+    },
+  })
+
+  const handleRestoreRecommendation = () => {
+    if (!toolName) return
+    const token = restoreToolRecommendations()
+    if (token === undefined) return
+    onToast(
+      formatToolMessage(
+        locale,
+        'recommendedSettingsRestored',
+        toolName,
+      ),
+      'success',
+      undoAction(token),
+    )
+  }
+
+  const handleResetAll = () => {
+    const token = resetAllSettings()
+    onToast(
+      t(locale, 'allSettingsReset'),
+      'success',
+      undoAction(token),
+    )
+  }
 
   const tabs: { id: InspectorTab; label: string }[] = [
     { id: 'theme', label: t(locale, 'theme') },
@@ -108,6 +230,39 @@ export function Inspector({
       </div>
 
       <div className="inspector-scroll">
+        {toolRecommendation && toolName && (
+          <section
+            className="tool-recommendation-card"
+            data-testid="tool-recommendation-card"
+          >
+            <div className="tool-recommendation-title">
+              <span aria-hidden="true">
+                <Sparkles size={15} />
+              </span>
+              <strong>{t(locale, 'recommendedSettings')}</strong>
+            </div>
+            <p className="tool-recommendation-summary">
+              {getRecommendationSummary(locale, toolRecommendation)}
+            </p>
+            <p className="tool-recommendation-hint">
+              {t(locale, 'recommendedSettingsHint')}
+            </p>
+            <button
+              type="button"
+              disabled={!recommendationDirty}
+              onClick={handleRestoreRecommendation}
+            >
+              <RotateCcw size={14} />
+              {recommendationDirty
+                ? formatToolMessage(
+                    locale,
+                    'restoreRecommendedSettings',
+                    toolName,
+                  )
+                : t(locale, 'recommendedSettingsApplied')}
+            </button>
+          </section>
+        )}
         {activeTab === 'theme' && (
           <>
             <section className="control-section">
@@ -540,10 +695,15 @@ export function Inspector({
       </div>
 
       <footer className="inspector-footer">
-        <button type="button" onClick={resetSettings}>
+        <button
+          className="reset-all-settings"
+          type="button"
+          onClick={handleResetAll}
+        >
           <RotateCcw size={14} />
-          {t(locale, 'resetSettings')}
+          {t(locale, 'resetAllSettings')}
         </button>
+        <p>{t(locale, 'resetKeepsContent')}</p>
       </footer>
 
       <input

@@ -1,4 +1,12 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {
   BookOpen,
   CheckCircle2,
@@ -15,6 +23,7 @@ import {
   Settings2,
   ShieldCheck,
   Sun,
+  X,
 } from 'lucide-react'
 import { EditorPane } from './components/EditorPane'
 import { BrandMark } from './components/BrandMark'
@@ -34,10 +43,17 @@ import {
 import { PRODUCT } from './config/product'
 import { getToolSample } from './data/toolSamples'
 import { t } from './i18n'
-import { useAppStore, type RouteDefaults } from './store'
-import type { MobilePane, ToolId } from './types'
+import { getRouteDefaults } from './lib/toolDefaults'
+import { useAppStore } from './store'
+import type { MobilePane, ToastAction, ToolId } from './types'
 
 type InfoModal = 'help' | 'privacy' | 'shortcuts' | null
+
+interface ToastState {
+  message: string
+  kind: 'success' | 'error'
+  action?: ToastAction
+}
 
 const shortcutItems = [
   { key: 'S', action: { 'zh-CN': '打开导出', en: 'Open export', ja: '書き出しを開く' } },
@@ -85,6 +101,12 @@ function App() {
   const syncLocale = useAppStore((state) => state.syncLocale)
   const setToolId = useAppStore((state) => state.setToolId)
   const applyRouteDefaults = useAppStore((state) => state.applyRouteDefaults)
+  const pendingSettingsUndoToken = useAppStore(
+    (state) => state.pendingSettingsUndo?.token,
+  )
+  const discardSettingsReset = useAppStore(
+    (state) => state.discardSettingsReset,
+  )
   const setMarkdown = useAppStore((state) => state.setMarkdown)
   const setAppearance = useAppStore((state) => state.setAppearance)
   const toggleEditor = useAppStore((state) => state.toggleEditor)
@@ -107,10 +129,11 @@ function App() {
   const [changelogOpen, setChangelogOpen] = useState(
     () => window.location.hash === '#/changelog',
   )
-  const [toast, setToast] = useState<{
-    message: string
-    kind: 'success' | 'error'
-  }>()
+  const [toast, setToast] = useState<ToastState>()
+  const [toastPaused, setToastPaused] = useState(false)
+  const toastRef = useRef<ToastState | undefined>(undefined)
+  const queuedToastRef = useRef<ToastState | undefined>(undefined)
+  const previousToastResetTokenRef = useRef<number | undefined>(undefined)
   const darkAppearance = appearance === 'dark'
 
   const stats = useMemo(() => {
@@ -129,9 +152,41 @@ function App() {
     }
   }, [markdown])
 
-  const showToast = (message: string, kind: 'success' | 'error' = 'success') => {
-    setToast({ message, kind })
-  }
+  const advanceToast = useCallback(() => {
+    const nextToast = queuedToastRef.current
+    queuedToastRef.current = undefined
+    toastRef.current = nextToast
+    setToastPaused(false)
+    setToast(nextToast)
+  }, [])
+
+  const showToast = useCallback(
+    (
+      message: string,
+      kind: 'success' | 'error' = 'success',
+      action?: ToastAction,
+    ) => {
+      const nextToast = { message, kind, action }
+      const currentResetToken = toastRef.current?.action?.resetToken
+      const activeResetToken =
+        useAppStore.getState().pendingSettingsUndo?.token
+
+      if (
+        !action &&
+        currentResetToken !== undefined &&
+        currentResetToken === activeResetToken
+      ) {
+        queuedToastRef.current = nextToast
+        return
+      }
+
+      queuedToastRef.current = undefined
+      toastRef.current = nextToast
+      setToastPaused(false)
+      setToast(nextToast)
+    },
+    [],
+  )
 
   useEffect(() => {
     document.documentElement.lang = locale
@@ -163,41 +218,10 @@ function App() {
     const copy = getLocalizedPageContent(page, locale)
     const editorSample = getLocalizedEditorSample(page, locale)
     setToolId(page.id as ToolId)
-    let canvasDefaults: RouteDefaults['canvas']
-    if (page.defaults.canvasPreset === 'a4') {
-      canvasDefaults = { preset: 'a4', width: 794, minHeight: 1123 }
-    } else if (page.defaults.canvasPreset === 'xiaohongshu') {
-      canvasDefaults = {
-        preset: 'xiaohongshu',
-        width: 1080,
-        minHeight: 1440,
-        cornerRadius: 0,
-        shadow: false,
-        transparent: false,
-      }
-    } else if (page.defaults.canvasPreset === 'auto') {
-      canvasDefaults = { preset: 'auto', width: 1080, minHeight: 720 }
-    }
     applyRouteDefaults(
       page.id === 'visual-workspace'
         ? undefined
-        : {
-            canvas: canvasDefaults,
-            export: {
-              format: page.defaults.exportFormat,
-              ...(page.defaults.scale
-                ? { scale: page.defaults.scale }
-                : {}),
-              ...(page.defaults.splitHeight !== undefined
-                ? { splitHeight: page.defaults.splitHeight }
-                : {}),
-              ...(page.defaults.splitMode
-                ? { splitMode: page.defaults.splitMode }
-                : {}),
-            },
-            codeLanguage: page.defaults.codeLanguage,
-            inspectorTab: page.defaults.inspectorTab,
-          },
+        : getRouteDefaults(page.defaults),
     )
     const currentState = useAppStore.getState()
     const knownSamples = new Set([
@@ -244,10 +268,42 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (!toast) return
-    const timeout = setTimeout(() => setToast(undefined), 3600)
+    if (!toast || toastPaused) return
+    const timeout = setTimeout(
+      advanceToast,
+      toast.action ? 8000 : 3600,
+    )
     return () => clearTimeout(timeout)
-  }, [toast])
+  }, [advanceToast, toast, toastPaused])
+
+  const visibleResetToken = toast?.action?.resetToken
+
+  useEffect(() => {
+    const previousToken = previousToastResetTokenRef.current
+    if (
+      previousToken !== undefined &&
+      previousToken !== visibleResetToken
+    ) {
+      discardSettingsReset(previousToken)
+    }
+    previousToastResetTokenRef.current = visibleResetToken
+  }, [discardSettingsReset, visibleResetToken])
+
+  useEffect(() => {
+    if (
+      visibleResetToken !== undefined &&
+      visibleResetToken !== pendingSettingsUndoToken
+    ) {
+      const timeout = window.setTimeout(() => {
+        if (
+          toastRef.current?.action?.resetToken === visibleResetToken
+        ) {
+          advanceToast()
+        }
+      }, 0)
+      return () => window.clearTimeout(timeout)
+    }
+  }, [advanceToast, pendingSettingsUndoToken, visibleResetToken])
 
   useEffect(() => {
     if (!helpMenuOpen) return
@@ -583,7 +639,15 @@ function App() {
         )}
 
         {!inspectorCollapsed && (
-          <Inspector onOpenExport={openExport} onToast={showToast} />
+          <Inspector
+            onOpenExport={openExport}
+            onToast={showToast}
+            toolName={
+              resolvedPage.page.id === 'visual-workspace'
+                ? undefined
+                : currentPageCopy.h1
+            }
+          />
         )}
       </main>
 
@@ -719,11 +783,39 @@ function App() {
       {toast && (
         <div
           className={`toast toast-${toast.kind}`}
-          role={toast.kind === 'error' ? 'alert' : 'status'}
-          aria-live={toast.kind === 'error' ? 'assertive' : 'polite'}
+          onMouseEnter={() => setToastPaused(true)}
+          onMouseLeave={() => setToastPaused(false)}
+          onFocusCapture={() => setToastPaused(true)}
+          onBlurCapture={() => setToastPaused(false)}
         >
-          {toast.kind === 'success' ? <CheckCircle2 size={17} /> : null}
-          {toast.message}
+          <div
+            className="toast-live"
+            role={toast.kind === 'error' ? 'alert' : 'status'}
+            aria-live={toast.kind === 'error' ? 'assertive' : 'polite'}
+            aria-atomic="true"
+          >
+            {toast.kind === 'success' ? <CheckCircle2 size={17} /> : null}
+            <span>{toast.message}</span>
+          </div>
+          <div className="toast-controls">
+            {toast.action && (
+              <button
+                className="toast-action"
+                type="button"
+                onClick={toast.action.onClick}
+              >
+                {toast.action.label}
+              </button>
+            )}
+            <button
+              className="toast-dismiss"
+              type="button"
+              aria-label={t(locale, 'dismiss')}
+              onClick={advanceToast}
+            >
+              <X size={15} />
+            </button>
+          </div>
         </div>
       )}
     </div>

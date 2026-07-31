@@ -362,6 +362,356 @@ test('preserves homepage choices while purpose-specific routes apply defaults', 
   await expect(page.getByRole('button', { name: '2×' })).toHaveClass(/active/)
 })
 
+test('keeps the persistent workspace free of a purpose-specific recommendation reset', async ({
+  page,
+}) => {
+  await page.goto('/')
+
+  const inspector = page.locator('.inspector-pane')
+  await expect(inspector.getByTestId('tool-recommendation-card')).toHaveCount(0)
+  await expect(
+    inspector.getByRole('button', { name: '重置全部样式与导出设置' }),
+  ).toBeVisible()
+  await expect(
+    inspector.getByRole('button', { name: /恢复.*推荐设置/ }),
+  ).toHaveCount(0)
+})
+
+test('restores only the Xiaohongshu output contract while keeping personal styling', async ({
+  page,
+}) => {
+  await page.goto('/xiaohongshu-long-article/')
+  const inspector = page.locator('.inspector-pane')
+  const recommendation = inspector.getByTestId('tool-recommendation-card')
+
+  await inspector.getByRole('tab', { name: '主题' }).click()
+  await inspector.getByRole('button', { name: /晴海$/ }).click()
+  await inspector.getByLabel('字号').fill('34')
+
+  await inspector.getByRole('tab', { name: '画布' }).click()
+  await inspector.getByRole('button', { name: 'LinkedIn' }).click()
+  await inspector.getByLabel('内边距').fill('104')
+  await inspector.getByLabel('圆角').fill('32')
+  await inspector.getByLabel('纸张阴影').check()
+  await inspector.getByLabel('透明背景').check()
+
+  await inspector.getByRole('tab', { name: '格式' }).click()
+  await inspector.getByRole('button', { name: '自适应长图' }).click()
+  await inspector.getByLabel('分片高度').fill('2000')
+  await inspector.getByRole('button', { name: 'WEBP', exact: true }).click()
+  await inspector.getByRole('button', { name: '3×' }).click()
+  await inspector.getByLabel('图片质量').fill('0.73')
+  await inspector.getByLabel('文件名').fill('keep-my-name')
+
+  await recommendation
+    .getByRole('button', { name: '恢复“小红书长文图片”推荐设置' })
+    .click()
+
+  await expect(page.locator('.toast-live[role="status"]')).toContainText(
+    '已恢复“小红书长文图片”推荐设置',
+  )
+  await expect(page.getByRole('button', { name: '撤销' })).toBeVisible()
+  await expect(
+    recommendation.getByRole('button', { name: '当前已采用推荐设置' }),
+  ).toBeDisabled()
+  await expect(inspector.getByRole('tab', { name: '格式' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
+  await expect(
+    inspector.getByRole('button', { name: 'ZIP', exact: true }),
+  ).toHaveClass(/active/)
+  await expect(inspector.getByRole('button', { name: '1×' })).toHaveClass(
+    /active/,
+  )
+  await expect(
+    inspector.getByRole('button', { name: '固定页面' }),
+  ).toHaveAttribute('aria-pressed', 'true')
+  await expect(inspector.getByLabel('单页高度')).toHaveValue('1440')
+  await expect(inspector.getByLabel('图片质量')).toHaveValue('0.73')
+  await expect(inspector.getByLabel('文件名')).toHaveValue('keep-my-name')
+
+  await inspector.getByRole('tab', { name: '主题' }).click()
+  await expect(
+    inspector.getByRole('button', { name: /晴海$/ }),
+  ).toHaveClass(/active/)
+  await expect(inspector.getByLabel('字号')).toHaveValue('34')
+
+  await inspector.getByRole('tab', { name: '画布' }).click()
+  await expect(page.getByTestId('export-surface')).toHaveCSS('width', '1080px')
+  await expect(page.getByTestId('export-surface')).toHaveCSS(
+    'min-height',
+    '1440px',
+  )
+  await expect(inspector.getByLabel('内边距')).toHaveValue('104')
+  await expect(inspector.getByLabel('圆角')).toHaveValue('0')
+  await expect(inspector.getByLabel('纸张阴影')).not.toBeChecked()
+  await expect(inspector.getByLabel('透明背景')).not.toBeChecked()
+})
+
+test('resets Xiaohongshu styling with undo and leaves a clean workspace baseline', async ({
+  page,
+}) => {
+  const article = '# Undo-safe article\n\nThe document itself must survive resets.'
+  await page.goto('/')
+  await replaceMarkdown(page, article)
+  const inspector = page.locator('.inspector-pane')
+
+  await inspector.getByRole('tab', { name: '主题' }).click()
+  await inspector.getByRole('button', { name: /晴海$/ }).click()
+  await inspector.getByLabel('字号').fill('34')
+  await inspector.getByRole('tab', { name: '画布' }).click()
+  await inspector.getByRole('button', { name: 'LinkedIn' }).click()
+  await inspector.getByLabel('内边距').fill('104')
+  await inspector.getByRole('tab', { name: '格式' }).click()
+  await inspector.getByRole('button', { name: 'WEBP', exact: true }).click()
+  await inspector.getByRole('button', { name: '3×' }).click()
+  await inspector.getByLabel('图片质量').fill('0.76')
+
+  await page.goto('/xiaohongshu-long-article/')
+  const resetAll = inspector.getByRole('button', {
+    name: '重置全部样式与导出设置',
+  })
+  await resetAll.dblclick()
+
+  await expect(page.locator('.cm-content')).toContainText('Undo-safe article')
+  await expect(page.getByTestId('export-surface')).toHaveCSS('width', '1080px')
+  await expect(page.getByTestId('export-surface')).toHaveCSS(
+    'min-height',
+    '1440px',
+  )
+  await expect(
+    inspector.getByRole('button', { name: 'ZIP', exact: true }),
+  ).toHaveClass(/active/)
+  await expect(inspector.getByRole('button', { name: '1×' })).toHaveClass(
+    /active/,
+  )
+  await expect(
+    inspector.getByRole('button', { name: '固定页面' }),
+  ).toHaveAttribute('aria-pressed', 'true')
+  await expect(inspector.getByLabel('图片质量')).toHaveValue('0.92')
+  await expect(page.locator('.toast-live[role="status"]')).toContainText(
+    '已重置样式与导出设置',
+  )
+
+  await page.getByRole('button', { name: '撤销' }).click()
+  await expect(page.locator('.toast-live[role="status"]')).toHaveText(
+    '已撤销本次设置变更',
+  )
+  await inspector.getByRole('tab', { name: '主题' }).click()
+  await expect(
+    inspector.getByRole('button', { name: /晴海$/ }),
+  ).toHaveClass(/active/)
+  await expect(inspector.getByLabel('字号')).toHaveValue('34')
+  await inspector.getByRole('tab', { name: '画布' }).click()
+  await expect(inspector.getByLabel('内边距')).toHaveValue('104')
+  await inspector.getByRole('tab', { name: '格式' }).click()
+  await expect(inspector.getByLabel('图片质量')).toHaveValue('0.76')
+
+  await resetAll.click()
+  await page.goto('/')
+
+  await expect(page.locator('.cm-content')).toContainText('Undo-safe article')
+  await expect(page.getByTestId('export-surface')).toHaveCSS('width', '1080px')
+  await expect(page.getByTestId('export-surface')).toHaveCSS(
+    'min-height',
+    '720px',
+  )
+  await inspector.getByRole('tab', { name: '主题' }).click()
+  await expect(
+    inspector.getByRole('button', { name: /暖纸$/ }),
+  ).toHaveClass(/active/)
+  await expect(inspector.getByLabel('字号')).toHaveValue('28')
+  await inspector.getByRole('tab', { name: '画布' }).click()
+  await expect(inspector.getByLabel('内边距')).toHaveValue('72')
+  await inspector.getByRole('tab', { name: '格式' }).click()
+  await expect(
+    inspector.getByRole('button', { name: 'PNG', exact: true }),
+  ).toHaveClass(/active/)
+  await expect(inspector.getByRole('button', { name: '2×' })).toHaveClass(
+    /active/,
+  )
+  await expect(inspector.getByLabel('图片质量')).toHaveValue('0.92')
+})
+
+test('restores the long-image and PDF route matrices without touching unrelated options', async ({
+  page,
+}) => {
+  const inspector = page.locator('.inspector-pane')
+
+  await page.goto('/markdown-long-image/')
+  await inspector.getByRole('button', { name: '固定页面' }).click()
+  await inspector.getByLabel('单页高度').fill('2000')
+  await inspector.getByRole('button', { name: 'WEBP', exact: true }).click()
+  await inspector.getByRole('button', { name: '3×' }).click()
+  await inspector.getByLabel('图片质量').fill('0.66')
+  await inspector.getByRole('tab', { name: '画布' }).click()
+  await inspector.getByRole('button', { name: 'LinkedIn' }).click()
+  await inspector
+    .getByTestId('tool-recommendation-card')
+    .getByRole('button', { name: '恢复“Markdown 转长图”推荐设置' })
+    .click()
+
+  await expect(inspector.getByRole('tab', { name: '画布' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
+  await expect(page.getByTestId('export-surface')).toHaveCSS('width', '1080px')
+  await expect(page.getByTestId('export-surface')).toHaveCSS(
+    'min-height',
+    '720px',
+  )
+  await inspector.getByRole('tab', { name: '格式' }).click()
+  await expect(
+    inspector.getByRole('button', { name: 'ZIP', exact: true }),
+  ).toHaveClass(/active/)
+  await expect(inspector.getByRole('button', { name: '2×' })).toHaveClass(
+    /active/,
+  )
+  await expect(
+    inspector.getByRole('button', { name: '自适应长图' }),
+  ).toHaveAttribute('aria-pressed', 'true')
+  await expect(inspector.getByLabel('分片高度')).toHaveValue('4096')
+  await expect(inspector.getByLabel('图片质量')).toHaveValue('0.66')
+
+  await page.goto('/markdown-to-pdf/')
+  await page.locator('.top-export').click()
+  let exportDialog = page.getByRole('dialog', { name: '导出' })
+  await exportDialog.getByLabel('纸张').selectOption('letter')
+  await exportDialog.getByRole('button', { name: '横向' }).click()
+  await exportDialog.getByLabel('页边距').fill('18')
+  await exportDialog.getByRole('button', { name: '关闭' }).click()
+
+  const pdfRecommendation = inspector.getByTestId('tool-recommendation-card')
+  await expect(
+    pdfRecommendation.getByRole('button', {
+      name: '恢复“Markdown 转 PDF”推荐设置',
+    }),
+  ).toBeEnabled()
+  await inspector.getByRole('button', { name: 'WEBP', exact: true }).click()
+  await inspector.getByRole('button', { name: '3×' }).click()
+  await inspector.getByRole('tab', { name: '画布' }).click()
+  await inspector.getByRole('button', { name: 'LinkedIn' }).click()
+  await pdfRecommendation
+    .getByRole('button', { name: '恢复“Markdown 转 PDF”推荐设置' })
+    .click()
+
+  await expect(inspector.getByRole('tab', { name: '画布' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
+  await expect(page.getByTestId('export-surface')).toHaveCSS('width', '794px')
+  await expect(page.getByTestId('export-surface')).toHaveCSS(
+    'min-height',
+    '1123px',
+  )
+  await inspector.getByRole('tab', { name: '格式' }).click()
+  await expect(
+    inspector.getByRole('button', { name: 'PDF', exact: true }),
+  ).toHaveClass(/active/)
+  await expect(inspector.getByRole('button', { name: '3×' })).toHaveClass(
+    /active/,
+  )
+  await expect(inspector.getByLabel('图片质量')).toHaveValue('0.66')
+
+  await page.locator('.top-export').click()
+  exportDialog = page.getByRole('dialog', { name: '导出' })
+  await expect(exportDialog.getByLabel('纸张')).toHaveValue('a4')
+  await expect(
+    exportDialog.getByRole('button', { name: '横向' }),
+  ).toHaveClass(/active/)
+  await expect(exportDialog.getByLabel('页边距')).toHaveValue('18')
+})
+
+test('keeps code language and the active Inspector tab through both reset actions', async ({
+  page,
+}) => {
+  await page.goto('/code-to-image/')
+  const inspector = page.locator('.inspector-pane')
+
+  await page.getByLabel('代码语言').selectOption('go')
+  await inspector.getByRole('button', { name: 'LinkedIn' }).click()
+  await inspector.getByRole('tab', { name: '主题' }).click()
+  await inspector.getByRole('button', { name: /终端$/ }).click()
+  await inspector
+    .getByTestId('tool-recommendation-card')
+    .getByRole('button', { name: '恢复“代码转图片”推荐设置' })
+    .click()
+
+  await expect(page.getByLabel('代码语言')).toHaveValue('go')
+  await expect(inspector.getByRole('tab', { name: '主题' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
+  await expect(
+    inspector.getByRole('button', { name: /终端$/ }),
+  ).toHaveClass(/active/)
+
+  await inspector
+    .getByRole('button', { name: '重置全部样式与导出设置' })
+    .click()
+  await expect(page.getByLabel('代码语言')).toHaveValue('go')
+  await expect(inspector.getByRole('tab', { name: '主题' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
+  await expect(
+    inspector.getByRole('button', { name: /暖纸$/ }),
+  ).toHaveClass(/active/)
+})
+
+test('localizes dynamic recommendation actions and success toasts', async ({
+  page,
+}) => {
+  const cases = [
+    {
+      path: '/xiaohongshu-long-article/',
+      restore: '恢复“小红书长文图片”推荐设置',
+      restored: '已恢复“小红书长文图片”推荐设置',
+      undo: '撤销',
+      dismiss: '关闭提示',
+    },
+    {
+      path: '/en/markdown-long-image/',
+      restore: 'Restore recommended settings for “Markdown to Long Image”',
+      restored: 'Recommended settings restored for “Markdown to Long Image”',
+      undo: 'Undo',
+      dismiss: 'Dismiss notification',
+    },
+    {
+      path: '/ja/markdown-to-pdf/',
+      restore: '「Markdown を PDF に変換」の推奨設定に戻す',
+      restored: '「Markdown を PDF に変換」の推奨設定に戻しました',
+      undo: '元に戻す',
+      dismiss: '通知を閉じる',
+    },
+  ]
+
+  for (const localized of cases) {
+    await page.goto(localized.path)
+    const inspector = page.locator('.inspector-pane')
+    await inspector.locator('.inspector-tabs [role="tab"]').last().click()
+    await inspector.getByRole('button', { name: 'WEBP', exact: true }).click()
+
+    const restore = inspector
+      .getByTestId('tool-recommendation-card')
+      .getByRole('button', { name: localized.restore, exact: true })
+    await expect(restore).toBeEnabled()
+    await restore.click()
+
+    await expect(page.locator('.toast-live[role="status"]')).toHaveText(
+      localized.restored,
+    )
+    await expect(
+      page.getByRole('button', { name: localized.undo, exact: true }),
+    ).toBeVisible()
+    await page
+      .getByRole('button', { name: localized.dismiss, exact: true })
+      .click()
+    await expect(page.locator('.toast')).toHaveCount(0)
+  }
+})
+
 test('returns a noindex 404 for unknown paths', async ({ page }) => {
   await page.goto('/missing-tool/')
 

@@ -18,6 +18,7 @@ import type {
   InspectorTab,
   Locale,
   MobilePane,
+  RouteDefaults,
   SignatureConfig,
   ToolId,
   ThemeId,
@@ -43,14 +44,9 @@ type PersistedAppState = PersistedDocumentState & {
   localePreference: Locale | null
 }
 
-export interface RouteDefaults {
-  canvas?: Partial<CanvasConfig>
-  export?: Partial<ExportConfig>
-  codeLanguage?: string
-  inspectorTab?: InspectorTab
-}
-
 interface RouteDefaultsSnapshot {
+  toolId: ToolId
+  defaults: RouteDefaults
   canvas: CanvasConfig
   export: ExportConfig
   codeLanguage: string
@@ -60,6 +56,32 @@ interface RouteDefaultsSnapshot {
   codeLanguageOverridden: boolean
   inspectorTabOverridden: boolean
 }
+
+interface ResettableSettingsSnapshot {
+  themeId: ThemeId
+  canvas: CanvasConfig
+  signature: SignatureConfig
+  export: ExportConfig
+  customCss: string
+  routeDefaultsSnapshot: RouteDefaultsSnapshot | null
+}
+
+interface PendingSettingsUndoBase {
+  token: number
+  toolId: ToolId
+  before: ResettableSettingsSnapshot
+}
+
+type PendingSettingsUndo =
+  | (PendingSettingsUndoBase & {
+      kind: 'recommendation'
+    })
+  | (PendingSettingsUndoBase & {
+      kind: 'full-reset'
+      after: ResettableSettingsSnapshot
+    })
+
+let nextSettingsUndoToken = 1
 
 const keysOf = <Value extends object>(patch?: Partial<Value>) =>
   patch ? (Object.keys(patch) as (keyof Value)[]) : []
@@ -73,6 +95,67 @@ const restoreOverriddenKeys = <Value extends object>(
     (restored, key) => ({ ...restored, [key]: original[key] }),
     current,
   )
+
+const cloneRouteDefaults = (defaults: RouteDefaults): RouteDefaults => ({
+  canvas: defaults.canvas ? { ...defaults.canvas } : undefined,
+  export: defaults.export ? { ...defaults.export } : undefined,
+  codeLanguage: defaults.codeLanguage,
+  inspectorTab: defaults.inspectorTab,
+})
+
+const cloneRouteDefaultsSnapshot = (
+  snapshot: RouteDefaultsSnapshot | null,
+): RouteDefaultsSnapshot | null =>
+  snapshot
+    ? {
+        ...snapshot,
+        defaults: cloneRouteDefaults(snapshot.defaults),
+        canvas: { ...snapshot.canvas },
+        export: { ...snapshot.export },
+        canvasKeys: [...snapshot.canvasKeys],
+        exportKeys: [...snapshot.exportKeys],
+      }
+    : null
+
+const captureResettableSettings = (state: {
+  themeId: ThemeId
+  canvas: CanvasConfig
+  signature: SignatureConfig
+  export: ExportConfig
+  customCss: string
+  routeDefaultsSnapshot: RouteDefaultsSnapshot | null
+}): ResettableSettingsSnapshot => ({
+  themeId: state.themeId,
+  canvas: { ...state.canvas },
+  signature: { ...state.signature },
+  export: { ...state.export },
+  customCss: state.customCss,
+  routeDefaultsSnapshot: cloneRouteDefaultsSnapshot(
+    state.routeDefaultsSnapshot,
+  ),
+})
+
+const hasSameResettableSettings = (
+  state: ResettableSettingsSnapshot,
+  expected: ResettableSettingsSnapshot,
+) =>
+  state.themeId === expected.themeId &&
+  state.canvas === expected.canvas &&
+  state.signature === expected.signature &&
+  state.export === expected.export &&
+  state.customCss === expected.customCss &&
+  state.routeDefaultsSnapshot === expected.routeDefaultsSnapshot
+
+const patchDiffers = <Value extends object>(
+  current: Value,
+  patch?: Partial<Value>,
+) =>
+  patch
+    ? Object.entries(patch).some(
+        ([key, value]) =>
+          (current as Record<string, unknown>)[key] !== value,
+      )
+    : false
 
 export const defaultCanvas: CanvasConfig = {
   preset: 'auto',
@@ -130,8 +213,13 @@ export const defaultDocumentState: DocumentState = {
 interface AppStore extends DocumentState {
   localePreference: Locale | null
   routeDefaultsSnapshot: RouteDefaultsSnapshot | null
+  pendingSettingsUndo: PendingSettingsUndo | null
   setToolId: (toolId: ToolId) => void
   applyRouteDefaults: (defaults?: RouteDefaults) => void
+  restoreToolRecommendations: () => number | undefined
+  resetAllSettings: () => number
+  undoSettingsReset: (token: number) => boolean
+  discardSettingsReset: (token: number) => void
   setInputKind: (inputKind: InputKind) => void
   setMarkdown: (markdown: string) => void
   setCodeLanguage: (codeLanguage: string) => void
@@ -147,7 +235,6 @@ interface AppStore extends DocumentState {
   toggleInspector: () => void
   setMobilePane: (mobilePane: MobilePane) => void
   setInspectorTab: (inspectorTab: InspectorTab) => void
-  resetSettings: () => void
 }
 
 export const useAppStore = create<AppStore>()(
@@ -156,9 +243,11 @@ export const useAppStore = create<AppStore>()(
       ...defaultDocumentState,
       localePreference: null,
       routeDefaultsSnapshot: null,
+      pendingSettingsUndo: null,
       setToolId: (toolId) =>
         set((state) => ({
           toolId,
+          pendingSettingsUndo: null,
           ...switchToolInput(state, getToolInputKind(toolId)),
         })),
       applyRouteDefaults: (defaults) =>
@@ -188,13 +277,18 @@ export const useAppStore = create<AppStore>()(
               : state.inspectorTab
 
           if (!defaults) {
-            if (!snapshot) return state
+            if (!snapshot) {
+              return state.pendingSettingsUndo
+                ? { pendingSettingsUndo: null }
+                : state
+            }
             return {
               canvas: baseCanvas,
               export: baseExport,
               codeLanguage: baseCodeLanguage,
               inspectorTab: baseInspectorTab,
               routeDefaultsSnapshot: null,
+              pendingSettingsUndo: null,
             }
           }
 
@@ -211,6 +305,8 @@ export const useAppStore = create<AppStore>()(
             codeLanguage: defaults.codeLanguage ?? baseCodeLanguage,
             inspectorTab: defaults.inspectorTab ?? baseInspectorTab,
             routeDefaultsSnapshot: {
+              toolId: state.toolId,
+              defaults: cloneRouteDefaults(defaults),
               canvas: baseCanvas,
               export: baseExport,
               codeLanguage: baseCodeLanguage,
@@ -220,10 +316,129 @@ export const useAppStore = create<AppStore>()(
               codeLanguageOverridden,
               inspectorTabOverridden,
             },
+            pendingSettingsUndo: null,
           }
         }),
+      restoreToolRecommendations: () => {
+        let token: number | undefined
+        set((state) => {
+          const snapshot = state.routeDefaultsSnapshot
+          if (!snapshot || snapshot.toolId !== state.toolId) return state
+          if (
+            !patchDiffers(state.canvas, snapshot.defaults.canvas) &&
+            !patchDiffers(state.export, snapshot.defaults.export)
+          ) {
+            return state
+          }
+
+          token = nextSettingsUndoToken
+          nextSettingsUndoToken += 1
+          return {
+            canvas: { ...state.canvas, ...snapshot.defaults.canvas },
+            export: { ...state.export, ...snapshot.defaults.export },
+            pendingSettingsUndo: {
+              kind: 'recommendation',
+              token,
+              toolId: state.toolId,
+              before: captureResettableSettings(state),
+            },
+          }
+        })
+        return token
+      },
+      resetAllSettings: () => {
+        let token = 0
+        set((state) => {
+          const pending = state.pendingSettingsUndo
+          if (
+            pending?.kind === 'full-reset' &&
+            pending.toolId === state.toolId &&
+            hasSameResettableSettings(state, pending.after)
+          ) {
+            token = pending.token
+            return state
+          }
+
+          token = nextSettingsUndoToken
+          nextSettingsUndoToken += 1
+          const baseCanvas = { ...defaultCanvas }
+          const baseExport = {
+            ...defaultExport,
+            filename: suggestFilename(state.markdown),
+          }
+          const activeSnapshot =
+            state.routeDefaultsSnapshot?.toolId === state.toolId
+              ? state.routeDefaultsSnapshot
+              : null
+          const defaults = activeSnapshot?.defaults
+          const nextCanvas = { ...baseCanvas, ...defaults?.canvas }
+          const nextSignature = { ...defaultSignature }
+          const nextExport = { ...baseExport, ...defaults?.export }
+          const nextRouteDefaultsSnapshot = activeSnapshot
+            ? {
+                ...cloneRouteDefaultsSnapshot(activeSnapshot)!,
+                canvas: baseCanvas,
+                export: baseExport,
+              }
+            : null
+          const after: ResettableSettingsSnapshot = {
+            themeId: defaultDocumentState.themeId,
+            canvas: nextCanvas,
+            signature: nextSignature,
+            export: nextExport,
+            customCss: '',
+            routeDefaultsSnapshot: nextRouteDefaultsSnapshot,
+          }
+
+          return {
+            ...after,
+            pendingSettingsUndo: {
+              kind: 'full-reset',
+              token,
+              toolId: state.toolId,
+              before: captureResettableSettings(state),
+              after,
+            },
+          }
+        })
+        return token
+      },
+      undoSettingsReset: (token) => {
+        let restored = false
+        set((state) => {
+          const pending = state.pendingSettingsUndo
+          if (
+            !pending ||
+            pending.token !== token ||
+            pending.toolId !== state.toolId
+          ) {
+            return state
+          }
+          restored = true
+          return {
+            ...pending.before,
+            canvas: { ...pending.before.canvas },
+            signature: { ...pending.before.signature },
+            export: { ...pending.before.export },
+            routeDefaultsSnapshot: cloneRouteDefaultsSnapshot(
+              pending.before.routeDefaultsSnapshot,
+            ),
+            pendingSettingsUndo: null,
+          }
+        })
+        return restored
+      },
+      discardSettingsReset: (token) =>
+        set((state) =>
+          state.pendingSettingsUndo?.token === token
+            ? { pendingSettingsUndo: null }
+            : state,
+        ),
       setInputKind: (inputKind) =>
-        set((state) => switchToolInput(state, inputKind)),
+        set((state) => ({
+          ...switchToolInput(state, inputKind),
+          pendingSettingsUndo: null,
+        })),
       setMarkdown: (markdown) =>
         set((state) => {
           const currentSuggestion = suggestFilename(state.markdown)
@@ -241,6 +456,7 @@ export const useAppStore = create<AppStore>()(
             export: shouldRefreshFilename
               ? { ...state.export, filename: suggestFilename(markdown) }
               : state.export,
+            pendingSettingsUndo: null,
           }
         }),
       setCodeLanguage: (codeLanguage) => set({ codeLanguage }),
@@ -254,32 +470,31 @@ export const useAppStore = create<AppStore>()(
             ...state.canvas,
             backgroundColor: getTheme(themeId).surface,
           },
+          pendingSettingsUndo: null,
         })),
       updateCanvas: (patch) =>
-        set((state) => ({ canvas: { ...state.canvas, ...patch } })),
+        set((state) => ({
+          canvas: { ...state.canvas, ...patch },
+          pendingSettingsUndo: null,
+        })),
       updateSignature: (patch) =>
-        set((state) => ({ signature: { ...state.signature, ...patch } })),
+        set((state) => ({
+          signature: { ...state.signature, ...patch },
+          pendingSettingsUndo: null,
+        })),
       updateExport: (patch) =>
-        set((state) => ({ export: { ...state.export, ...patch } })),
-      setCustomCss: (customCss) => set({ customCss }),
+        set((state) => ({
+          export: { ...state.export, ...patch },
+          pendingSettingsUndo: null,
+        })),
+      setCustomCss: (customCss) =>
+        set({ customCss, pendingSettingsUndo: null }),
       toggleEditor: () =>
         set((state) => ({ editorCollapsed: !state.editorCollapsed })),
       toggleInspector: () =>
         set((state) => ({ inspectorCollapsed: !state.inspectorCollapsed })),
       setMobilePane: (mobilePane) => set({ mobilePane }),
       setInspectorTab: (inspectorTab) => set({ inspectorTab }),
-      resetSettings: () =>
-        set((state) => ({
-          ...state,
-          themeId: defaultDocumentState.themeId,
-          canvas: { ...defaultCanvas },
-          signature: { ...defaultSignature },
-          export: {
-            ...defaultExport,
-            filename: suggestFilename(state.markdown),
-          },
-          customCss: '',
-        })),
     }),
     {
       name: 'md2img-state-v1',

@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises'
 const useEnglish = async (page: import('@playwright/test').Page) => {
   await page.getByRole('combobox').click()
   await page.getByRole('option', { name: 'English' }).click()
+  await page.waitForURL(/\/en\/$/)
 }
 
 test.beforeEach(async ({ page }) => {
