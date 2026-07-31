@@ -9,6 +9,35 @@ interface ChangelogEntry {
 
 export const changelogEntries: ChangelogEntry[] = [
   {
+    date: '2026-07-31',
+    version: '2026.07.31',
+    title: {
+      'zh-CN': '小红书长文固定分页',
+      en: 'Fixed-page Xiaohongshu long-form exports',
+      ja: '小紅書向け長文の固定ページ書き出し',
+    },
+    items: {
+      'zh-CN': [
+        '新增“小红书长文图片”工具，将 Markdown 和 GFM 表格智能分页为 1080×1440 PNG ZIP。',
+        '预览会显示真实分页边界、预计页数和越界内容提醒，并与导出共用同一分页计划。',
+        '长图 ZIP 新增“自适应长图 / 固定页面”模式，分片高度可直接设置为 1440。',
+        '明确普通“小红书图文”只是单张最小画布；长文图片需解压后从“上传图文”发布，不能导入原生“写长文”。',
+      ],
+      en: [
+        'Added Xiaohongshu Long Article Images, with smart 1080×1440 PNG ZIP pagination for Markdown and GFM tables.',
+        'The preview now shows the actual page boundaries, estimated page count, and oversized-content warnings from the same plan used for export.',
+        'Sliced ZIP export now offers Adaptive slices and Fixed pages, including a directly editable 1440px page height.',
+        'Clarified that the regular Xiaohongshu canvas is a single-image minimum size; exported long-form images must be unzipped and published as an image post, not imported into the native long-article editor.',
+      ],
+      ja: [
+        'Markdown と GFM 表を 1080×1440 の PNG ZIP に自動改ページする「小紅書長文画像」を追加しました。',
+        'プレビューと書き出しで同じ改ページ計画を使い、実際の境界、推定ページ数、ページ領域を超えるコンテンツの警告を表示します。',
+        '分割 ZIP に「可変長の分割 / 固定ページ」を追加し、ページ高を 1440px に直接設定できるようにしました。',
+        '通常の小紅書キャンバスは単一画像の最小サイズです。長文画像は ZIP を展開して画像投稿として公開し、標準の長文エディターには読み込めません。',
+      ],
+    },
+  },
+  {
     date: '2026-07-30',
     version: '2026.07',
     title: {

@@ -85,15 +85,26 @@ describe('getSplitPagePlan', () => {
       contentBudget: 900,
       groups: [{ start: 0, end: 2, height: 520, startTop: 100 }],
       oversizedBlocks: [],
+      horizontalOverflow: false,
     })
   })
 
-  it('deducts surface padding, signature height, and content padding-bottom', () => {
+  it('deducts every surface and content box inset plus the signature', () => {
     const surface = document.createElement('section')
     surface.style.paddingTop = '72px'
     surface.style.paddingBottom = '72px'
+    surface.style.borderTop = '3px solid'
+    surface.style.borderBottom = '3px solid'
     surface.innerHTML = `
-      <article data-export-content style="padding-bottom: 48px">
+      <article
+        data-export-content
+        style="
+          padding: 20px 0 48px;
+          border-top: 2px solid;
+          border-bottom: 2px solid;
+          margin: 6px 0;
+        "
+      >
         <p>Body</p>
       </article>
       <footer data-export-signature>Signature</footer>
@@ -115,7 +126,30 @@ describe('getSplitPagePlan', () => {
     )
 
     expect(plan.pageHeight).toBe(1440)
-    expect(plan.contentBudget).toBe(1204)
+    expect(plan.contentBudget).toBe(1162)
+  })
+
+  it('marks a short block oversized when content padding consumes the page', () => {
+    const surface = document.createElement('section')
+    surface.innerHTML = `
+      <article data-export-content style="padding-top: 1200px">
+        <p>Short body</p>
+      </article>
+    `
+    document.body.append(surface)
+
+    mockLayoutSize(surface, 1080, 1600)
+    mockRectangle(surface, rectangle(0, 1600))
+    const body = surface.querySelector<HTMLElement>('p')!
+    mockRectangle(body, rectangle(1200, 80))
+
+    const plan = getSplitPagePlan(
+      surface,
+      config({ splitHeight: 1000, splitMode: 'fixed' }),
+    )
+
+    expect(plan.contentBudget).toBe(1)
+    expect(plan.oversizedBlocks).toEqual([{ index: 0, height: 80 }])
   })
 
   it('reports an oversized block and keeps it on its own page', () => {
@@ -145,7 +179,59 @@ describe('getSplitPagePlan', () => {
         { start: 1, end: 2, height: 100, startTop: 760 },
       ],
       oversizedBlocks: [{ index: 0, height: 700 }],
+      horizontalOverflow: false,
     })
+  })
+
+  it('reports content wider than the logical canvas', () => {
+    const surface = document.createElement('section')
+    surface.innerHTML = `
+      <article data-export-content>
+        <p>Wide content</p>
+      </article>
+    `
+    document.body.append(surface)
+
+    mockLayoutSize(surface, 1080, 900)
+    Object.defineProperty(surface, 'scrollWidth', {
+      configurable: true,
+      value: 1440,
+    })
+    mockRectangle(surface, rectangle(0, 900))
+    mockRectangle(
+      surface.querySelector<HTMLElement>('p')!,
+      rectangle(40, 100, 1440),
+    )
+
+    expect(getSplitPagePlan(surface, config()).horizontalOverflow).toBe(true)
+  })
+
+  it('detects nested content that is clipped by its own block', () => {
+    const surface = document.createElement('section')
+    surface.innerHTML = `
+      <article data-export-content>
+        <table><tbody><tr><td>Unbreakable content</td></tr></tbody></table>
+      </article>
+    `
+    document.body.append(surface)
+
+    mockLayoutSize(surface, 1080, 900)
+    Object.defineProperty(surface, 'scrollWidth', {
+      configurable: true,
+      value: 1080,
+    })
+    mockRectangle(surface, rectangle(0, 900))
+    const table = surface.querySelector<HTMLElement>('table')!
+    const cell = surface.querySelector<HTMLElement>('td')!
+    mockLayoutSize(table, 900, 100)
+    mockLayoutSize(cell, 120, 80)
+    Object.defineProperty(cell, 'scrollWidth', {
+      configurable: true,
+      value: 360,
+    })
+    mockRectangle(table, rectangle(40, 100, 900))
+
+    expect(getSplitPagePlan(surface, config()).horizontalOverflow).toBe(true)
   })
 
   it('respects forced page breaks in both split modes', () => {

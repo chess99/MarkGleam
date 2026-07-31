@@ -7,7 +7,7 @@
 - GitHub Flavored Markdown、代码高亮、KaTeX 数学公式和 Mermaid 图表
 - 八套原创内容主题、独立界面明暗模式、自定义字体、背景、画布尺寸和作用域内自定义 CSS
 - PNG、JPEG、WebP、SVG、PDF、剪贴板和长图分片 ZIP
-- Markdown 长图、PDF、Mermaid、公式、代码、GitHub README 和批量转换专用页面
+- Markdown 长图、小红书长文图片、PDF、Mermaid、公式、代码、GitHub README 和批量转换专用页面
 - X、LinkedIn、微信公众号头图等画布预设；PDF 支持页眉、页脚和页码
 - Markdown 文件、图片拖放导入和浏览器本地自动保存
 - 简体中文、English、日本語界面；首次访问跟随浏览器语言，主动选择后记住偏好
@@ -44,8 +44,14 @@ npx playwright install chromium firefox webkit
 
 - 复制图片依赖 `ClipboardItem` 和安全上下文，不支持时会自动下载 PNG。
 - 远程图片受原站 CORS 策略约束。将图片下载到本地后拖入编辑器最可靠。
-- 超长图片可能超过浏览器画布上限，MarkGleam 会自动改为分片 ZIP；品牌署名只出现在最后一张分片中。
+- “自适应长图”分片用于规避浏览器画布上限，每张高度会随内容变化；“固定页面”会补齐为统一高度。两种模式都优先在内容块之间分页，品牌署名只出现在最后一张。
 - 本地上传的图片和字体保存在 IndexedDB；Markdown 与设置保存在 localStorage。
+
+## 小红书长文图片
+
+顶部“小红书长文图片”工具会把 Markdown 按内容块分页，默认导出一组 `1080×1440`、`1×` 的 PNG 并打包为 ZIP。预览中的虚线和页码表示每一页从哪个标题、段落或表格开始；独立一行的 `<!-- pagebreak -->` 可以手动开始新页。
+
+下载后需要先解压 ZIP，再按文件名顺序从小红书“上传图文”选择 PNG。该产物不是小红书原生“写长文”工程，不能直接导入原生编辑器。右侧普通“小红书图文”画布只设置 `1080×1440` 的最小画布，适合单张内容，不会自动把长文变成固定页面。
 
 ## GitHub Pages 部署
 

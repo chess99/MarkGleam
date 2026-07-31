@@ -188,7 +188,7 @@ describe('ExportDialog', () => {
 
     await waitFor(() =>
       expect(onToast).toHaveBeenCalledWith(
-        'A content block is taller than the usable page area. Reduce type or padding, or split the content manually.',
+        'Content exceeds the usable page area. Reduce type or padding, adjust wide content, or split it manually.',
         'error',
       ),
     )

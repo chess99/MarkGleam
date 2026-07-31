@@ -219,6 +219,11 @@ export function Inspector({
                 ))}
               </div>
               <p className="preset-hint">{t(locale, 'canvasPresetHint')}</p>
+              {canvas.preset === 'xiaohongshu' && (
+                <p className="preset-hint preset-hint-platform">
+                  {t(locale, 'xiaohongshuCanvasHint')}
+                </p>
+              )}
             </section>
 
             <section className="control-section control-stack">

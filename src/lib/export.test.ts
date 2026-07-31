@@ -17,6 +17,7 @@ const pdfConfig: ExportConfig = {
   pdfHeader: 'Project brief',
   pdfFooter: 'Internal',
   pdfPageNumbers: true,
+  splitMode: 'compact',
   splitHeight: 4096,
 }
 

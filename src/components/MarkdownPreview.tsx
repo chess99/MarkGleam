@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -10,9 +11,14 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import type { Components } from 'react-markdown'
 import { getTheme } from '../data/themes'
+import { t } from '../i18n'
 import { loadAssetUrl } from '../lib/assets'
 import { scopeCustomCss } from '../lib/css'
 import { remarkPageBreak } from '../lib/pagebreak'
+import {
+  getSplitPagePlan,
+  type SplitPagePlan,
+} from '../lib/splitPagination'
 import { useAppStore } from '../store'
 import type { InputKind } from '../types'
 import { AssetImage } from './AssetImage'
@@ -25,6 +31,11 @@ interface MarkdownPreviewProps {
   surfaceRef: React.RefObject<HTMLDivElement | null>
   onSurfaceReady?: (surface: HTMLDivElement) => void
   onHeightChange?: (height: number) => void
+  onSplitPlanChange?: (summary?: {
+    pages: number
+    oversizedBlocks: number
+    pageHeight: number
+  }) => void
   source?: string
   inputKind?: InputKind
   codeLanguage?: string
@@ -65,6 +76,7 @@ export function MarkdownPreview({
   surfaceRef,
   onSurfaceReady,
   onHeightChange,
+  onSplitPlanChange,
   source,
   inputKind: explicitInputKind,
   codeLanguage: explicitCodeLanguage,
@@ -79,11 +91,14 @@ export function MarkdownPreview({
   const themeId = useAppStore((state) => state.themeId)
   const canvas = useAppStore((state) => state.canvas)
   const signature = useAppStore((state) => state.signature)
+  const exportConfig = useAppStore((state) => state.export)
   const locale = useAppStore((state) => state.locale)
   const customCss = useAppStore((state) => state.customCss)
   const containerRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(1)
   const [surfaceHeight, setSurfaceHeight] = useState(canvas.minHeight)
+  const [surfaceNode, setSurfaceNode] = useState<HTMLDivElement | null>(null)
+  const [splitPlan, setSplitPlan] = useState<SplitPagePlan>()
   const [scopedCss, setScopedCss] = useState('')
   const [backgroundAsset, setBackgroundAsset] = useState<{
     id: string
@@ -113,6 +128,18 @@ export function MarkdownPreview({
   const markdownPluginsLoading =
     inputKind === 'markdown' &&
     ((needsKatex && !katexPlugin) || (needsHighlight && !highlightPlugin))
+  const splitPreviewEnabled = exportConfig.format === 'split-zip'
+  const fixedPagePreview =
+    splitPreviewEnabled && exportConfig.splitMode === 'fixed'
+
+  const setSurface = useCallback(
+    (node: HTMLDivElement | null) => {
+      surfaceRef.current = node
+      setSurfaceNode(node)
+      if (node) onSurfaceReady?.(node)
+    },
+    [onSurfaceReady, surfaceRef],
+  )
 
   useEffect(() => {
     if (!needsKatex || katexPlugin) return
@@ -209,6 +236,49 @@ export function MarkdownPreview({
     return () => observer.disconnect()
   }, [canvas.width, canvas.minHeight, onHeightChange, surfaceRef])
 
+  useEffect(() => {
+    if (!splitPreviewEnabled || !surfaceNode) {
+      onSplitPlanChange?.(undefined)
+      return
+    }
+
+    let frame = 0
+    const update = () => {
+      const plan = getSplitPagePlan(surfaceNode, exportConfig)
+      setSplitPlan(plan)
+      onSplitPlanChange?.({
+        pages: Math.max(1, plan.groups.length),
+        oversizedBlocks: plan.oversizedBlocks.length,
+        pageHeight: plan.pageHeight,
+      })
+    }
+    const schedule = () => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(update)
+    }
+
+    update()
+    const resizeObserver = new ResizeObserver(schedule)
+    const mutationObserver = new MutationObserver(schedule)
+    resizeObserver.observe(surfaceNode)
+    mutationObserver.observe(surfaceNode, {
+      attributes: true,
+      childList: true,
+      characterData: true,
+      subtree: true,
+    })
+    return () => {
+      cancelAnimationFrame(frame)
+      resizeObserver.disconnect()
+      mutationObserver.disconnect()
+    }
+  }, [
+    exportConfig,
+    onSplitPlanChange,
+    splitPreviewEnabled,
+    surfaceNode,
+  ])
+
   const backgroundUrl =
     backgroundAsset && backgroundAsset.id === canvas.backgroundAssetId
       ? backgroundAsset.url
@@ -248,6 +318,15 @@ export function MarkdownPreview({
 
   return (
     <div className="preview-container" ref={containerRef}>
+      {splitPreviewEnabled &&
+        fixedPagePreview &&
+        splitPlan &&
+        (splitPlan.oversizedBlocks.length > 0 ||
+          splitPlan.horizontalOverflow) && (
+          <div className="split-preview-warning" role="status">
+            {t(locale, 'oversizedContent')}
+          </div>
+        )}
       <div
         className="preview-spacer"
         style={{
@@ -260,12 +339,11 @@ export function MarkdownPreview({
           style={{ transform: `scale(${scale})`, width: `${canvas.width}px` }}
         >
           <div
-            ref={(node) => {
-              surfaceRef.current = node
-              if (node) onSurfaceReady?.(node)
-            }}
+            ref={setSurface}
             id={surfaceId}
-            className={`export-surface ${canvas.shadow ? 'has-shadow' : ''}`}
+            className={`export-surface ${
+              canvas.shadow ? 'has-shadow' : ''
+            } ${fixedPagePreview ? 'fixed-page-surface' : ''}`}
             style={style}
             data-testid="export-surface"
             data-markgleam-export-surface
@@ -305,6 +383,56 @@ export function MarkdownPreview({
               transparent={canvas.transparent}
             />
           </div>
+          {splitPreviewEnabled && splitPlan && (
+            <div
+              className={`split-preview-overlay ${
+                splitPlan.oversizedBlocks.length > 0 ||
+                splitPlan.horizontalOverflow
+                  ? 'has-warning'
+                  : ''
+              }`}
+              style={{
+                width: `${canvas.width}px`,
+                height: `${surfaceHeight}px`,
+                borderRadius: `${canvas.cornerRadius}px`,
+              }}
+              data-testid="split-preview-overlay"
+              data-page-count={Math.max(1, splitPlan.groups.length)}
+              data-split-mode={exportConfig.splitMode}
+              aria-hidden="true"
+            >
+              {(splitPlan.groups.length > 0
+                ? splitPlan.groups
+                : [
+                    {
+                      start: 0,
+                      end: 0,
+                      height: 0,
+                      startTop: canvas.paddingY,
+                    },
+                  ]
+              ).map((group, index, groups) => {
+                const hasOversizedBlock = splitPlan.oversizedBlocks.some(
+                  ({ index: blockIndex }) =>
+                    blockIndex >= group.start && blockIndex < group.end,
+                )
+                return (
+                  <div
+                    className={`split-preview-guide ${
+                      hasOversizedBlock ? 'has-warning' : ''
+                    }`}
+                    style={{ top: `${Math.max(0, group.startTop)}px` }}
+                    data-page={index + 1}
+                    key={`${group.start}-${group.end}-${index}`}
+                  >
+                    <span>
+                      {index + 1} / {groups.length}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>

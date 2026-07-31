@@ -15,6 +15,9 @@ import {
   calculateSafePartHeight,
   groupBlockHeights,
 } from './pagination'
+import { getSplitPagePlan } from './splitPagination'
+
+export { calculateSplitContentBudget } from './splitPagination'
 
 const MAX_CANVAS_PIXELS = 64_000_000
 
@@ -35,6 +38,13 @@ export interface GeneratedArtifact {
   blob: Blob
   filename: string
   format: ImageArtifactFormat
+}
+
+export class FixedPageOverflowError extends Error {
+  constructor() {
+    super('A content block is taller than the fixed page content area')
+    this.name = 'FixedPageOverflowError'
+  }
 }
 
 const throwIfAborted = (signal?: AbortSignal) => {
@@ -311,43 +321,6 @@ const getPageGroups = (
   return groupBlockHeights(heights, availableHeight, forcedBreaks, gapsBefore)
 }
 
-export const calculateSplitContentBudget = (
-  safePartHeight: number,
-  verticalPadding: number,
-  signatureOuterHeight: number,
-) =>
-  Math.max(
-    1,
-    Math.floor(safePartHeight - verticalPadding - signatureOuterHeight),
-  )
-
-const getSplitContentBudget = (
-  surface: HTMLElement,
-  config: ExportConfig,
-) => {
-  const surfaceStyle = getComputedStyle(surface)
-  const verticalPadding =
-    Number.parseFloat(surfaceStyle.paddingTop || '0') +
-    Number.parseFloat(surfaceStyle.paddingBottom || '0')
-  const signature = surface.querySelector<HTMLElement>(
-    '[data-export-signature]',
-  )
-  const content = surface.querySelector<HTMLElement>('[data-export-content]')
-  const signatureStyle = signature ? getComputedStyle(signature) : undefined
-  const contentStyle = content ? getComputedStyle(content) : undefined
-  const signatureOuterHeight = signature
-    ? signature.offsetHeight +
-      Number.parseFloat(contentStyle?.paddingBottom || '0') +
-      Number.parseFloat(signatureStyle?.marginBottom || '0')
-    : 0
-
-  return calculateSplitContentBudget(
-    calculateSafePartHeight(config.splitHeight, config.scale),
-    verticalPadding,
-    signatureOuterHeight,
-  )
-}
-
 export const decoratePdfSegment = (
   segment: HTMLElement,
   config: ExportConfig,
@@ -412,11 +385,14 @@ const exportSplitZip = async (
   baseName: string,
   options: RunExportOptions,
 ) => {
-  const groups = getPageGroups(
-    surface,
-    config,
-    getSplitContentBudget(surface, config),
-  )
+  const plan = getSplitPagePlan(surface, config)
+  if (
+    config.splitMode === 'fixed' &&
+    (plan.oversizedBlocks.length > 0 || plan.horizontalOverflow)
+  ) {
+    throw new FixedPageOverflowError()
+  }
+  const groups = plan.groups
   const parts =
     groups.length > 0 ? groups : [{ start: 0, end: 9999, height: 0 }]
 
@@ -429,12 +405,32 @@ const exportSplitZip = async (
       surface,
       group.start,
       group.end,
-      0,
+      config.splitMode === 'fixed' ? plan.pageHeight : 0,
       index === parts.length - 1,
     )
     try {
       await waitForRenderReady(segment)
-      const dataUrl = await domToPng(segment, screenshotOptions(segment, config))
+      const fixedWidth =
+        segment.offsetWidth ||
+        segment.clientWidth ||
+        Number.parseFloat(getComputedStyle(segment).width)
+      const fixedContentWidth = segment.clientWidth || fixedWidth
+      if (
+        config.splitMode === 'fixed' &&
+        (Math.max(segment.scrollHeight, segment.offsetHeight) >
+          plan.pageHeight + 1 ||
+          !Number.isFinite(fixedWidth) ||
+          fixedWidth < 1 ||
+          segment.scrollWidth > fixedContentWidth + 1)
+      ) {
+        throw new FixedPageOverflowError()
+      }
+      const imageOptions = screenshotOptions(segment, config)
+      if (config.splitMode === 'fixed') {
+        imageOptions.width = fixedWidth
+        imageOptions.height = plan.pageHeight
+      }
+      const dataUrl = await domToPng(segment, imageOptions)
       zip.file(
         `${baseName}-${String(index + 1).padStart(2, '0')}.png`,
         await dataUrlToBlob(dataUrl),
@@ -579,7 +575,16 @@ export const runExport = async (
       (estimatedPixels > MAX_CANVAS_PIXELS &&
         !['pdf', 'svg', 'clipboard'].includes(config.format))
     ) {
-      const parts = await exportSplitZip(snapshot, config, baseName, options)
+      const splitConfig =
+        config.format === 'split-zip'
+          ? config
+          : { ...config, splitMode: 'compact' as const }
+      const parts = await exportSplitZip(
+        snapshot,
+        splitConfig,
+        baseName,
+        options,
+      )
       return { filename: `${baseName}-parts.zip`, format: 'split-zip', parts }
     }
 

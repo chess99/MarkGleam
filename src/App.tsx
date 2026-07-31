@@ -34,7 +34,7 @@ import {
 import { PRODUCT } from './config/product'
 import { getToolSample } from './data/toolSamples'
 import { t } from './i18n'
-import { useAppStore } from './store'
+import { useAppStore, type RouteDefaults } from './store'
 import type { MobilePane, ToolId } from './types'
 
 type InfoModal = 'help' | 'privacy' | 'shortcuts' | null
@@ -77,21 +77,19 @@ function App() {
   const inputKind = useAppStore((state) => state.inputKind)
   const appearance = useAppStore((state) => state.appearance)
   const canvas = useAppStore((state) => state.canvas)
+  const exportConfig = useAppStore((state) => state.export)
   const editorCollapsed = useAppStore((state) => state.editorCollapsed)
   const inspectorCollapsed = useAppStore((state) => state.inspectorCollapsed)
   const mobilePane = useAppStore((state) => state.mobilePane)
   const setLocale = useAppStore((state) => state.setLocale)
   const syncLocale = useAppStore((state) => state.syncLocale)
   const setToolId = useAppStore((state) => state.setToolId)
+  const applyRouteDefaults = useAppStore((state) => state.applyRouteDefaults)
   const setMarkdown = useAppStore((state) => state.setMarkdown)
-  const setCodeLanguage = useAppStore((state) => state.setCodeLanguage)
   const setAppearance = useAppStore((state) => state.setAppearance)
   const toggleEditor = useAppStore((state) => state.toggleEditor)
   const toggleInspector = useAppStore((state) => state.toggleInspector)
   const setMobilePane = useAppStore((state) => state.setMobilePane)
-  const setInspectorTab = useAppStore((state) => state.setInspectorTab)
-  const updateCanvas = useAppStore((state) => state.updateCanvas)
-  const updateExport = useAppStore((state) => state.updateExport)
   const surfaceRef = useRef<HTMLDivElement>(null)
   const [exportSurface, setExportSurface] = useState<HTMLDivElement | null>(null)
   const [outputHeight, setOutputHeight] = useState(canvas.minHeight)
@@ -99,6 +97,11 @@ function App() {
   const helpMenuRef = useRef<HTMLDivElement>(null)
   const helpButtonRef = useRef<HTMLButtonElement>(null)
   const [exportOpen, setExportOpen] = useState(false)
+  const [splitPreview, setSplitPreview] = useState<{
+    pages: number
+    oversizedBlocks: number
+    pageHeight: number
+  }>()
   const [infoModal, setInfoModal] = useState<InfoModal>(null)
   const [helpMenuOpen, setHelpMenuOpen] = useState(false)
   const [changelogOpen, setChangelogOpen] = useState(
@@ -145,6 +148,7 @@ function App() {
 
   useEffect(() => {
     if (!resolvedPage) {
+      applyRouteDefaults()
       document.title =
         locale === 'zh-CN'
           ? `页面不存在 · ${PRODUCT.name}`
@@ -159,6 +163,42 @@ function App() {
     const copy = getLocalizedPageContent(page, locale)
     const editorSample = getLocalizedEditorSample(page, locale)
     setToolId(page.id as ToolId)
+    let canvasDefaults: RouteDefaults['canvas']
+    if (page.defaults.canvasPreset === 'a4') {
+      canvasDefaults = { preset: 'a4', width: 794, minHeight: 1123 }
+    } else if (page.defaults.canvasPreset === 'xiaohongshu') {
+      canvasDefaults = {
+        preset: 'xiaohongshu',
+        width: 1080,
+        minHeight: 1440,
+        cornerRadius: 0,
+        shadow: false,
+        transparent: false,
+      }
+    } else if (page.defaults.canvasPreset === 'auto') {
+      canvasDefaults = { preset: 'auto', width: 1080, minHeight: 720 }
+    }
+    applyRouteDefaults(
+      page.id === 'visual-workspace'
+        ? undefined
+        : {
+            canvas: canvasDefaults,
+            export: {
+              format: page.defaults.exportFormat,
+              ...(page.defaults.scale
+                ? { scale: page.defaults.scale }
+                : {}),
+              ...(page.defaults.splitHeight !== undefined
+                ? { splitHeight: page.defaults.splitHeight }
+                : {}),
+              ...(page.defaults.splitMode
+                ? { splitMode: page.defaults.splitMode }
+                : {}),
+            },
+            codeLanguage: page.defaults.codeLanguage,
+            inspectorTab: page.defaults.inspectorTab,
+          },
+    )
     const currentState = useAppStore.getState()
     const knownSamples = new Set([
       getToolSample(currentState.inputKind),
@@ -169,24 +209,6 @@ function App() {
       ]),
     ])
     if (knownSamples.has(currentState.markdown)) setMarkdown(editorSample)
-    // The homepage is the general editor, so keep a returning user's export
-    // and canvas choices. Purpose-specific routes intentionally apply the
-    // settings needed to make their advertised workflow usable immediately.
-    if (page.id !== 'visual-workspace') {
-      updateExport({
-        format: page.defaults.exportFormat,
-        ...(page.defaults.splitHeight
-          ? { splitHeight: page.defaults.splitHeight }
-          : {}),
-      })
-      if (page.defaults.inspectorTab) setInspectorTab(page.defaults.inspectorTab)
-      if (page.defaults.codeLanguage) setCodeLanguage(page.defaults.codeLanguage)
-      if (page.defaults.canvasPreset === 'a4') {
-        updateCanvas({ preset: 'a4', width: 794, minHeight: 1123 })
-      } else if (page.defaults.canvasPreset === 'auto') {
-        updateCanvas({ preset: 'auto', width: 1080, minHeight: 720 })
-      }
-    }
 
     document.title = copy.title
     document
@@ -202,14 +224,11 @@ function App() {
         `${PRODUCT.origin}${getToolPagePath(resolvedPage.page, locale)}`,
       )
   }, [
+    applyRouteDefaults,
     locale,
     resolvedPage,
-    setCodeLanguage,
-    setInspectorTab,
     setMarkdown,
     setToolId,
-    updateCanvas,
-    updateExport,
   ])
 
   useEffect(() => {
@@ -361,6 +380,13 @@ function App() {
   }
 
   const currentPageCopy = getLocalizedPageContent(resolvedPage.page, locale)
+  const splitPreviewActive = exportConfig.format === 'split-zip'
+  const splitPreviewLabel =
+    splitPreviewActive && splitPreview
+      ? exportConfig.splitMode === 'fixed'
+        ? `${t(locale, 'estimatedPages')} ${splitPreview.pages} · ${t(locale, 'fixedPageSize')} ${canvas.width * exportConfig.scale} × ${splitPreview.pageHeight * exportConfig.scale}px`
+        : `${t(locale, 'estimatedParts')} ${splitPreview.pages} · ${canvas.width * exportConfig.scale} × ≤${splitPreview.pageHeight * exportConfig.scale}px`
+      : undefined
 
   return (
     <div className="app-shell" data-appearance={appearance}>
@@ -531,9 +557,9 @@ function App() {
               <span>{t(locale, 'preview')}</span>
             </div>
             <div className="preview-meta">
-              <span>
-                {canvas.width} × {Math.max(canvas.minHeight, outputHeight)}
-                px
+              <span data-testid="preview-output-summary">
+                {splitPreviewLabel ??
+                  `${canvas.width} × ${Math.max(canvas.minHeight, outputHeight)}px`}
               </span>
             </div>
           </header>
@@ -541,6 +567,7 @@ function App() {
             surfaceRef={surfaceRef}
             onSurfaceReady={setExportSurface}
             onHeightChange={setOutputHeight}
+            onSplitPlanChange={setSplitPreview}
           />
         </section>
 
@@ -571,7 +598,9 @@ function App() {
         </div>
         <div className="status-output">
           <ImageIcon size={14} />
-          {t(locale, 'output')} {canvas.width} × {canvas.minHeight}+ px
+          {t(locale, 'output')}{' '}
+          {splitPreviewLabel ??
+            `${canvas.width} × ${canvas.minHeight}+ px`}
         </div>
         <div className="saved-status">
           <CheckCircle2 size={15} />

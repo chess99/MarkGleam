@@ -1,7 +1,12 @@
 import { createRef, useEffect } from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useAppStore } from '../store'
+import {
+  defaultCanvas,
+  defaultExport,
+  defaultSignature,
+  useAppStore,
+} from '../store'
 import { MarkdownPreview } from './MarkdownPreview'
 
 const mermaidLifecycle = vi.hoisted(() => ({
@@ -29,6 +34,9 @@ describe('MarkdownPreview', () => {
       markdown:
         '# Hello\n\n**strong** and $E = mc^2$\n\n| A | B |\n| - | - |\n| 1 | 2 |',
       themeId: 'paper',
+      canvas: { ...defaultCanvas },
+      signature: { ...defaultSignature },
+      export: { ...defaultExport },
       customCss: '',
     })
   })
@@ -149,6 +157,39 @@ describe('MarkdownPreview', () => {
       'true',
     )
     expect(screen.getByText('Third')).toBeInTheDocument()
+  })
+
+  it('shows split guides outside the export surface and reports the shared page plan', async () => {
+    useAppStore.setState({
+      export: {
+        ...defaultExport,
+        format: 'split-zip',
+        scale: 1,
+        splitMode: 'fixed',
+        splitHeight: 1440,
+      },
+    })
+    const surfaceRef = createRef<HTMLDivElement>()
+    const onSplitPlanChange = vi.fn()
+
+    render(
+      <MarkdownPreview
+        surfaceRef={surfaceRef}
+        onSplitPlanChange={onSplitPlanChange}
+      />,
+    )
+
+    const overlay = await screen.findByTestId('split-preview-overlay')
+    expect(overlay).toHaveAttribute('data-split-mode', 'fixed')
+    expect(overlay).toHaveAttribute('data-page-count', '1')
+    expect(surfaceRef.current?.contains(overlay)).toBe(false)
+    await waitFor(() =>
+      expect(onSplitPlanChange).toHaveBeenCalledWith({
+        pages: 1,
+        oversizedBlocks: 0,
+        pageHeight: 1440,
+      }),
+    )
   })
 
   it('keeps Mermaid mounted when the preview rerenders', () => {

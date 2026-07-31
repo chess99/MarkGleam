@@ -936,6 +936,23 @@ select:focus-visible {
   scrollbar-gutter: stable;
 }
 
+.split-preview-warning {
+  position: sticky;
+  top: 0;
+  z-index: 12;
+  max-width: 680px;
+  margin: 0 auto 14px;
+  padding: 9px 12px;
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+  border: 1px solid color-mix(in srgb, var(--danger) 38%, var(--line));
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--panel) 92%, var(--danger));
+  box-shadow: var(--shadow-sm);
+}
+
 .preview-spacer {
   position: relative;
   margin: 0 auto;
@@ -946,6 +963,56 @@ select:focus-visible {
   top: 0;
   left: 0;
   transform-origin: top left;
+}
+
+.split-preview-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: var(--canvas-radius);
+}
+
+.split-preview-guide {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  border-top: 3px dashed rgba(242, 95, 58, 0.9);
+}
+
+.split-preview-guide:first-child {
+  border-top-color: transparent;
+}
+
+.split-preview-guide > span {
+  position: absolute;
+  top: -18px;
+  right: 14px;
+  min-width: 58px;
+  padding: 5px 9px;
+  color: #fff;
+  font-family: Inter, ui-sans-serif, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  border-radius: 999px;
+  background: rgba(223, 79, 44, 0.94);
+  box-shadow: 0 3px 10px rgba(80, 39, 25, 0.22);
+}
+
+.split-preview-guide:first-child > span {
+  top: 12px;
+}
+
+.split-preview-guide.has-warning {
+  border-top-color: var(--danger);
+}
+
+.split-preview-guide.has-warning > span {
+  background: var(--danger);
 }
 
 .export-surface {
@@ -1338,6 +1405,19 @@ select:focus-visible {
   border-right: 0;
 }
 
+.fixed-page-surface .markdown-body table {
+  table-layout: fixed;
+  overflow: visible;
+}
+
+.fixed-page-surface .markdown-body th,
+.fixed-page-surface .markdown-body td {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: break-word;
+}
+
 .markdown-body hr {
   height: 1px;
   margin: 1.7em 0;
@@ -1630,6 +1710,13 @@ input[type="range"] {
   color: var(--muted);
   font-size: 10px;
   line-height: 1.5;
+}
+
+.preset-hint-platform {
+  padding: 7px 8px;
+  color: var(--control-ink);
+  border-radius: 7px;
+  background: var(--coral-soft);
 }
 
 .preset-shape {

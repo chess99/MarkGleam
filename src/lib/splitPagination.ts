@@ -29,6 +29,8 @@ export interface SplitPagePlan {
   contentBudget: number
   groups: SplitPageGroup[]
   oversizedBlocks: OversizedSplitBlock[]
+  /** True when content extends beyond the fixed logical canvas width. */
+  horizontalOverflow: boolean
 }
 
 interface LogicalBlockRect {
@@ -107,19 +109,23 @@ const getLogicalElementHeight = (
   )
 }
 
+const overflowsHorizontally = (element: HTMLElement) =>
+  element.clientWidth > 0 &&
+  element.scrollWidth > element.clientWidth + 1
+
 export const calculateSplitContentBudget = (
   safePartHeight: number,
-  verticalPadding: number,
+  surfaceVerticalInsets: number,
   signatureHeight: number,
-  contentPaddingBottom = 0,
+  contentOuterHeight = 0,
 ) =>
   Math.max(
     1,
     Math.floor(
       safePartHeight -
-        verticalPadding -
+        surfaceVerticalInsets -
         signatureHeight -
-        contentPaddingBottom,
+        contentOuterHeight,
     ),
   )
 
@@ -134,9 +140,20 @@ export const getSplitPagePlan = (
   const surfaceRect = surface.getBoundingClientRect()
   const scaleY = getLogicalScaleY(surface, surfaceRect)
   const surfaceStyle = getComputedStyle(surface)
-  const verticalPadding =
+  const surfaceWidth =
+    surface.clientWidth ||
+    surface.offsetWidth ||
+    cssLength(surfaceStyle.width)
+  const horizontalOverflow =
+    (surfaceWidth > 0 && surface.scrollWidth > surfaceWidth + 1) ||
+    [...surface.querySelectorAll<HTMLElement>('*')].some(
+      overflowsHorizontally,
+    )
+  const surfaceVerticalInsets =
     cssLength(surfaceStyle.paddingTop) +
-    cssLength(surfaceStyle.paddingBottom)
+    cssLength(surfaceStyle.paddingBottom) +
+    cssLength(surfaceStyle.borderTopWidth) +
+    cssLength(surfaceStyle.borderBottomWidth)
 
   const content = surface.querySelector<HTMLElement>(
     '[data-export-content]',
@@ -144,8 +161,14 @@ export const getSplitPagePlan = (
   const signature = surface.querySelector<HTMLElement>(
     '[data-export-signature]',
   )
-  const contentPaddingBottom = content
-    ? cssLength(getComputedStyle(content).paddingBottom)
+  const contentStyle = content ? getComputedStyle(content) : undefined
+  const contentOuterHeight = contentStyle
+    ? cssLength(contentStyle.paddingTop) +
+      cssLength(contentStyle.paddingBottom) +
+      cssLength(contentStyle.borderTopWidth) +
+      cssLength(contentStyle.borderBottomWidth) +
+      cssLength(contentStyle.marginTop) +
+      cssLength(contentStyle.marginBottom)
     : 0
   const signatureStyle = signature
     ? getComputedStyle(signature)
@@ -156,9 +179,9 @@ export const getSplitPagePlan = (
     cssLength(signatureStyle?.marginBottom)
   const contentBudget = calculateSplitContentBudget(
     pageHeight,
-    verticalPadding,
+    surfaceVerticalInsets,
     signatureHeight,
-    contentPaddingBottom,
+    contentOuterHeight,
   )
 
   if (!content) {
@@ -167,6 +190,7 @@ export const getSplitPagePlan = (
       contentBudget,
       groups: [],
       oversizedBlocks: [],
+      horizontalOverflow,
     }
   }
 
@@ -205,5 +229,6 @@ export const getSplitPagePlan = (
     contentBudget,
     groups,
     oversizedBlocks,
+    horizontalOverflow,
   }
 }

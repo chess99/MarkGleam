@@ -1,6 +1,14 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 import JSZip from 'jszip'
+
+const replaceMarkdown = async (page: Page, markdown: string) => {
+  const editor = page.getByRole('textbox', { name: 'Markdown' })
+  await editor.click()
+  await editor.press('Control+A')
+  await editor.press('Backspace')
+  await page.keyboard.insertText(markdown)
+}
 
 test('opens English tool URLs directly even when Chinese was saved', async ({
   page,
@@ -174,6 +182,106 @@ test('offers purpose-specific social canvas presets', async ({ page }) => {
 
   await page.getByRole('button', { name: '微信头图' }).click()
   await expect(page.getByTestId('export-surface')).toHaveCSS('width', '900px')
+
+  await page.getByRole('button', { name: '小红书图文' }).click()
+  await expect(page.getByText(/这里只设置单张图文的 1080×1440/)).toBeVisible()
+})
+
+test('exports Xiaohongshu long-form pages as fixed 1080 by 1440 PNG files', async ({
+  page,
+  browserName,
+}, testInfo) => {
+  test.skip(browserName !== 'chromium', 'Raster dimensions are covered once')
+  await page.goto('/xiaohongshu-long-article/')
+
+  const columns = Array.from(
+    { length: 20 },
+    (_, index) => `C${String(index + 1).padStart(2, '0')}`,
+  )
+  const wideTable = [
+    `| ${columns.join(' | ')} |`,
+    `| ${columns.map(() => '---').join(' | ')} |`,
+    `| ${columns.map((_, index) => index + 1).join(' | ')} |`,
+  ].join('\n')
+  const sections = Array.from(
+    { length: 18 },
+    (_, index) =>
+      `## 第 ${index + 1} 节\n\n这是一段用于验证固定分页的正文。每一页都应保持相同尺寸，并在完整内容块之间换页。`,
+  ).join('\n\n')
+  await replaceMarkdown(
+    page,
+    `# 小红书长文分页测试\n\n${wideTable}\n\n${sections}`,
+  )
+
+  await expect(page.locator('#tool-page-title')).toHaveText('小红书长文图片')
+  await expect(page.getByTestId('export-surface')).toHaveCSS('width', '1080px')
+  await expect(page.getByTestId('export-surface')).toHaveCSS(
+    'min-height',
+    '1440px',
+  )
+  await expect
+    .poll(() =>
+      page
+        .getByTestId('export-surface')
+        .evaluate((surface) => surface.scrollWidth - surface.clientWidth),
+    )
+    .toBe(0)
+  const splitOverlay = page.getByTestId('split-preview-overlay')
+  await expect(splitOverlay).toHaveAttribute(
+    'data-split-mode',
+    'fixed',
+  )
+  const previewPageCount = Number(
+    await splitOverlay.getAttribute('data-page-count'),
+  )
+  await expect(page.getByTestId('preview-output-summary')).toContainText(
+    '每张 1080 × 1440px',
+  )
+  await expect(page.getByLabel('单页高度')).toHaveValue('1440')
+  await expect(page.getByRole('button', { name: '固定页面' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(
+    page.getByTestId('export-surface').getByRole('table'),
+  ).toHaveCount(1)
+
+  await page.locator('.top-export').click()
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: '下载' }).click(),
+  ])
+  const output = testInfo.outputPath('xiaohongshu-pages.zip')
+  await download.saveAs(output)
+  const zip = await JSZip.loadAsync(await readFile(output))
+  const entries = Object.values(zip.files).filter((entry) => !entry.dir)
+
+  expect(entries.length).toBe(previewPageCount)
+  expect(entries.length).toBeGreaterThan(1)
+  for (const entry of entries) {
+    const png = await entry.async('nodebuffer')
+    expect(png.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a')
+    expect(png.readUInt32BE(16)).toBe(1080)
+    expect(png.readUInt32BE(20)).toBe(1440)
+  }
+})
+
+test('warns in the preview when custom content spacing cannot fit a fixed page', async ({
+  page,
+  browserName,
+}) => {
+  test.skip(browserName !== 'chromium', 'Advanced layout measurement is covered once')
+  await page.goto('/xiaohongshu-long-article/')
+  await replaceMarkdown(page, '# Short article')
+  await page.getByRole('tab', { name: '画布' }).click()
+  await page.getByRole('button', { name: /高级样式/ }).click()
+  await page
+    .getByLabel('自定义 CSS')
+    .fill(':root { padding-top: 1200px; }')
+
+  await expect(page.getByRole('status')).toContainText(
+    '有内容块超出单页可用区域',
+  )
 })
 
 test('keeps limits and GitHub privacy boundaries visible on mobile', async ({
@@ -213,16 +321,45 @@ test('preserves homepage choices while purpose-specific routes apply defaults', 
   await page.goto('/')
   await page.getByRole('tab', { name: '格式' }).click()
   await page.getByRole('button', { name: 'WEBP', exact: true }).click()
+  await page.getByRole('button', { name: '3×' }).click()
+  await page.getByRole('tab', { name: '画布' }).click()
+  await page.getByRole('button', { name: 'LinkedIn' }).click()
   await page.reload()
   await page.getByRole('tab', { name: '格式' }).click()
   await expect(
     page.getByRole('complementary').getByRole('button', { name: 'WEBP' }),
   ).toHaveClass(/active/)
+  await expect(page.getByRole('button', { name: '3×' })).toHaveClass(/active/)
+  await expect(page.getByTestId('export-surface')).toHaveCSS('width', '1200px')
+
+  await page.goto('/xiaohongshu-long-article/')
+  await expect(page.getByRole('button', { name: '固定页面' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(page.getByRole('button', { name: '1×' })).toHaveClass(/active/)
+
+  await page.goto('/')
+  await page.getByRole('tab', { name: '格式' }).click()
+  await expect(
+    page.getByRole('complementary').getByRole('button', { name: 'WEBP' }),
+  ).toHaveClass(/active/)
+  await expect(page.getByRole('button', { name: '3×' })).toHaveClass(/active/)
+  await expect(page.getByTestId('export-surface')).toHaveCSS('width', '1200px')
+
+  await page.goto('/markdown-to-image/')
+  await page.getByRole('tab', { name: '格式' }).click()
+  await expect(page.getByRole('button', { name: '3×' })).toHaveClass(/active/)
 
   await page.goto('/markdown-long-image/')
   await expect(
     page.getByRole('complementary').getByRole('button', { name: 'ZIP' }),
   ).toHaveClass(/active/)
+  await expect(page.getByRole('button', { name: '自适应长图' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(page.getByRole('button', { name: '2×' })).toHaveClass(/active/)
 })
 
 test('returns a noindex 404 for unknown paths', async ({ page }) => {

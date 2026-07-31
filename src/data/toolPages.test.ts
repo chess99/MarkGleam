@@ -61,6 +61,7 @@ describe('tool page samples', () => {
 
   it('configures the Xiaohongshu image-post workflow without implying native article import', () => {
     const xiaohongshu = page('xiaohongshu-long-article')
+    const longImage = page('markdown-long-image')
 
     expect(xiaohongshu.h1['zh-CN']).toBe('小红书长文图片')
     expect(xiaohongshu.intro['zh-CN']).toContain('上传图文')
@@ -80,5 +81,10 @@ describe('tool page samples', () => {
     )
     expect(resolveToolPage('/en/xiaohongshu-long-article/')?.locale).toBe('en')
     expect(resolveToolPage('/ja/xiaohongshu-long-article/')?.locale).toBe('ja')
+    expect(longImage.defaults).toMatchObject({
+      scale: 2,
+      splitHeight: 4096,
+      splitMode: 'compact',
+    })
   })
 })

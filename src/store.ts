@@ -43,6 +43,37 @@ type PersistedAppState = PersistedDocumentState & {
   localePreference: Locale | null
 }
 
+export interface RouteDefaults {
+  canvas?: Partial<CanvasConfig>
+  export?: Partial<ExportConfig>
+  codeLanguage?: string
+  inspectorTab?: InspectorTab
+}
+
+interface RouteDefaultsSnapshot {
+  canvas: CanvasConfig
+  export: ExportConfig
+  codeLanguage: string
+  inspectorTab: InspectorTab
+  canvasKeys: (keyof CanvasConfig)[]
+  exportKeys: (keyof ExportConfig)[]
+  codeLanguageOverridden: boolean
+  inspectorTabOverridden: boolean
+}
+
+const keysOf = <Value extends object>(patch?: Partial<Value>) =>
+  patch ? (Object.keys(patch) as (keyof Value)[]) : []
+
+const restoreOverriddenKeys = <Value extends object>(
+  current: Value,
+  original: Value,
+  keys: readonly (keyof Value)[],
+) =>
+  keys.reduce<Value>(
+    (restored, key) => ({ ...restored, [key]: original[key] }),
+    current,
+  )
+
 export const defaultCanvas: CanvasConfig = {
   preset: 'auto',
   width: 1080,
@@ -68,6 +99,7 @@ export const defaultExport: ExportConfig = {
   pdfHeader: '',
   pdfFooter: '',
   pdfPageNumbers: true,
+  splitMode: 'compact',
   splitHeight: 4096,
 }
 
@@ -97,7 +129,9 @@ export const defaultDocumentState: DocumentState = {
 
 interface AppStore extends DocumentState {
   localePreference: Locale | null
+  routeDefaultsSnapshot: RouteDefaultsSnapshot | null
   setToolId: (toolId: ToolId) => void
+  applyRouteDefaults: (defaults?: RouteDefaults) => void
   setInputKind: (inputKind: InputKind) => void
   setMarkdown: (markdown: string) => void
   setCodeLanguage: (codeLanguage: string) => void
@@ -121,11 +155,73 @@ export const useAppStore = create<AppStore>()(
     (set) => ({
       ...defaultDocumentState,
       localePreference: null,
+      routeDefaultsSnapshot: null,
       setToolId: (toolId) =>
         set((state) => ({
           toolId,
           ...switchToolInput(state, getToolInputKind(toolId)),
         })),
+      applyRouteDefaults: (defaults) =>
+        set((state) => {
+          const snapshot = state.routeDefaultsSnapshot
+          const baseCanvas = snapshot
+            ? restoreOverriddenKeys(
+                state.canvas,
+                snapshot.canvas,
+                snapshot.canvasKeys,
+              )
+            : state.canvas
+          const baseExport = snapshot
+            ? restoreOverriddenKeys(
+                state.export,
+                snapshot.export,
+                snapshot.exportKeys,
+              )
+            : state.export
+          const baseCodeLanguage =
+            snapshot?.codeLanguageOverridden
+              ? snapshot.codeLanguage
+              : state.codeLanguage
+          const baseInspectorTab =
+            snapshot?.inspectorTabOverridden
+              ? snapshot.inspectorTab
+              : state.inspectorTab
+
+          if (!defaults) {
+            if (!snapshot) return state
+            return {
+              canvas: baseCanvas,
+              export: baseExport,
+              codeLanguage: baseCodeLanguage,
+              inspectorTab: baseInspectorTab,
+              routeDefaultsSnapshot: null,
+            }
+          }
+
+          const canvasKeys = keysOf(defaults.canvas)
+          const exportKeys = keysOf(defaults.export)
+          const codeLanguageOverridden =
+            defaults.codeLanguage !== undefined
+          const inspectorTabOverridden =
+            defaults.inspectorTab !== undefined
+
+          return {
+            canvas: { ...baseCanvas, ...defaults.canvas },
+            export: { ...baseExport, ...defaults.export },
+            codeLanguage: defaults.codeLanguage ?? baseCodeLanguage,
+            inspectorTab: defaults.inspectorTab ?? baseInspectorTab,
+            routeDefaultsSnapshot: {
+              canvas: baseCanvas,
+              export: baseExport,
+              codeLanguage: baseCodeLanguage,
+              inspectorTab: baseInspectorTab,
+              canvasKeys,
+              exportKeys,
+              codeLanguageOverridden,
+              inspectorTabOverridden,
+            },
+          }
+        }),
       setInputKind: (inputKind) =>
         set((state) => switchToolInput(state, inputKind)),
       setMarkdown: (markdown) =>
@@ -187,7 +283,7 @@ export const useAppStore = create<AppStore>()(
     }),
     {
       name: 'md2img-state-v1',
-      version: 5,
+      version: 6,
       migrate: (persisted, version) => {
         const saved = persisted as PersistedAppState & { locale?: Locale }
         let migrated: PersistedAppState = {
@@ -236,23 +332,50 @@ export const useAppStore = create<AppStore>()(
           }
           delete (migrated as PersistedAppState & { locale?: Locale }).locale
         }
+        if (version < 6) {
+          migrated = {
+            ...migrated,
+            export: {
+              ...defaultExport,
+              ...migrated.export,
+              splitMode: 'compact',
+            },
+          }
+        }
         return migrated
       },
-      partialize: (state) => ({
-        markdown: state.markdown,
-        inputKind: state.inputKind,
-        drafts: state.drafts,
-        codeLanguage: state.codeLanguage,
-        localePreference: state.localePreference,
-        appearance: state.appearance,
-        themeId: state.themeId,
-        canvas: state.canvas,
-        signature: state.signature,
-        export: state.export,
-        customCss: state.customCss,
-        editorCollapsed: state.editorCollapsed,
-        inspectorCollapsed: state.inspectorCollapsed,
-      }),
+      partialize: (state) => {
+        const snapshot = state.routeDefaultsSnapshot
+        return {
+          markdown: state.markdown,
+          inputKind: state.inputKind,
+          drafts: state.drafts,
+          codeLanguage: snapshot?.codeLanguageOverridden
+            ? snapshot.codeLanguage
+            : state.codeLanguage,
+          localePreference: state.localePreference,
+          appearance: state.appearance,
+          themeId: state.themeId,
+          canvas: snapshot
+            ? restoreOverriddenKeys(
+                state.canvas,
+                snapshot.canvas,
+                snapshot.canvasKeys,
+              )
+            : state.canvas,
+          signature: state.signature,
+          export: snapshot
+            ? restoreOverriddenKeys(
+                state.export,
+                snapshot.export,
+                snapshot.exportKeys,
+              )
+            : state.export,
+          customCss: state.customCss,
+          editorCollapsed: state.editorCollapsed,
+          inspectorCollapsed: state.inspectorCollapsed,
+        }
+      },
       merge: (persisted, current) => {
         const saved = persisted as Partial<PersistedAppState>
         return {
