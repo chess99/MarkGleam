@@ -1,6 +1,6 @@
 import pageData from './toolPages.json'
 import japanesePageData from './toolPages.ja.json'
-import type { Locale } from '../types'
+import type { Locale, SplitMode } from '../types'
 
 export type ToolPageLocale = Locale
 
@@ -20,9 +20,11 @@ export interface LocalizedText {
 
 export interface ToolPageDefaults {
   exportFormat: 'png' | 'pdf' | 'split-zip'
-  canvasPreset?: 'auto' | 'a4'
+  canvasPreset?: 'auto' | 'a4' | 'xiaohongshu'
   inspectorTab?: 'canvas' | 'export'
+  scale?: 1 | 2 | 3
   splitHeight?: number
+  splitMode?: SplitMode
   codeLanguage?: string
 }
 

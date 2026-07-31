@@ -11,7 +11,7 @@ test('presents the homepage as the default Markdown converter', async ({
     exact: true,
   })
 
-  await expect(converterNav.getByRole('link')).toHaveCount(8)
+  await expect(converterNav.getByRole('link')).toHaveCount(9)
   await expect(
     converterNav.getByRole('link', {
       name: '把结构化内容做成可分享的视觉作品',
@@ -19,6 +19,12 @@ test('presents the homepage as the default Markdown converter', async ({
   ).toHaveCount(0)
   await expect(markdownLink).toHaveAttribute('aria-current', 'page')
   await expect(markdownLink).toHaveAttribute('href', '/')
+  await expect(
+    converterNav.getByRole('link', {
+      name: '小红书长文图片',
+      exact: true,
+    }),
+  ).toHaveAttribute('href', '/xiaohongshu-long-article/')
 
   await page.goto('/markdown-to-image/')
   await expect(

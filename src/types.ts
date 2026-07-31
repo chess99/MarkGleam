@@ -4,6 +4,7 @@ export type ToolId =
   | 'visual-workspace'
   | 'markdown-to-image'
   | 'markdown-long-image'
+  | 'xiaohongshu-long-article'
   | 'markdown-to-pdf'
   | 'mermaid-to-image'
   | 'formula-to-image'
@@ -53,6 +54,8 @@ export type ExportFormat =
   | 'print'
   | 'clipboard'
   | 'split-zip'
+
+export type SplitMode = 'compact' | 'fixed'
 
 export type PdfSize = 'a4' | 'letter'
 export type PdfOrientation = 'portrait' | 'landscape'
@@ -108,6 +111,7 @@ export interface ExportConfig {
   pdfFooter: string
   pdfPageNumbers: boolean
   splitHeight: number
+  splitMode: SplitMode
 }
 
 export interface DocumentState {

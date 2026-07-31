@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { sampleMarkdown, sampleMarkdownEn } from './sample'
-import { getLocalizedEditorSample, toolPages } from './toolPages'
+import {
+  getLocalizedEditorSample,
+  resolveToolPage,
+  toolPages,
+} from './toolPages'
 
 const page = (id: string) => {
   const match = toolPages.find((candidate) => candidate.id === id)
@@ -53,5 +57,28 @@ describe('tool page samples', () => {
     expect(getLocalizedEditorSample(github, 'ja')).toBe(
       page('markdown-to-image').sample.ja,
     )
+  })
+
+  it('configures the Xiaohongshu image-post workflow without implying native article import', () => {
+    const xiaohongshu = page('xiaohongshu-long-article')
+
+    expect(xiaohongshu.h1['zh-CN']).toBe('小红书长文图片')
+    expect(xiaohongshu.intro['zh-CN']).toContain('上传图文')
+    expect(xiaohongshu.intro['zh-CN']).toContain('不能直接导入原生“写长文”')
+    expect(xiaohongshu.sample['zh-CN']).toContain('| 关注点 | 处理方式 | 发布前检查 |')
+    expect(xiaohongshu.sample['zh-CN']).toContain('<!-- pagebreak -->')
+    expect(xiaohongshu.defaults).toEqual({
+      exportFormat: 'split-zip',
+      canvasPreset: 'xiaohongshu',
+      inspectorTab: 'export',
+      scale: 1,
+      splitHeight: 1440,
+      splitMode: 'fixed',
+    })
+    expect(resolveToolPage('/xiaohongshu-long-article/')?.page.id).toBe(
+      'xiaohongshu-long-article',
+    )
+    expect(resolveToolPage('/en/xiaohongshu-long-article/')?.locale).toBe('en')
+    expect(resolveToolPage('/ja/xiaohongshu-long-article/')?.locale).toBe('ja')
   })
 })

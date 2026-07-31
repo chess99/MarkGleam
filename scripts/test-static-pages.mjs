@@ -53,7 +53,7 @@ const matchOne = (html, pattern, label, path) => {
   return matches[0]
 }
 
-assert.equal(manifest.length, 9, 'SEO manifest must contain the workspace and eight tool pages')
+assert.equal(manifest.length, 10, 'SEO manifest must contain the workspace and nine tool pages')
 assert.equal(new Set(manifest.map((page) => page.id)).size, manifest.length, 'Tool page ids must be unique')
 assert.equal(new Set(manifest.map((page) => page.path)).size, manifest.length, 'Chinese paths must be unique')
 assert.equal(new Set(manifest.map((page) => page.enPath)).size, manifest.length, 'English paths must be unique')

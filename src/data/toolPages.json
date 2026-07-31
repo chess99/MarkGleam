@@ -93,6 +93,21 @@
     "schemaFeatures": { "zh-CN": ["自适应高度 Markdown 长图", "可调分片高度", "多张 PNG 打包为 ZIP"], "en": ["Auto-height Markdown images", "Adjustable split height", "PNG parts packaged as a ZIP"] }
   },
   {
+    "id": "xiaohongshu-long-article",
+    "path": "/xiaohongshu-long-article/",
+    "enPath": "/en/xiaohongshu-long-article/",
+    "inputKind": "markdown",
+    "title": { "zh-CN": "小红书长文转多张图片与 ZIP · MarkGleam", "en": "Xiaohongshu Long Article to Images and ZIP · MarkGleam" },
+    "description": { "zh-CN": "把 Markdown 长文和 GFM 表格排成多张 1080×1440 图片并下载 ZIP。解压后请从小红书“上传图文”发布，不能直接导入原生“写长文”。", "en": "Turn Markdown long-form posts and GFM tables into 1080×1440 images in a ZIP. Unzip the files and publish them through Xiaohongshu's image-post upload; they cannot be imported into the native long-article editor." },
+    "h1": { "zh-CN": "小红书长文图片", "en": "Xiaohongshu Long Article Images" },
+    "intro": { "zh-CN": "这个模式使用固定 3:4 页面和智能分页，把长文导出为按顺序编号的 PNG ZIP。下载后先解压，再到小红书选择“上传图文”；生成的图片不能直接导入原生“写长文”。", "en": "This mode paginates a long article into fixed 3:4 pages and exports an ordered PNG ZIP. Unzip it, then choose Xiaohongshu's image-post upload. The generated images cannot be imported into the native long-article editor." },
+    "steps": { "zh-CN": ["粘贴包含标题、列表或表格的 Markdown 长文", "检查 1080×1440 分页并按需插入手动分页符", "导出 ZIP，解压后通过小红书“上传图文”发布"], "en": ["Paste a Markdown article with headings, lists or tables", "Review the 1080×1440 pages and add manual page breaks where needed", "Export and unzip the ZIP, then publish through Xiaohongshu's image-post upload"] },
+    "limitations": { "zh-CN": "产物是一组 PNG 图片，不是小红书原生长文工程，无法直接导入“写长文”。单个特别高的图片、代码块或复杂表格可能需要缩小或手动拆开后再分页。", "en": "The output is a set of PNG images, not a native Xiaohongshu long-article project, so it cannot be imported into that editor. A single oversized image, code block or complex table may need to be reduced or split manually." },
+    "sample": { "zh-CN": "# 我怎样把一个真实需求做成工具\n\n> 导出 ZIP 后请先解压，再从小红书“上传图文”选择这些 PNG；它们不能直接导入原生“写长文”。\n\n## 问题是什么\n\n写长文时，我希望标题、列表和表格都能按原来的结构保留下来，并且提前看到每一页会放哪些内容。\n\n| 关注点 | 处理方式 | 发布前检查 |\n| --- | --- | --- |\n| 页面尺寸 | 固定 1080×1440 | 每张图保持 3:4 |\n| 表格 | 使用 GFM 表格渲染 | 确认列宽可读 |\n| 分页 | 优先避开完整内容块 | 检查页尾留白 |\n\n## 第一部分结论\n\n- 先保证内容完整，再调整主题和字号\n- 表格过高时，主动拆成两张较短的表格\n- 导出后按文件名顺序上传\n\n<!-- pagebreak -->\n\n## 下一页从这里开始\n\n需要固定换页时，把 `<!-- pagebreak -->` 单独放在一行。普通的 `---` 仍然只是正文分隔线。\n\n发布前再逐张检查图片顺序、文字大小和表格可读性。", "en": "# Turning a real need into a useful tool\n\n> After exporting, unzip the archive and select the PNG files in Xiaohongshu's image-post upload. They cannot be imported into the native long-article editor.\n\n## The problem\n\nFor long-form writing, headings, lists and tables should keep their original structure, and each page should be visible before publishing.\n\n| Concern | Approach | Before publishing |\n| --- | --- | --- |\n| Page size | Fixed at 1080×1440 | Keep every image at 3:4 |\n| Tables | Render GFM tables | Check column readability |\n| Pagination | Prefer complete content blocks | Review bottom whitespace |\n\n## First conclusion\n\n- Preserve all content before adjusting the theme and type size\n- Split a table manually when it is too tall for one page\n- Upload files in filename order\n\n<!-- pagebreak -->\n\n## Start the next page here\n\nTo force a new page, put `<!-- pagebreak -->` on its own line. A normal `---` remains a thematic divider.\n\nBefore publishing, check image order, text size and table readability page by page." },
+    "defaults": { "exportFormat": "split-zip", "canvasPreset": "xiaohongshu", "inspectorTab": "export", "scale": 1, "splitHeight": 1440, "splitMode": "fixed" },
+    "schemaFeatures": { "zh-CN": ["Markdown 长文与 GFM 表格排版", "固定 1080×1440 智能分页", "按顺序编号的 PNG ZIP"], "en": ["Markdown long-form and GFM table layout", "Fixed 1080×1440 smart pagination", "Ordered PNG files packaged as a ZIP"] }
+  },
+  {
     "id": "markdown-to-pdf",
     "path": "/markdown-to-pdf/",
     "enPath": "/en/markdown-to-pdf/",

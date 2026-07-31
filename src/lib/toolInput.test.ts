@@ -5,6 +5,7 @@ import { getToolInputKind, switchToolInput } from './toolInput'
 describe('tool input helpers', () => {
   it('maps workflows separately from their input kind', () => {
     expect(getToolInputKind('markdown-long-image')).toBe('markdown')
+    expect(getToolInputKind('xiaohongshu-long-article')).toBe('markdown')
     expect(getToolInputKind('markdown-to-pdf')).toBe('markdown')
     expect(getToolInputKind('github-readme-to-image')).toBe('markdown')
     expect(getToolInputKind('mermaid-to-image')).toBe('mermaid')

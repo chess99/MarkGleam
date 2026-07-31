@@ -4,6 +4,7 @@ const toolInputKinds: Record<ToolId, InputKind> = {
   'visual-workspace': 'markdown',
   'markdown-to-image': 'markdown',
   'markdown-long-image': 'markdown',
+  'xiaohongshu-long-article': 'markdown',
   'markdown-to-pdf': 'markdown',
   'mermaid-to-image': 'mermaid',
   'formula-to-image': 'formula',
